@@ -407,7 +407,7 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   ok(W15('trigger') > W15('betta') * 1.9 && W15('lion') > W15('betta') * 1.6 && W15('emp') > W15('clown') * 1.3, '15) Tetik/Aslan/Mavi Melek, Betta ve Palyaço yanında belirgin büyük');
   ok(W15('neon') >= 40 && W15('trigger') <= 150, '15) en küçük balık dokunulabilir (>=40 px), en büyük ekranı kaplamıyor (<=150 px)');
   ok(G.T.fishW(mkFish(1, 'trigger', { age: 1.4, sizeGrowth: .75, sizeTrait: 'giant' })) <= 200, '15) Dev ve yaşlı Tetik Balığı bile 200 px tavanını aşmıyor');
-  ok(Object.values(G.T.MUTW).every(v => v >= .8 && v <= 1.25) && Object.keys(G.T.MUTW).length === 80, '15) 80 mutasyon görünümünün boy düzeltmesi makul');
+  ok(Object.values(G.T.MUTW).every(v => v >= .8 && v <= 1.25) && Object.keys(G.T.MUTW).length === 100, '15) 100 mutasyon görünümünün boy düzeltmesi makul');
   // büyük balıklar duvarlara taşmıyor
   S().tank = 'salt'; S().stash = { fresh: { fish: [], dirt: 0 } }; S().fish = [mkFish(2001, 'trigger', { x: .5 }), mkFish(2002, 'lion', { x: .5 }), mkFish(2003, 'emp', { x: .5 }), mkFish(2004, 'mandarin', { x: .5 })];
   let worst = 0; for (let i = 0; i < 40; i++) { step(G, 60); for (const f of S().fish) { const half = G.T.fishW(f) / 2; worst = Math.max(worst, half - f.x * 960, f.x * 960 + half - 960) } }
@@ -502,7 +502,7 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
     T.admAct('time', 3600); ok(S().eggs.every(e => e.hatchAt <= Date.now() + 5), '19) zaman atlama yumurta süresini kaydırıyor');
     S().admEv = ['love']; T.activeEvents(); G.T.admAct('coins0'); ok(true, '19) devam');
     T.admRender(); T.admAct('hatch'); T.admAct('orders'); T.admAct('daily'); T.admAct('muts'); T.admAct('ach'); T.admAct('bot'); T.admAct('botHelp'); T.admAct('night'); T.admAct('night');
-    ok(S().ach.first === 'done' && S().mutsFound.length === T.species.length * 4, '19) ilerleme komutları');
+    ok(S().ach.first === 'done' && S().mutsFound.length === T.species.length * 5, '19) ilerleme komutları');
     S().fish = []; S().coins = 999; T.buy('neon', { x: 480, y: 270 }); ok(S().fish.length === 1 && Math.abs(S().fish[0].x - .5) < 1e-9 && Math.abs(S().fish[0].y - .5) < 1e-9, '19) satın alınan balık seçilen noktaya konuyor');
     S().propPos = { moai: { x: .5, y: 500 } }; S().decor = [{ k: '🐚', x: .3, y: 400 }]; const sv = JSON.parse(T.serial()); ok(sv.propPos.moai.y === 500 && sv.decor[0].y === 400, '19) dekor konumları kayda yazılıyor'); S().props = ['moai']; step(G, 30); ok(errors.length === 0, '19) özel konumlu dekorla çizim hatasız');
     T.admAct('wheelReset'); ok(T.wheelReady() === true, '19) çark: yeni günde hazır');
@@ -604,6 +604,21 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   { // ===== 31) kovalamaca sırasında kayıt
   const T = G.T; use(G); const a1 = mkFish(1400, 'betta'), b1 = mkFish(1401, 'guppy'); S().fish = [a1, b1]; a1.chase = b1; b1.flee = a1;
   let okS = true, js = ''; try { js = T.serial() } catch (e) { okS = false } ok(okS && !js.includes('"chase"') && !js.includes('"flee"'), '31) kovalamaca sırasında kayıt hatasız alınıyor'); }
+
+  { // ===== 32) glitch mutasyonu
+  const T = G.T; use(G); T.closeSheet(); S().tank = 'fresh'; S().lowGfx = false;
+  ok(T.MUTS.glitch && T.MUTS.glitch.mult === 30 && T.MUTS.glitch.p < T.MUTS.gold.p, '32) Glitch mutasyonu tanımlı, altından nadir, 30 kat değer');
+  ok(T.MUT_IMG.glitch && T.species.every(s => typeof T.MUT_IMG.glitch[s.id] === 'string' && T.MUT_IMG.glitch[s.id].length > 1000), '32) 20 türün hepsinin glitch görseli var');
+  let n = 0; for (let i = 0; i < 400000; i++) if (T.rollMutation() === 'glitch') n++; ok(n >= 5 && n <= 45, '32) kendiliğinden glitch şansı ~1/20000 (' + n + '/400000)');
+  S().fish = ['neon','koi','betta','discus'].map((k, i) => mkFish(1500 + i, k, { mutation: 'glitch', x: .2 + i * .15, y: .4 }));
+  const e0 = errors.length; step(G, 900); ok(errors.length === e0 && S().fish.every(q => isFinite(q.x + q.y)), '32) glitch balıklar 15 sn boyunca hatasız çiziliyor');
+  ok(T.particles.some(p => p.type === 'px'), '32) glitch balıkların kuyruğundan piksel kopuyor');
+  S().lowGfx = true; step(G, 120); ok(errors.length === e0, '32) düşük grafikte de hatasız'); S().lowGfx = false;
+  const g0 = S().gems; S().mutsFound = S().mutsFound.filter(k => k !== 'glitch_guppy'); const f = T.admFish ? null : null;
+  const v1 = T.saleValue(mkFish(1600, 'guppy', { mutation: 'glitch', age: 1 })), v0 = T.saleValue(mkFish(1601, 'guppy', { age: 1 })); ok(v1 > v0 * 20, '32) glitch balık çok daha değerli (' + Math.round(v1) + ' / ' + Math.round(v0) + ')');
+  ok(T.ACH.some(a => a.id === 'glitch1'), '32) Sistem Hatası başarımı var');
+  T.openSheet('book'); step(G, 3); T.closeSheet(); ok(!errors.slice(e0).length, '32) defter glitch satırıyla açılıyor');
+  }
 
   // ===== 9) uzun koşu ve hata
   use(G); S().tank = 'fresh'; S().stash = { salt: { fish: [], dirt: 0 }, cfresh: { fish: [mkFish(990, 'guppy', { vx: 0, vy: 0 })], dirt: 0 } }; S().fish = []; for (let i = 0; i < 25; i++) S().fish.push(mkFish(600 + i, ['neon', 'guppy', 'gold', 'betta'][i % 4]));
