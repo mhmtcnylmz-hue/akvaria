@@ -330,26 +330,32 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   S().fish = [mkFish(900, 'neon', { hunger: 50, age: .6 }), mkFish(901, 'guppy'), mkFish(902, 'clown')]; S().tank = 'fresh'; S().stash = { salt: { fish: [mkFish(903, 'angel'), mkFish(904, 'ytang')], dirt: 0 } };
   S().coins = 5000; S().level = 3; S().pending = 0; const c12 = S().coins;
   G.T.unlockTank('cfresh'); ok(!G.T.hasTank('cfresh') && S().coins === c12, '12) koleksiyon tankı seviye 4 olmadan açılmıyor');
-  S().level = 4; G.T.unlockTank('cfresh'); G.T.unlockTank('csalt');
-  ok(G.T.hasTank('cfresh') && G.T.hasTank('csalt') && S().coins === c12 - 1000, '12) seviye 4 ve 500 🪙 ile iki koleksiyon tankı açıldı');
-  G.T.unlockTank('cfresh'); ok(S().coins === c12 - 1000, '12) açık tank ikinci kez ücret almıyor');
-  G.T.moveFish(902, 'cfresh'); ok(S().fish.some(f => f.id === 902) && !G.T.tankArr('cfresh').some(f => f.id === 902), '12) tuzlu su balığı (Palyaço) tatlı su koleksiyonuna alınmıyor');
-  G.T.moveFish(900, 'cfresh'); G.T.moveFish(901, 'cfresh'); G.T.moveFish(902, 'csalt');
-  ok(G.T.tankArr('cfresh').map(f => f.id).join() === '900,901' && G.T.tankArr('csalt').map(f => f.id).join() === '902' && !S().fish.length, '12) uygun balıklar kendi koleksiyon tankına taşındı');
-  G.T.switchTank('cfresh'); ok(S().tank === 'cfresh' && S().fish.length === 2 && G.T.isColl(S().tank) && G.T.tw('cfresh') === 'fresh', '12) tatlı su koleksiyon tankına geçildi');
+  S().level = 4; G.T.unlockTank('cfresh');
+  ok(G.T.hasTank('cfresh') && S().coins === c12 - 500, '12) seviye 4 ve 500 🪙 ile tek koleksiyon tankı açıldı');
+  G.T.unlockTank('cfresh'); ok(S().coins === c12 - 500, '12) açık tank ikinci kez ücret almıyor');
+  G.T.moveFish(900, 'cfresh'); G.T.moveFish(901, 'cfresh'); G.T.moveFish(902, 'cfresh');
+  ok(G.T.tankArr('cfresh').map(f => f.id).join() === '900,901,902' && !S().fish.length, '12) tatlı ve tuzlu su balıkları aynı koleksiyon tankına girdi');
+  G.T.switchTank('cfresh'); ok(S().tank === 'cfresh' && S().fish.length === 3 && G.T.isColl(S().tank), '12) koleksiyon tankına geçildi');
   step(G, 300); ok(S().fish.every(f => isFinite(f.x + f.y + f.vx)), '12) koleksiyon tankında balıklar yüzüyor');
   const snap = S().fish.map(f => [f.hunger, f.health, f.age, f.lifeHours, f.sizeGrowth].join()).join('|'); const dirt0 = S().dirt;
   S().lastTick -= 24 * 3600e3; step(G, 5); G.T.advance(24 * 3600);
   ok(S().fish.map(f => [f.hunger, f.health, f.age, f.lifeHours, f.sizeGrowth].join()).join('|') === snap && S().dirt === dirt0, '12) 48 saat sonra koleksiyon balıkları aç kalmadı, yaşlanmadı, büyümedi');
-  ok(S().stash.salt.fish.length > 0 && S().stash.salt.fish.every(f => f.hunger === 0 && f.health >= 25) && S().pending < 60 && S().fish.every(f => f.st === ''), '12) koleksiyon balıkları gelir üretmiyor; uzun yoklukta çalışan tanktaki balıklar ölmüyor, aç kalıyor (bekleyen: ' + Math.round(S().pending) + ')');
+  ok(S().stash.salt.fish.length > 0 && S().stash.salt.fish.every(f => f.hunger === 0 && f.health >= 25) && S().pending < 60 && S().fish.every(f => !f.st), '12) koleksiyon balıkları gelir üretmiyor; uzun yoklukta çalışan tanktaki balıklar ölmüyor, aç kalıyor (bekleyen: ' + Math.round(S().pending) + ')');
   const cc = S().coins; G.T.feed(); G.T.clean(); ok(S().coins === cc, '12) koleksiyon tankında yemleme/temizleme para harcatmıyor');
-  G.T.moveFish(901, 'csalt'); ok(S().fish.some(f => f.id === 901), '12) tatlı su balığı tuzlu su koleksiyonuna da girmiyor');
   G.T.moveFish(901, 'fresh'); ok(!S().fish.some(f => f.id === 901) && G.T.tankArr('fresh').some(f => f.id === 901), '12) koleksiyondan çalışan tanka geri alma çalışıyor');
   G.T.save(); const sv = JSON.parse(G.localStorage ? G.localStorage.getItem('fishvilleClassicSave3') : G.env.localStorage.getItem('fishvilleClassicSave3'));
-  ok(sv.stash && sv.stash.fresh && sv.stash.csalt && sv.stash.csalt.fish[0].id === 902 && sv.tank === 'cfresh' && !('other' in sv), '12) kayıtta dört tank da duruyor');
+  ok(sv.stash && sv.stash.fresh && sv.stash.salt && sv.tank === 'cfresh' && !('other' in sv) && !sv.stash.csalt, '12) kayıtta üç tank duruyor');
   const sv2 = store(); sv2.setItem('fishvilleClassicSave3', JSON.stringify(sv)); const R = boot(makeEnv(sv2, undefined)); step(R, 5); await settle();
-  ok(R.T.state.tank === 'cfresh' && R.T.state.fish.map(f => f.id).join() === '900' && R.T.state.stash.csalt.fish.length === 1 && !!R.T.state.stash.salt && R.T.state.stash.fresh.fish.some(f => f.id === 901), '12) yeniden açınca tüm tanklar ve balıklar yerinde');
-  use(G); G.T.switchTank('fresh'); G.T.switchTank('salt'); ok(S().tank === 'salt' && G.T.hasTank('cfresh') && G.T.tankArr('csalt').length === 1 && G.T.tankArr('cfresh').length === 1 && G.T.tankArr('fresh').some(f => f.id === 901), '12) tanklar arası geçişte koleksiyon balıkları kaybolmuyor');
+  ok(R.T.state.tank === 'cfresh' && R.T.state.fish.map(f => f.id).sort().join() === '900,902' && !!R.T.state.stash.salt && R.T.state.stash.fresh.fish.some(f => f.id === 901), '12) yeniden açınca tüm tanklar ve balıklar yerinde');
+  use(G); G.T.switchTank('fresh'); G.T.switchTank('salt'); ok(S().tank === 'salt' && G.T.tankArr('cfresh').length === 2 && G.T.tankArr('fresh').some(f => f.id === 901), '12) tanklar arası geçişte koleksiyon balıkları kaybolmuyor');
+  { // eski iki koleksiyonlu kayıt birleşiyor
+  const o2 = store(); o2.setItem('fishvilleClassicSave3', JSON.stringify({ coins: 100, level: 5, tank: 'csalt', dirt: 0, fish: [mkFish(31, 'clown')], stash: { fresh: { fish: [mkFish(32, 'neon')], dirt: 0 }, cfresh: { fish: [mkFish(33, 'betta'), mkFish(34, 'gold')], dirt: 0 } }, discovered: ['neon'], lastTick: Date.now(), nextId: 40 }));
+  const O = boot(makeEnv(o2, undefined)); step(O, 5); await settle();
+  ok(O.T.state.tank === 'cfresh' && O.T.state.fish.map(f => f.id).sort().join() === '31,33,34' && !O.T.state.stash.csalt && !O.T.state.stash.cfresh, '12) eski tatlı ve tuzlu koleksiyon tankları tek tankta birleşti');
+  const o3 = store(); o3.setItem('fishvilleClassicSave3', JSON.stringify({ coins: 100, level: 5, tank: 'fresh', dirt: 0, fish: [mkFish(41, 'neon')], stash: { csalt: { fish: [mkFish(42, 'clown')], dirt: 0 } }, discovered: ['neon'], lastTick: Date.now(), nextId: 50 }));
+  const O3 = boot(makeEnv(o3, undefined)); step(O3, 5); await settle();
+  ok(O3.T.state.stash.cfresh && O3.T.state.stash.cfresh.fish[0].id === 42 && !O3.T.state.stash.csalt, '12) sadece tuzlu su koleksiyonu olan eski kayıt da taşındı');
+  }
   // eski (iki tanklı, Sürüm 3) kayıt: other -> stash
   const v3 = store(); v3.setItem('fishvilleClassicSave3', JSON.stringify({ coins: 100, tank: 'salt', dirt: 12, fish: [mkFish(1, 'clown')], other: { key: 'fresh', dirt: 33, fish: [mkFish(2, 'neon'), mkFish(3, 'betta')] }, discovered: ['neon', 'clown'], lastTick: Date.now(), nextId: 10 }));
   const V = boot(makeEnv(v3, undefined)); step(V, 5); await settle();
@@ -471,7 +477,7 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   // ===== 18) tank balık sınırı
   {
     use(G); const T = G.T; S().tank = 'fresh'; S().stash = { salt: { fish: [], dirt: 0 } }; S().level = 12; S().coins = 99999; S().fish = []; for (let i = 0; i < 20; i++) S().fish.push(mkFish(8000 + i, 'neon'));
-    ok(T.fishCap && T.fishCap('fresh') === 20 && T.fishCap('cfresh') === 24, '18) ana tank 20, koleksiyon tankı 24 balık');
+    ok(T.fishCap && T.fishCap('fresh') === 20 && T.fishCap('cfresh') === 30, '18) ana tank 20, koleksiyon tankı 30 balık');
     const c0 = S().coins; T.buy('guppy'); ok(S().fish.length === 20 && S().coins === c0, '18) tank doluyken balık alınmıyor ve para çekilmiyor');
     S().stash.salt.fish = []; T.buy('clown'); ok(S().stash.salt.fish.length === 1, '18) diğer tank boşsa oraya alınabiliyor');
     for (let i = 0; i < 20; i++) S().stash.salt.fish.push(mkFish(8100 + i, 'clown')); S().stash.salt.fish.length = 20; T.moveFish(8000, 'salt'); ok(S().fish.length === 20, '18) dolu tanka balık taşınmıyor');
