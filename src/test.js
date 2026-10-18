@@ -593,6 +593,10 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   ok(JSON.parse(T.serial()).crit.fresh.length === 4, '29) omurgasızlar kayda yazılıyor');
   }
 
+  { // ===== 31) kovalamaca sırasında kayıt
+  const T = G.T; use(G); const a1 = mkFish(1400, 'betta'), b1 = mkFish(1401, 'guppy'); S().fish = [a1, b1]; a1.chase = b1; b1.flee = a1;
+  let okS = true, js = ''; try { js = T.serial() } catch (e) { okS = false } ok(okS && !js.includes('"chase"') && !js.includes('"flee"'), '31) kovalamaca sırasında kayıt hatasız alınıyor'); }
+
   // ===== 9) uzun koşu ve hata
   use(G); S().tank = 'fresh'; S().stash = { salt: { fish: [], dirt: 0 }, cfresh: { fish: [mkFish(990, 'guppy', { vx: 0, vy: 0 })], dirt: 0 } }; S().fish = []; for (let i = 0; i < 25; i++) S().fish.push(mkFish(600 + i, ['neon', 'guppy', 'gold', 'betta'][i % 4]));
   S().stash.salt.fish = []; for (let i = 0; i < 15; i++) S().stash.salt.fish.push(mkFish(700 + i, ['clown', 'ytang', 'btang', 'angel'][i % 4]));

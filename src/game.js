@@ -286,7 +286,7 @@ $("tankList").innerHTML=TKEYS.map(t).join("")}
 
 const SPM=new Map();function getSpecies(id){let s=SPM.get(id);if(!s){s=species.find(x=>x.id===id);if(!s)return species[0];SPM.set(id,s)}return s}
 function notify(text){$("message").textContent=text;$("message").classList.add("show");clearTimeout(messageTimer);messageTimer=setTimeout(()=>$("message").classList.remove("show"),2200)}
-const TRANSIENT=new Set(["wake","slp","vx","vy","tx","ty","tt","rest","ang","fs","tp","sn","st"]);
+const TRANSIENT=new Set(["chase","flee","chT","fleeT","wake","slp","vx","vy","tx","ty","tt","rest","ang","fs","tp","sn","st"]);
 function serial(){const ls=coinsLoose.reduce((a,c)=>a+c.v,0);return JSON.stringify(state,function(k,v){if(TRANSIENT.has(k))return undefined;return k==="pending"&&this===state?(v||0)+ls:v})}
 function save(silent=false){if(VISIT||window.__nosave)return;state.savedAt=Date.now();cloudSave();try{localStorage.setItem("fishvilleClassicSave3",serial());$("lastSaved").textContent="Kaydedildi · "+new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});if(!silent)notify("Akvaryumun kaydedildi! 💾")}catch(e){$("lastSaved").textContent="Kayıt kullanılamıyor"}}
 function validSave(p){return p&&typeof p==="object"&&Array.isArray(p.fish)&&Array.isArray(p.discovered)}
