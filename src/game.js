@@ -737,7 +737,7 @@ const gk=f.gulp>0?Math.sin(Math.PI*(1-f.gulp/.24)):0;ctx.scale((fs>=0?Math.max(.
 ctx.rotate((f.ang||0)+Math.sin(tp+1.9)*(SWIM.roll*.35+SWIM.roll*sn)*(SWP[f.type]||SWP.clown)[3]);
 const M=mu?MUTS[mu]:null,hc=state.lowGfx?null:M?{c:M.glow,b:M.blur,k:mu}:(f.rarity==="Nadir"?{c:"#ffe46b",b:14,k:"rare"}:null);
 if(hc){const hs=lodImg(im,w*K*.6),hw=hs.naturalWidth||hs.width,H0=halo(hs,hc.k+"_"+s.id+"_"+hw,hc.c,hc.b*1.6*hw/190);if(H0){const k=w/hw,pu=(.75+.25*Math.sin(t*2+f.phase))*(mu==="transparent"?.45:1);ctx.globalAlpha=pu;ctx.drawImage(H0.cv,-w/2-H0.pad*k,-h/2-H0.pad*k,H0.cv.width*k,H0.cv.height*k);ctx.globalAlpha=1}}
-const src0=lodImg(im,w*K),LT=litOn(),nfL=LT?nightAmt():1,src=LT?(nfL<.8?shine(litTex(src0),t,f.phase||0,.3*(1-nfL)):litTex(src0)):src0,N=state.lowGfx?(w<90?4:5):(w<70?6:w<110?8:10),iw=src.naturalWidth||src.width,ih=src.naturalHeight||src.height,sw=iw/N,dw=w/N,P=SWP[f.type]||SWP.clown,amp=w*(SWIM.rest+SWIM.amp*sn)*P[0]*Math.pow(90/w,.15),ov=1.2;
+const src0=lodImg(im,w*K),LT=litOn(),src=LT?litTex(src0):src0,N=state.lowGfx?(w<90?4:5):(w<70?6:w<110?8:10),iw=src.naturalWidth||src.width,ih=src.naturalHeight||src.height,sw=iw/N,dw=w/N,P=SWP[f.type]||SWP.clown,amp=w*(SWIM.rest+SWIM.amp*sn)*P[0]*Math.pow(90/w,.15),ov=1.2;
 for(let i=0;i<N;i++){const u=1-(i+.5)/N,dy=Math.sin(tp-u*SWIM.wave*P[4])*amp*Math.pow(u,P[2]),last=i===N-1;
 ctx.drawImage(src,i*sw,0,last?sw:sw+ov,ih,-w/2+i*dw,-h/2+dy,last?dw:dw+ov*dw/sw,h)}
 if(mu==="gold"&&!state.lowGfx){const sh=(t*.45+f.phase*.13)%1.6;if(sh<1){ctx.save();ctx.globalCompositeOperation="lighter";ctx.globalAlpha=.32*Math.sin(sh*Math.PI);const gx=-w/2+w*sh,gr=ctx.createLinearGradient(gx-w*.18,0,gx+w*.18,0);gr.addColorStop(0,"rgba(255,240,170,0)");gr.addColorStop(.5,"rgba(255,248,210,1)");gr.addColorStop(1,"rgba(255,240,170,0)");ctx.fillStyle=gr;ctx.beginPath();ctx.ellipse(gx,0,w*.16,h*.36,-.5,0,7);ctx.fill();ctx.restore()}}
@@ -745,10 +745,9 @@ if(mu&&!state.lowGfx){ctx.shadowBlur=0;const k=mu==="gold"?5:mu==="melanistic"?3
 ctx.restore()
 }
 let selectedFish=null;
-const litC=new WeakMap(),shM={};
+const litC=new WeakMap();
 function litOn(){return !state.lowGfx&&!VISIT}
 function litTex(src){let L=litC.get(src);if(L!==undefined)return L;L=src;try{const iw=src.naturalWidth||src.width,ih=src.naturalHeight||src.height,c=document.createElement("canvas");c.width=iw;c.height=ih;const x=c.getContext("2d");x.drawImage(src,0,0);x.globalCompositeOperation="source-atop";const g=x.createLinearGradient(0,0,0,ih);g.addColorStop(0,"rgba(255,252,235,.26)");g.addColorStop(.3,"rgba(255,255,255,.06)");g.addColorStop(.55,"rgba(0,0,0,0)");g.addColorStop(1,"rgba(0,22,40,.38)");x.fillStyle=g;x.fillRect(0,0,iw,ih);L=c}catch(e){L=src}litC.set(src,L);return L}
-function shine(img,t,ph,al){try{const iw=img.width,ih=img.height,kk=iw+"x"+ih;let c=shM[kk];if(!c){c=shM[kk]=document.createElement("canvas");c.width=iw;c.height=ih}const x=c.getContext("2d"),T=causticTex();if(!T)return img;x.globalCompositeOperation="copy";x.globalAlpha=1;x.drawImage(img,0,0);x.globalCompositeOperation="source-atop";x.globalAlpha=al;const S=160*iw/150,ox=((t*16+ph*40)*iw/150)%S,oy=((t*7+ph*23)*iw/150)%S;for(let i=-1;i*S<iw+S;i++)for(let j=-1;j*S<ih+S;j++)x.drawImage(T,i*S+ox,j*S+oy,S,S);x.globalAlpha=1;x.globalCompositeOperation="source-over";return c}catch(e){return img}}
 function drawParticles(dt){
 particles=particles.filter(p=>p.life>0);
 particles.forEach(p=>{
