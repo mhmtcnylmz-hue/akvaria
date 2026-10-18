@@ -1,0 +1,24 @@
+<style>
+#boot{position:fixed;inset:0;z-index:99;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 28%,#1b6d8a 0%,#0d3f57 45%,#061d2b 100%);color:#eaf6f3;font-family:"Trebuchet MS",system-ui,-apple-system,sans-serif;overflow:hidden;transition:opacity .6s ease}
+#boot.out{opacity:0;pointer-events:none}
+#boot .rays{position:absolute;inset:-20% -10% auto;height:75%;background:repeating-linear-gradient(100deg,rgba(255,255,255,.05) 0 26px,transparent 26px 80px);-webkit-mask:linear-gradient(#000,transparent);mask:linear-gradient(#000,transparent);animation:bray 9s ease-in-out infinite alternate}
+@keyframes bray{to{transform:translateX(6%)}}
+#boot .bb{position:absolute;bottom:-20px;width:var(--s);height:var(--s);border-radius:50%;border:1.5px solid rgba(220,250,255,.55);background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.5),transparent 55%);animation:bup var(--d) linear infinite;animation-delay:var(--w);left:var(--x)}
+@keyframes bup{to{transform:translate(18px,-112vh)}}
+#boot .bc{position:relative;display:grid;justify-items:center;gap:14px;width:min(86%,400px);text-align:center}
+#boot .blogo{width:100%;height:auto;animation:bswim 3.2s ease-in-out infinite;filter:drop-shadow(0 10px 18px rgba(0,0,0,.45))}
+#boot .bf{width:min(34vw,128px);aspect-ratio:1.3;background:center/contain no-repeat;animation:bswim 2.4s ease-in-out infinite;filter:drop-shadow(0 10px 14px rgba(0,0,0,.4))}
+@keyframes bswim{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-8px) rotate(1deg)}}
+#boot h1{margin:0;font-weight:800;font-size:clamp(28px,8vw,40px);line-height:1;letter-spacing:.3px;color:#fff;text-shadow:0 3px 0 #0a3a52,0 8px 20px rgba(0,0,0,.35)}
+#boot h1 span{display:block;font-size:.42em;font-weight:700;color:#f3c552;letter-spacing:4px;margin-top:6px;text-shadow:none}
+#boot .bar{width:100%;height:12px;border-radius:99px;background:rgba(0,10,20,.45);box-shadow:inset 0 1px 3px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.12);overflow:hidden;margin-top:10px}
+#boot .bar i{display:block;height:100%;width:6%;border-radius:99px;background:linear-gradient(90deg,#8fe0b2,#f3c552);box-shadow:0 0 12px rgba(243,197,82,.6);transition:width .5s ease}
+#boot .bt{font-size:13px;font-weight:700;color:#9ec4c6;min-height:2.6em;line-height:1.35}
+@media (prefers-reduced-motion:reduce){#boot *{animation:none!important}}
+</style>
+<div id="boot" role="status" aria-label="Yükleniyor"><div class="rays"></div><i class="bb" style="--s:10px;--x:12%;--d:7s;--w:0s"></i><i class="bb" style="--s:6px;--x:24%;--d:5s;--w:1.2s"></i><i class="bb" style="--s:14px;--x:70%;--d:8s;--w:.4s"></i><i class="bb" style="--s:8px;--x:84%;--d:6s;--w:2s"></i><i class="bb" style="--s:5px;--x:55%;--d:4.5s;--w:3s"></i><i class="bb" style="--s:11px;--x:38%;--d:9s;--w:2.6s"></i>
+<div class="bc"><img class="blogo" src="data:image/webp;base64,«logo»" alt="Akvaria"><div class="bar"><i id="bootBar"></i></div><div class="bt" id="bootTip">Akvaryum hazırlanıyor…</div></div></div>
+<script>(function(){var T=["İpucu: Altın balıklar 2.500'de bir doğar ve 15 kat değerlidir 👑","İpucu: Dipte kalan yem çürür ve suyu kirletir 🍤","İpucu: Japon balığı ve Koi dipte eşelenerek beslenir","İpucu: Her gün çarkı çevirmeyi unutma 🎡","İpucu: İki taşıyıcı balığı çiftleştirirsen mutasyon şansın artar 🧬","İpucu: Dekorları sürükleyip istediğin yere koyabilirsin 🪸"],i=Math.random()*T.length|0,el=document.getElementById("bootTip"),p=6;
+window.bootP=function(v){if(v>p){p=v;var b=document.getElementById("bootBar");if(b)b.style.width=v+"%"}};
+setTimeout(function(){if(el)el.textContent=T[i]},700);window.__bootTipT=setInterval(function(){i=(i+1)%T.length;if(el&&document.getElementById("boot"))el.textContent=T[i]},3200);
+var c=6;window.__bootCreep=setInterval(function(){if(p<88){c=Math.min(88,p+.6);bootP(c)}},250);bootP(14)})()</script>
