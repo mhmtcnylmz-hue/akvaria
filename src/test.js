@@ -6,7 +6,7 @@ let CODE = SRC.slice(SRC.lastIndexOf('<script>') + 8, SRC.lastIndexOf('</script>
 const HOOK = 'requestAnimationFrame(frame);netLabel();netInit();\n})();';
 if (!CODE.includes(HOOK)) throw new Error('hook yok');
 CODE = CODE.replace(HOOK, `requestAnimationFrame(frame);netLabel();globalThis.__NETP=netInit();
-globalThis.__T={sellMany,isPrecious,invList,FSEL,ymig,get layoutH(){return H},buyGem,GEMS,setShopTab,get shopTab(){return shopTab},renderShop,lvGems,reportErr,buyMany,TRAIT,foodStep,mkFood,upgradeCap,pickTheme,claimBook,bookClaimable,tutStep,tutOn,THEMES,CAP_COST,wheelReady,wheelPay,WHEEL,dayKey,PROPS,WATER,isAdmin,admAct,admRender,admVis,fishCap,botData,botHelp,BOT_ID,dropFood,feedModeOn,ensureOrders,deliverOrder,skipOrder,findOrderFish,orderReady,newOrder,spitCoin,pickCoin,isSleepy,MUTS,MATURE,serial,get coinsLoose(){return coinsLoose},get coinsFly(){return coinsFly},get drops(){return drops},get particles(){return particles},get state(){return state},set state(v){state=v},get VISIT(){return VISIT},get NET(){return NET},ev,activeEvents,inEvent,EVENTS,rollMutation,rollGene,allele,breed,fillParents,geneTest,species,PH,MUT_IMG,SWP,swimFq,fishW,fishH,CMS,MUTW,ageFactor,incomeRate,feedCost,breedCost,lvCoins,moveFish,switchTank,unlockTank,swapTo,isColl,tankDirt,tw,buy,sell,advance,dailyCheck,claimQuest,claimAch,Q,startVisit,endVisit,helpNeighbor,checkHelps,score,renderNeighbors,renderRank,fetchTanks,save,load,normalize,feed,clean,collect,featureTick,saleValue,openSheet:(k)=>openSheet(k,k),closeSheet,oddsText,dayKey,ACH,QUESTS,allFish,hasTank,tankArr,WATER,cloudSave,publishTank,renderUI,openChest,audio:()=>audio(),sfx:n=>sfx(n),musicTick:()=>musicTick(),startAmbience:()=>startAmbience(),get AU(){return AU},applyVolumes:()=>applyVolumes(),get tapInfo(){return tapInfo},get DN(){return DN},toggleNight,showLevelUp,closeLevelUp,rollSize,inheritSize,fsz,addXP,snapFish};
+globalThis.__T={buyCrit,critCount,critShrimpK,critXPK,CRIT,critTap,critRT,sellMany,isPrecious,invList,FSEL,ymig,get layoutH(){return H},buyGem,GEMS,setShopTab,get shopTab(){return shopTab},renderShop,lvGems,reportErr,buyMany,TRAIT,foodStep,mkFood,upgradeCap,pickTheme,claimBook,bookClaimable,tutStep,tutOn,THEMES,CAP_COST,wheelReady,wheelPay,WHEEL,dayKey,PROPS,WATER,isAdmin,admAct,admRender,admVis,fishCap,botData,botHelp,BOT_ID,dropFood,feedModeOn,ensureOrders,deliverOrder,skipOrder,findOrderFish,orderReady,newOrder,spitCoin,pickCoin,isSleepy,MUTS,MATURE,serial,get coinsLoose(){return coinsLoose},get coinsFly(){return coinsFly},get drops(){return drops},get particles(){return particles},get state(){return state},set state(v){state=v},get VISIT(){return VISIT},get NET(){return NET},ev,activeEvents,inEvent,EVENTS,rollMutation,rollGene,allele,breed,fillParents,geneTest,species,PH,MUT_IMG,SWP,swimFq,fishW,fishH,CMS,MUTW,ageFactor,incomeRate,feedCost,breedCost,lvCoins,moveFish,switchTank,unlockTank,swapTo,isColl,tankDirt,tw,buy,sell,advance,dailyCheck,claimQuest,claimAch,Q,startVisit,endVisit,helpNeighbor,checkHelps,score,renderNeighbors,renderRank,fetchTanks,save,load,normalize,feed,clean,collect,featureTick,saleValue,openSheet:(k)=>openSheet(k,k),closeSheet,oddsText,dayKey,ACH,QUESTS,allFish,hasTank,tankArr,WATER,cloudSave,publishTank,renderUI,openChest,audio:()=>audio(),sfx:n=>sfx(n),musicTick:()=>musicTick(),startAmbience:()=>startAmbience(),get AU(){return AU},applyVolumes:()=>applyVolumes(),get tapInfo(){return tapInfo},get DN(){return DN},toggleNight,showLevelUp,closeLevelUp,rollSize,inheritSize,fsz,addXP,snapFish};
 })();`);
 
 const errors = [];
@@ -572,6 +572,19 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   const c0 = S().coins; T.sellMany(ids);
   ok(S().fish.length === 2 && S().coins > c0 && !S().fish.some(f => ids.includes(f.id)), '27) seçilen balıklar toplu satıldı (+' + (S().coins - c0) + ')');
   ok(T.invList().length === 2, '27) liste güncel');
+  }
+
+  {
+  // ===== 29) omurgasızlar
+  const T = G.T; use(G); S().tank = 'fresh'; S().level = 6; S().coins = 1000; S().gems = 50; S().crit = {};
+  T.buyCrit('cherry'); ok(T.critCount('fresh', 'sh') === 1 && S().coins === 880, '29) kiraz karides alındı (120 🪙)');
+  T.buyCrit('cleaner'); ok(T.critCount('fresh', 'sh') === 1, '29) tuzlu su karidesi tatlı su tankına alınamıyor');
+  for (let i = 0; i < 6; i++) T.buyCrit('blue'); ok(T.critCount('fresh', 'sh') === 4, '29) tank başına en fazla 4 karides');
+  ok(Math.abs(T.critShrimpK() - .68) < 1e-9, '29) 4 karides kirlenmeyi %32 yavaşlatıyor');
+  const g0 = S().gems; T.buyCrit('jpink'); ok(S().gems === g0, '29) denizanası tatlı suya alınamıyor');
+  T.critRT(); ok(T.critTap(-500, -500) === false, '29) boşa dokunma omurgasızları etkilemiyor');
+  const r = T.critRT(); const s0 = r[0]; const hitX = s0.x + 5; T.critTap(hitX, s0.y); ok(s0.flip > 0 && s0.vx < 0, '29) karidese sağından dokununca sola kaçıyor');
+  ok(JSON.parse(T.serial()).crit.fresh.length === 4, '29) omurgasızlar kayda yazılıyor');
   }
 
   // ===== 9) uzun koşu ve hata
