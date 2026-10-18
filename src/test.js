@@ -270,10 +270,10 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   ok(Au.T.AU === null, '10) ses, ilk dokunuştan önce başlamıyor');
   Au.T.audio(); Au.T.startAmbience();
   ok(Au.T.AU && Au.T.AU.sfx && Au.T.AU.mus, '10) ses motoru dokunuşla başladı (efekt, ortam ve müzik kanalları)');
-  const names = ['bubble', 'amb', 'boop', 'click', 'feed', 'clean', 'whoosh', 'buy', 'sell', 'coins', 'chest', 'level', 'ach', 'place', 'help', 'cure', 'gene', 'breed', 'hatch', 'rare', 'legend', 'unlock', 'sick', 'death', 'error'];
+  const names = ['bubble', 'amb', 'boop', 'click', 'feed', 'clean', 'whoosh', 'buy', 'sell', 'coins', 'chest', 'level', 'ach', 'place', 'help', 'cure', 'gene', 'breed', 'hatch', 'rare', 'legend', 'unlock', 'sick', 'death', 'error', 'crash'];
   const per = {}; for (const n of names) { const b = starts; Au.T.sfx(n); per[n] = starts - b; CLOCK.t += 1 }
   const silent = names.filter(n => !per[n]);
-  ok(silent.length === 0, '10) 25 efektin hepsi ses üretiyor' + (silent.length ? ' (sessiz: ' + silent + ')' : ''));
+  ok(silent.length === 0, '10) 26 efektin hepsi ses üretiyor' + (silent.length ? ' (sessiz: ' + silent + ')' : ''));
   console.log('   efekt başına ses kaynağı: ' + names.map(n => n + ' ' + per[n]).join(', '));
   ok(maxPeak <= .12, '10) tek bir sesin tepe seviyesi makul (' + maxPeak.toFixed(3) + ')');
   // gerçek oyun eylemleri ses tetikliyor mu
