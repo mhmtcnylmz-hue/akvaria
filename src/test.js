@@ -63,7 +63,7 @@ function boot(env) {
   return env;
 }
 function step(env, n) { use(env); for (let i = 0; i < n; i++) { env.time += 16.67; try { env.raf(env.time) } catch (e) { errors.push(e); return } } }
-const store = () => ({ _: {}, getItem(k) { return this._[k] ?? null }, setItem(k, v) { this._[k] = String(v) } });
+const store = () => ({ _: {}, getItem(k) { return this._[k] ?? null }, setItem(k, v) { this._[k] = String(v) }, removeItem(k) { delete this._[k] } });
 
 // ---------- sahte paylaşılan veritabanı (iki oyuncu aynı store'u görür)
 function makeDB() {
@@ -594,10 +594,11 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   }
 
   {
-  // ===== 30) derinlik katmanları
+  // ===== 30) hacim ışığı ve eski hata notu
   const T = G.T; use(G); T.closeSheet(); S().tank = 'fresh'; S().lowGfx = false; S().fish = ['neon','koi','guppy','betta'].map((k, i) => mkFish(1200 + i, k, { x: .2 + i * .15, y: .4 }));
-  step(G, 600); ok(S().fish.every(q => isFinite(q.x + q.y)) && !JSON.parse(T.serial()).fish.some(q => 'z' in q || 'zt' in q), '30) derinlik kayda yazılmıyor, balıklar sağlam');
-  S().lowGfx = true; step(G, 60); ok(S().fish.every(q => isFinite(q.x + q.y)), '30) düşük grafikte de sorunsuz'); S().lowGfx = false;
+  step(G, 300); S().lowGfx = true; step(G, 60); S().lowGfx = false; step(G, 60); ok(S().fish.every(q => isFinite(q.x + q.y)) && !errors.length, '30) hacim ışığıyla balıklar sorunsuz çiziliyor');
+  const e2 = store(); e2.setItem('fvErr', JSON.stringify({ m: 'eski', n: 1, t: Date.now(), v: 'Akvaria · sürüm 1' })); const E = boot(makeEnv(e2, undefined)); step(E, 5); await settle();
+  ok(e2.getItem('fvErr') === null, '30) eski sürümden kalan hata notu silindi'); use(G);
   }
 
   { // ===== 31) kovalamaca sırasında kayıt
