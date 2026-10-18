@@ -593,6 +593,13 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   ok(JSON.parse(T.serial()).crit.fresh.length === 4, '29) omurgasızlar kayda yazılıyor');
   }
 
+  {
+  // ===== 30) derinlik katmanları
+  const T = G.T; use(G); T.closeSheet(); S().tank = 'fresh'; S().lowGfx = false; S().fish = ['neon','koi','guppy','betta'].map((k, i) => mkFish(1200 + i, k, { x: .2 + i * .15, y: .4 }));
+  step(G, 600); ok(S().fish.every(q => isFinite(q.x + q.y)) && !JSON.parse(T.serial()).fish.some(q => 'z' in q || 'zt' in q), '30) derinlik kayda yazılmıyor, balıklar sağlam');
+  S().lowGfx = true; step(G, 60); ok(S().fish.every(q => isFinite(q.x + q.y)), '30) düşük grafikte de sorunsuz'); S().lowGfx = false;
+  }
+
   { // ===== 31) kovalamaca sırasında kayıt
   const T = G.T; use(G); const a1 = mkFish(1400, 'betta'), b1 = mkFish(1401, 'guppy'); S().fish = [a1, b1]; a1.chase = b1; b1.flee = a1;
   let okS = true, js = ''; try { js = T.serial() } catch (e) { okS = false } ok(okS && !js.includes('"chase"') && !js.includes('"flee"'), '31) kovalamaca sırasında kayıt hatasız alınıyor'); }
