@@ -1006,7 +1006,7 @@ const closeSheet=()=>{openKey=null;$("sheet").classList.remove("show");tutRender
 $("vhome").onclick=endVisit;$("vhelp").onclick=()=>{audio();helpNeighbor()};$("vtank").onclick=()=>{if(!VISIT)return;VISIT.tank=VISIT.tank==="fresh"?"salt":"fresh";visitTank();renderUI()};
 $("surprise").addEventListener("click",()=>{audio();if(state.chest)openChest();else collect()});
 const ADMIN_ID="u_LyrFB5NBQ50Xrl0WUgzi_Q";
-function isAdmin(){return NET.uid===ADMIN_ID}
+const ADMIN_MAIL="mhmtcnylmz@gmail.com";function isAdmin(){if(NET.uid===ADMIN_ID)return true;try{const u=FB&&FB.auth.currentUser;return!!(u&&!u.isAnonymous&&u.emailVerified!==false&&String(u.email||"").toLowerCase()===ADMIN_MAIL)}catch(e){return false}}
 function admVis(){const b=$("admBtn");if(b)b.hidden=!isAdmin()}
 let admFps=null,admFpsT=0,admFrames=0;
 function admSetK(v){K=v;canvas.width=Math.round(W*K);canvas.height=Math.round(H*K);try{ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high"}catch(e){}try{localStorage.setItem("fvK2",K)}catch(e){}}
