@@ -269,3 +269,16 @@ html.land #game .rside{margin-right:env(safe-area-inset-right,0px)}
 html.land #game .dock,html.land #game .visitbar{margin-bottom:env(safe-area-inset-bottom,0px)}
 html.land #game #statusRow,html.land #game .tut{margin-bottom:env(safe-area-inset-bottom,0px)}
 html.land #game #sheet .card{padding-right:calc(14px + env(safe-area-inset-right,0px))}
+
+/* v69: sakin sahne — durum yazıları kendiliğinden kaybolur, temizken su yazısı gizli */
+#game #statusRow .mood{transition:opacity .6s}
+#game #statusRow .mood.quiet{opacity:0}
+#game #statusRow .wpill.ok{display:none}
+/* yatay + kısa ekran: alt çubuk ince, yazısız; zemin görünür kalsın */
+@media (max-height:520px){
+html.land #game .dock{width:min(32%,380px);padding:2px 6px 3px;border-radius:16px}
+html.land #game .dock .tll{display:none}
+html.land #game .dock .chip{transform:scale(.72);transform-origin:center top}
+html.land #game #statusRow{bottom:calc(2% + 50px)}
+html.land #game .tut{bottom:calc(2% + 56px)}
+}
