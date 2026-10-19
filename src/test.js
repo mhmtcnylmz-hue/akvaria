@@ -686,6 +686,13 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   [global.innerWidth, global.innerHeight] = sz; if (sz[0] === undefined) { delete global.innerWidth; delete global.innerHeight } use(G);
   }
 
+  { // ===== 36) dev glitch Napolyon, dev melanistik Napolyonla aynı boyda görünmeli
+  const T = G.T; use(G);
+  const mk = mu => mkFish(1900, 'napo', { mutation: mu, sizeTrait: 'giant', age: 1, sizeGrowth: .75 });
+  const r = T.fishW(mk('glitch')) / T.fishW(mk('melanistic')), want = T.MUTW.glitch_napo / T.MUTW.melanistic_napo;
+  ok(Math.abs(r - want) < .01, '36) dev glitch Napolyon üst boy sınırında küçülmüyor (oran ' + r.toFixed(3) + ', olmalı ' + want.toFixed(3) + ')');
+  }
+
   // ===== 9) uzun koşu ve hata
   use(G); S().tank = 'fresh'; S().stash = { salt: { fish: [], dirt: 0 }, cfresh: { fish: [mkFish(990, 'guppy', { vx: 0, vy: 0 })], dirt: 0 } }; S().fish = []; for (let i = 0; i < 25; i++) S().fish.push(mkFish(600 + i, ['neon', 'guppy', 'gold', 'betta'][i % 4]));
   S().stash.salt.fish = []; for (let i = 0; i < 15; i++) S().stash.salt.fish.push(mkFish(700 + i, ['clown', 'ytang', 'btang', 'angel'][i % 4]));
