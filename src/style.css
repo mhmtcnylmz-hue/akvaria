@@ -286,3 +286,5 @@ html.land #game .tut{bottom:calc(2% + 56px)}
 .pill.mut-glitch{background:#160826;color:#ff6bf0;text-shadow:-1px 0 #00f0ff,1px 0 #ff1fd2}#game .pill.mut-glitch{background:rgba(255,40,220,.2);color:#ffb3f7;text-shadow:-1px 0 rgba(0,240,255,.55)}
 @keyframes glx{0%{filter:none;transform:none}10%{filter:hue-rotate(90deg) saturate(2.4) contrast(1.3);transform:translate(-8px,3px) skewX(5deg)}20%{filter:invert(.15) hue-rotate(200deg);transform:translate(7px,-4px)}30%{filter:none;transform:none}42%{filter:saturate(3) hue-rotate(-60deg);transform:translate(-4px,0) skewX(-6deg)}55%{transform:translate(5px,2px)}70%{filter:hue-rotate(140deg) contrast(1.4);transform:translate(-3px,-2px)}85%,100%{filter:none;transform:none}}
 #game.glx{animation:glx 1.2s steps(1,end)}
+
+.tico{display:inline-block;vertical-align:-.3em;margin-right:4px}.tico img.cuimg{width:1.45em!important;height:1.45em!important;max-width:none;object-fit:contain;display:block}

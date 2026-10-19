@@ -6,7 +6,7 @@ let CODE = SRC.slice(SRC.lastIndexOf('<script>') + 8, SRC.lastIndexOf('</script>
 const HOOK = 'requestAnimationFrame(frame);netLabel();netInit();\n})();';
 if (!CODE.includes(HOOK)) throw new Error('hook yok');
 CODE = CODE.replace(HOOK, `requestAnimationFrame(frame);netLabel();globalThis.__NETP=netInit();
-globalThis.__T={mutNote,getSpecies,buyCrit,critCount,critShrimpK,critXPK,CRIT,critTap,critRT,sellMany,isPrecious,invList,FSEL,ymig,get layoutH(){return H},buyGem,GEMS,setShopTab,get shopTab(){return shopTab},renderShop,lvGems,reportErr,buyMany,TRAIT,foodStep,mkFood,upgradeCap,pickTheme,claimBook,bookClaimable,tutStep,tutOn,THEMES,CAP_COST,wheelReady,wheelPay,WHEEL,dayKey,PROPS,WATER,isAdmin,admAct,admRender,admVis,fishCap,botData,botHelp,BOT_ID,dropFood,feedModeOn,ensureOrders,deliverOrder,skipOrder,findOrderFish,orderReady,newOrder,spitCoin,pickCoin,isSleepy,MUTS,MATURE,serial,get coinsLoose(){return coinsLoose},get coinsFly(){return coinsFly},get drops(){return drops},get particles(){return particles},get state(){return state},set state(v){state=v},get VISIT(){return VISIT},get NET(){return NET},ev,activeEvents,inEvent,EVENTS,rollMutation,rollGene,allele,breed,fillParents,geneTest,species,PH,MUT_IMG,SWP,swimFq,fishW,fishH,CMS,MUTW,ageFactor,incomeRate,feedCost,breedCost,lvCoins,moveFish,switchTank,unlockTank,swapTo,isColl,tankDirt,tw,buy,sell,advance,dailyCheck,claimQuest,claimAch,Q,startVisit,endVisit,helpNeighbor,checkHelps,score,renderNeighbors,renderRank,fetchTanks,save,load,normalize,feed,clean,collect,featureTick,saleValue,openSheet:(k)=>openSheet(k,k),closeSheet,oddsText,dayKey,ACH,QUESTS,allFish,hasTank,tankArr,WATER,cloudSave,publishTank,renderUI,openChest,audio:()=>audio(),sfx:n=>sfx(n),musicTick:()=>musicTick(),startAmbience:()=>startAmbience(),get AU(){return AU},applyVolumes:()=>applyVolumes(),get tapInfo(){return tapInfo},get DN(){return DN},toggleNight,showLevelUp,closeLevelUp,rollSize,inheritSize,fsz,addXP,snapFish};
+globalThis.__T={moveOpts,yasOf,yasTxt,growHours,bookAll,mutNote,getSpecies,buyCrit,critCount,critShrimpK,critXPK,CRIT,critTap,critRT,sellMany,isPrecious,invList,FSEL,ymig,get layoutH(){return H},buyGem,GEMS,setShopTab,get shopTab(){return shopTab},renderShop,lvGems,reportErr,buyMany,TRAIT,foodStep,mkFood,upgradeCap,pickTheme,claimBook,bookClaimable,tutStep,tutOn,THEMES,CAP_COST,wheelReady,wheelPay,WHEEL,dayKey,PROPS,WATER,isAdmin,admAct,admRender,admVis,fishCap,botData,botHelp,BOT_ID,dropFood,feedModeOn,ensureOrders,deliverOrder,skipOrder,findOrderFish,orderReady,newOrder,spitCoin,pickCoin,isSleepy,MUTS,MATURE,serial,get coinsLoose(){return coinsLoose},get coinsFly(){return coinsFly},get drops(){return drops},get particles(){return particles},get state(){return state},set state(v){state=v},get VISIT(){return VISIT},get NET(){return NET},ev,activeEvents,inEvent,EVENTS,rollMutation,rollGene,allele,breed,fillParents,geneTest,species,PH,MUT_IMG,SWP,swimFq,fishW,fishH,CMS,MUTW,ageFactor,incomeRate,feedCost,breedCost,lvCoins,moveFish,switchTank,unlockTank,swapTo,isColl,tankDirt,tw,buy,sell,advance,dailyCheck,claimQuest,claimAch,Q,startVisit,endVisit,helpNeighbor,checkHelps,score,renderNeighbors,renderRank,fetchTanks,save,load,normalize,feed,clean,collect,featureTick,saleValue,openSheet:(k)=>openSheet(k,k),closeSheet,oddsText,dayKey,ACH,QUESTS,allFish,hasTank,tankArr,WATER,cloudSave,publishTank,renderUI,openChest,audio:()=>audio(),sfx:n=>sfx(n),musicTick:()=>musicTick(),startAmbience:()=>startAmbience(),get AU(){return AU},applyVolumes:()=>applyVolumes(),get tapInfo(){return tapInfo},get DN(){return DN},toggleNight,showLevelUp,closeLevelUp,rollSize,inheritSize,fsz,addXP,snapFish};
 })();`);
 
 const errors = [];
@@ -619,6 +619,26 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   ok(T.ACH.some(a => a.id === 'glitch1'), '32) Sistem Hatası başarımı var');
   { const gf = S().fish[0]; step(G, 5); T.mutNote(gf, T.getSpecies(gf.type)); await new Promise(r => setTimeout(r, 800)); step(G, 30); const x0 = gf.x; step(G, 60); ok(gf.x !== x0 && !errors.length, '32) glitch bulununca efekt çalışıyor, oyun donmuyor'); }
   T.openSheet('book'); step(G, 3); T.closeSheet(); ok(!errors.slice(e0).length, '32) defter glitch satırıyla açılıyor');
+  }
+
+  { // ===== 33) koleksiyon, yaş ve defter
+  const T = G.T; use(G); T.closeSheet(); S().level = 10; S().coins = 9999; S().tank = 'fresh'; S().lowGfx = true;
+  S().stash = { salt: { fish: [], dirt: 0 }, cfresh: { fish: [], dirt: 0 } };
+  S().fish = [mkFish(1700, 'neon'), mkFish(1701, 'koi'), mkFish(1702, 'discus')];
+  ok(S().fish.every(f => T.moveOpts(f).includes('cfresh')), '33) tatlı su balıkları koleksiyon tankına taşınabiliyor');
+  T.moveFish(1700, 'cfresh'); T.moveFish(1701, 'cfresh'); ok(T.tankArr('cfresh').length === 2, '33) tatlı su balıkları koleksiyona girdi');
+  T.switchTank('cfresh'); step(G, 30); ok(S().fish.every(f => f.st !== 'water'), '33) koleksiyonda "yanlış su" uyarısı yok'); T.switchTank('fresh');
+  const f = S().fish[0]; f.age = 1; f.sizeGrowth = 0; f.hunger = 100; f.health = 100; f.sick = false; S().dirt = 0;
+  const Gs = T.growHours(T.getSpecies(f.type)) * 3600 / .95;
+  ok(T.yasOf(f) === 1, '33) yetişkin balık 1 yaşında (' + T.yasTxt(f) + ')');
+  const grow = sec => { for (let left = sec; left > 0; left -= 600) { f.hunger = 100; f.health = 100; f.sick = false; S().dirt = 0; T.advance(Math.min(600, left)) } };
+  grow(Gs * 1.9); ok(T.yasOf(f) === 1, '33) 2. yaş, yavru süresinin 2 katından önce gelmiyor (' + T.yasTxt(f) + ')');
+  grow(Gs * .15); ok(T.yasOf(f) === 2, '33) 2 kat sürede 2 yaşına geldi (' + T.yasTxt(f) + ')');
+  grow(Gs * 2.85); ok(T.yasOf(f) === 2, '33) 3. yaş 3 kat süreden önce gelmiyor (' + T.yasTxt(f) + ')');
+  grow(Gs * .2); ok(T.yasOf(f) === 3, '33) 3 kat sürede 3 yaşına geldi (' + T.yasTxt(f) + ')');
+  const sg = f.sizeGrowth; grow(Gs * 5); ok(T.yasOf(f) === 3 && f.sizeGrowth === sg && sg <= .75, '33) 3 yaş en fazla, büyüme durdu (boy ' + (1 + sg).toFixed(2) + 'x)');
+  S().mutsFound = ['albino_neon', 'gold_neon', 'glitch_neon']; ok(T.bookAll('neon') === 3, '33) defter 5 mutasyonun hepsini sayıyor');
+  S().lowGfx = false;
   }
 
   // ===== 9) uzun koşu ve hata
