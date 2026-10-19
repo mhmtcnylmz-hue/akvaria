@@ -1,0 +1,96 @@
+# Akvaria uygulamaları: Android APK ve imzasız iOS IPA.
+# Uygulama oyunu akvariagame.com'dan açar; oyun güncellemeleri için yeniden derlemek gerekmez.
+# Sadece app/ klasörü değişince (veya elle başlatılınca) çalışır.
+# Çıktılar "app" adlı GitHub sürümüne (Releases) yüklenir.
+name: Uygulamalar
+
+on:
+  push:
+    branches: [main]
+    paths: ["app/**", ".github/workflows/app.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: app-build
+  cancel-in-progress: true
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: android-actions/setup-android@v3
+
+      - name: Android projesini oluştur
+        working-directory: app
+        run: |
+          npm install
+          npx cap add android
+          npx capacitor-assets generate --android --iconBackgroundColor '#061d2b' --splashBackgroundColor '#061d2b'
+          npx cap sync android
+          sed -i "s/versionCode 1$/versionCode ${{ github.run_number }}/; s/versionName \"1.0\"/versionName \"1.${{ github.run_number }}\"/" android/app/build.gradle
+
+      - name: APK derle
+        working-directory: app/android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleRelease \
+            -Pandroid.injected.signing.store.file="$GITHUB_WORKSPACE/app/akvaria.jks" \
+            -Pandroid.injected.signing.store.password=akvaria-app \
+            -Pandroid.injected.signing.key.alias=akvaria \
+            -Pandroid.injected.signing.key.password=akvaria-app
+          cp app/build/outputs/apk/release/app-release.apk "$GITHUB_WORKSPACE/Akvaria.apk"
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: app
+          name: Akvaria uygulaması
+          make_latest: true
+          body: |
+            **Android:** Akvaria.apk dosyasını telefonda açıp kur (bilinmeyen kaynaklara izin vermen istenebilir).
+            **iPhone:** Akvaria-imzasiz.ipa dosyasını bilgisayarda Sideloadly ile kendi Apple hesabınla telefona kur (7 günde bir yenilenir).
+          files: Akvaria.apk
+
+  ios:
+    needs: android
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: iOS projesini oluştur
+        working-directory: app
+        run: |
+          npm install
+          npx cap add ios
+          npx capacitor-assets generate --ios --iconBackgroundColor '#061d2b' --splashBackgroundColor '#061d2b'
+          npx cap sync ios
+
+      - name: İmzasız IPA derle
+        working-directory: app/ios/App
+        run: |
+          if [ -d App.xcworkspace ]; then SRC="-workspace App.xcworkspace"; else SRC="-project App.xcodeproj"; fi
+          xcodebuild $SRC -scheme App -configuration Release -sdk iphoneos \
+            -destination 'generic/platform=iOS' -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            CURRENT_PROJECT_VERSION=${{ github.run_number }} MARKETING_VERSION=1.${{ github.run_number }} build
+          mkdir -p Payload
+          cp -R build/Build/Products/Release-iphoneos/App.app Payload/
+          zip -qr "$GITHUB_WORKSPACE/Akvaria-imzasiz.ipa" Payload
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: app
+          files: Akvaria-imzasiz.ipa
