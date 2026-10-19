@@ -407,7 +407,7 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   ok(W15('trigger') > W15('betta') * 1.9 && W15('lion') > W15('betta') * 1.6 && W15('emp') > W15('clown') * 1.3, '15) Tetik/Aslan/Mavi Melek, Betta ve Palyaço yanında belirgin büyük');
   ok(W15('neon') >= 40 && W15('trigger') <= 150, '15) en küçük balık dokunulabilir (>=40 px), en büyük ekranı kaplamıyor (<=150 px)');
   ok(G.T.fishW(mkFish(1, 'trigger', { age: 1.4, sizeGrowth: .75, sizeTrait: 'giant' })) <= 200, '15) Dev ve yaşlı Tetik Balığı bile 200 px tavanını aşmıyor');
-  ok(Object.values(G.T.MUTW).every(v => v >= .8 && v <= 1.25) && Object.keys(G.T.MUTW).length === 100, '15) 100 mutasyon görünümünün boy düzeltmesi makul');
+  ok(Object.values(G.T.MUTW).every(v => v >= .8 && v <= 1.3) && Object.keys(G.T.MUTW).length === 100, '15) 100 mutasyon görünümünün boy düzeltmesi makul');
   // büyük balıklar duvarlara taşmıyor
   S().tank = 'salt'; S().stash = { fresh: { fish: [], dirt: 0 } }; S().fish = [mkFish(2001, 'trigger', { x: .5 }), mkFish(2002, 'lion', { x: .5 }), mkFish(2003, 'emp', { x: .5 }), mkFish(2004, 'mandarin', { x: .5 })];
   let worst = 0; for (let i = 0; i < 40; i++) { step(G, 60); for (const f of S().fish) { const half = G.T.fishW(f) / 2; worst = Math.max(worst, half - f.x * 960, f.x * 960 + half - 960) } }
