@@ -19,30 +19,32 @@ concurrency:
 
 jobs:
   android:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 21
-      - uses: android-actions/setup-android@v3
 
       - name: Android projesini oluştur
         working-directory: app
         run: |
+          bash -e > "$RUNNER_TEMP/log.txt" 2>&1 <<'EOS' || { tail -c 3500 "$RUNNER_TEMP/log.txt" | python3 -c "import sys;print('::error::'+sys.stdin.read().replace('%','%25').replace(chr(13),'').replace(chr(10),'%0A'))"; exit 1; }
           npm install
           npx cap add android
           npx capacitor-assets generate --android --iconBackgroundColor '#061d2b' --splashBackgroundColor '#061d2b'
           npx cap sync android
           sed -i "s/versionCode 1$/versionCode ${{ github.run_number }}/; s/versionName \"1.0\"/versionName \"1.${{ github.run_number }}\"/" android/app/build.gradle
+          EOS
 
       - name: APK derle
         working-directory: app/android
         run: |
+          bash -e > "$RUNNER_TEMP/log.txt" 2>&1 <<'EOS' || { tail -c 3500 "$RUNNER_TEMP/log.txt" | python3 -c "import sys;print('::error::'+sys.stdin.read().replace('%','%25').replace(chr(13),'').replace(chr(10),'%0A'))"; exit 1; }
           chmod +x gradlew
           ./gradlew --no-daemon assembleRelease \
             -Pandroid.injected.signing.store.file="$GITHUB_WORKSPACE/app/akvaria.jks" \
@@ -50,6 +52,7 @@ jobs:
             -Pandroid.injected.signing.key.alias=akvaria \
             -Pandroid.injected.signing.key.password=akvaria-app
           cp app/build/outputs/apk/release/app-release.apk "$GITHUB_WORKSPACE/Akvaria.apk"
+          EOS
 
       - uses: softprops/action-gh-release@v2
         with:
@@ -63,24 +66,27 @@ jobs:
 
   ios:
     needs: android
-    runs-on: macos-latest
+    runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
 
       - name: iOS projesini oluştur
         working-directory: app
         run: |
+          bash -e > "$RUNNER_TEMP/log.txt" 2>&1 <<'EOS' || { tail -c 3500 "$RUNNER_TEMP/log.txt" | python3 -c "import sys;print('::error::'+sys.stdin.read().replace('%','%25').replace(chr(13),'').replace(chr(10),'%0A'))"; exit 1; }
           npm install
           npx cap add ios
           npx capacitor-assets generate --ios --iconBackgroundColor '#061d2b' --splashBackgroundColor '#061d2b'
           npx cap sync ios
+          EOS
 
       - name: İmzasız IPA derle
         working-directory: app/ios/App
         run: |
+          bash -e > "$RUNNER_TEMP/log.txt" 2>&1 <<'EOS' || { tail -c 3500 "$RUNNER_TEMP/log.txt" | python3 -c "import sys;print('::error::'+sys.stdin.read().replace('%','%25').replace(chr(13),'').replace(chr(10),'%0A'))"; exit 1; }
           if [ -d App.xcworkspace ]; then SRC="-workspace App.xcworkspace"; else SRC="-project App.xcodeproj"; fi
           xcodebuild $SRC -scheme App -configuration Release -sdk iphoneos \
             -destination 'generic/platform=iOS' -derivedDataPath build \
@@ -89,6 +95,7 @@ jobs:
           mkdir -p Payload
           cp -R build/Build/Products/Release-iphoneos/App.app Payload/
           zip -qr "$GITHUB_WORKSPACE/Akvaria-imzasiz.ipa" Payload
+          EOS
 
       - uses: softprops/action-gh-release@v2
         with:
