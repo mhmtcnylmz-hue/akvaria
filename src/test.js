@@ -6,7 +6,7 @@ let CODE = SRC.slice(SRC.lastIndexOf('<script>') + 8, SRC.lastIndexOf('</script>
 const HOOK = 'requestAnimationFrame(frame);netLabel();netInit();\n})();';
 if (!CODE.includes(HOOK)) throw new Error('hook yok');
 CODE = CODE.replace(HOOK, `requestAnimationFrame(frame);netLabel();globalThis.__NETP=netInit();
-globalThis.__T={moveOpts,yasOf,yasTxt,growHours,bookAll,mutNote,getSpecies,buyCrit,critCount,critShrimpK,critXPK,CRIT,critTap,critRT,sellMany,isPrecious,invList,FSEL,ymig,get layoutH(){return H},buyGem,GEMS,setShopTab,get shopTab(){return shopTab},renderShop,lvGems,reportErr,buyMany,TRAIT,foodStep,mkFood,upgradeCap,pickTheme,claimBook,bookClaimable,tutStep,tutOn,THEMES,CAP_COST,wheelReady,wheelPay,WHEEL,dayKey,PROPS,WATER,isAdmin,admAct,admRender,admVis,fishCap,botData,botHelp,BOT_ID,dropFood,feedModeOn,ensureOrders,deliverOrder,skipOrder,findOrderFish,orderReady,newOrder,spitCoin,pickCoin,isSleepy,MUTS,MATURE,serial,get coinsLoose(){return coinsLoose},get coinsFly(){return coinsFly},get drops(){return drops},get particles(){return particles},get state(){return state},set state(v){state=v},get VISIT(){return VISIT},get NET(){return NET},ev,activeEvents,inEvent,EVENTS,rollMutation,rollGene,allele,breed,fillParents,geneTest,species,PH,MUT_IMG,SWP,swimFq,fishW,fishH,CMS,MUTW,ageFactor,incomeRate,feedCost,breedCost,lvCoins,moveFish,switchTank,unlockTank,swapTo,isColl,tankDirt,tw,buy,sell,advance,dailyCheck,claimQuest,claimAch,Q,startVisit,endVisit,helpNeighbor,checkHelps,score,renderNeighbors,renderRank,fetchTanks,save,load,normalize,feed,clean,collect,featureTick,saleValue,openSheet:(k)=>openSheet(k,k),closeSheet,oddsText,dayKey,ACH,QUESTS,allFish,hasTank,tankArr,WATER,cloudSave,publishTank,renderUI,openChest,audio:()=>audio(),sfx:n=>sfx(n),musicTick:()=>musicTick(),startAmbience:()=>startAmbience(),get AU(){return AU},applyVolumes:()=>applyVolumes(),get tapInfo(){return tapInfo},get DN(){return DN},toggleNight,showLevelUp,closeLevelUp,rollSize,inheritSize,fsz,addXP,snapFish};
+globalThis.__T={lokEk,boyOf,fcMeta,infoText,critShopHTML,renderQuests,moveOpts,yasOf,yasTxt,growHours,bookAll,mutNote,getSpecies,buyCrit,critCount,critShrimpK,critXPK,CRIT,critTap,critRT,sellMany,isPrecious,invList,FSEL,ymig,get layoutH(){return H},buyGem,GEMS,setShopTab,get shopTab(){return shopTab},renderShop,lvGems,reportErr,buyMany,TRAIT,foodStep,mkFood,upgradeCap,pickTheme,claimBook,bookClaimable,tutStep,tutOn,THEMES,CAP_COST,wheelReady,wheelPay,WHEEL,dayKey,PROPS,WATER,isAdmin,admAct,admRender,admVis,fishCap,botData,botHelp,BOT_ID,dropFood,feedModeOn,ensureOrders,deliverOrder,skipOrder,findOrderFish,orderReady,newOrder,spitCoin,pickCoin,isSleepy,MUTS,MATURE,serial,get coinsLoose(){return coinsLoose},get coinsFly(){return coinsFly},get drops(){return drops},get particles(){return particles},get state(){return state},set state(v){state=v},get VISIT(){return VISIT},get NET(){return NET},ev,activeEvents,inEvent,EVENTS,rollMutation,rollGene,allele,breed,fillParents,geneTest,species,PH,MUT_IMG,SWP,swimFq,fishW,fishH,CMS,MUTW,ageFactor,incomeRate,feedCost,breedCost,lvCoins,moveFish,switchTank,unlockTank,swapTo,isColl,tankDirt,tw,buy,sell,advance,dailyCheck,claimQuest,claimAch,Q,startVisit,endVisit,helpNeighbor,checkHelps,score,renderNeighbors,renderRank,fetchTanks,save,load,normalize,feed,clean,collect,featureTick,saleValue,openSheet:(k)=>openSheet(k,k),closeSheet,oddsText,dayKey,ACH,QUESTS,allFish,hasTank,tankArr,WATER,cloudSave,publishTank,renderUI,openChest,audio:()=>audio(),sfx:n=>sfx(n),musicTick:()=>musicTick(),startAmbience:()=>startAmbience(),get AU(){return AU},applyVolumes:()=>applyVolumes(),get tapInfo(){return tapInfo},get DN(){return DN},toggleNight,showLevelUp,closeLevelUp,rollSize,inheritSize,fsz,addXP,snapFish};
 })();`);
 
 const errors = [];
@@ -639,6 +639,40 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   const sg = f.sizeGrowth; grow(Gs * 5); ok(T.yasOf(f) === 3 && f.sizeGrowth === sg && sg <= .75, '33) 3 yaş en fazla, büyüme durdu (boy ' + (1 + sg).toFixed(2) + 'x)');
   S().mutsFound = ['albino_neon', 'gold_neon', 'glitch_neon']; ok(T.bookAll('neon') === 3, '33) defter 5 mutasyonun hepsini sayıyor');
   S().lowGfx = false;
+  }
+
+  { // ===== 34) bulut kaydı, metinler, boy etiketi
+  const T = G.T; use(G); T.closeSheet();
+  // eski yerel kayıt oyun açılırken kaydedilse bile buluttaki yeni kayıt ezilmemeli
+  const DB = makeDB(), now = Date.now();
+  const cloudSt = { ...JSON.parse(T.serial()), coins: 7777, savedAt: now - 60e3 };
+  DB.docs.set('data/users/u_K/save', { json: JSON.stringify(cloudSt), savedAt: now - 60e3 });
+  const ls = store(); ls.setItem('fishvilleClassicSave3', JSON.stringify({ ...JSON.parse(T.serial()), coins: 11, savedAt: now - 5 * 3600e3 }));
+  const K = boot(makeEnv(ls, claudeFor(DB, 'u_K', 'Kaan'))); K.T.save(true); await K.NETP; await settle(40);
+  ok(K.T.state.coins === 7777 && JSON.parse(DB.docs.get('data/users/u_K/save').json).coins === 7777, '34) açılışta yerel kayıt yazılsa da buluttaki yeni kayıt yüklendi, ezilmedi (' + K.T.state.coins + ')');
+  // bulut okunamazsa buluttaki kayıt ezilmemeli
+  const DB2 = makeDB(); DB2.docs.set('data/users/u_R/save', { json: JSON.stringify(cloudSt), savedAt: now - 60e3 });
+  const cl = claudeFor(DB2, 'u_R', 'Rüya'), d0 = cl.dbApi.doc; cl.dbApi.doc = p => { const r = d0(p); if (p === 'data/users/u_R/save') r.get = async () => { throw Object.assign(new Error('unavailable'), { code: 'unavailable' }) }; return r };
+  const R = boot(makeEnv(store(), cl)); await R.NETP; await settle(40); R.T.save(true); R.T.cloudSave(true); await settle(40);
+  ok(JSON.parse(DB2.docs.get('data/users/u_R/save').json).coins === 7777 && !R.T.NET.on, '34) bulut okunamayınca buluttaki kayıt ezilmiyor');
+  use(G);
+  // seviye ekleri
+  ok([1,2,3,4,5,6,7,8,9,10,12,15,20,40].map(n => n + T.lokEk(n)).join(' ') === "1'de 2'de 3'te 4'te 5'te 6'da 7'de 8'de 9'da 10'da 12'de 15'te 20'de 40'ta", '34) "Seviye 6\'da açılır" gibi ekler doğru');
+  // metinler koddaki ödüllerle aynı
+  T.dailyCheck(); T.renderQuests(); ok(/\+40 🪙 · \+2 💎 bonus/.test(G.els.quests.innerHTML) && !/\+60/.test(G.els.quests.innerHTML), '34) görev bonusu yazısı gerçek ödülle aynı');
+  S().streak.count = 6; T.renderQuests(); ok(/\+56 🪙$/.test(G.els.streak.textContent), '34) seri ödülü yazısı gerçek ödülle aynı (' + G.els.streak.textContent + ')');
+  const g12 = T.ACH.find(a => a.id === 'gen12'); ok(g12.d.startsWith(T.species.length * 5 + ' mutasyonun'), '34) Genetikçi başarımı doğru mutasyon sayısını yazıyor (' + g12.d + ')');
+  // boy etiketi her yerde aynı
+  const big = mkFish(1800, 'koi', { sizeTrait: 'giant', sizeGrowth: .75 }), bs = T.boyOf(big);
+  ok(T.fcMeta(big).includes('boy ' + bs + 'x') && T.infoText(big).includes('boy ' + bs + 'x') && bs === '1.72', '34) boy etiketi listede ve bilgi satırında aynı (' + bs + 'x)');
+  // koleksiyonda omurgasız düğmeleri kapalı
+  const tk = S().tank; S().stash.cfresh = S().stash.cfresh || { fish: [], dirt: 0 }; T.switchTank('cfresh'); S().level = 10;
+  ok(!/data-crit="[^"]*">/.test(T.critShopHTML()), '34) koleksiyon tankında omurgasız alma düğmeleri kapalı'); T.switchTank(tk);
+  // yönetici "kaydı sıfırla" gerçekten sıfırlıyor
+  const rs = store(); rs.setItem('fishvilleClassicSave3', JSON.stringify({ ...JSON.parse(T.serial()), coins: 12345 }));
+  const Z = boot(makeEnv(rs, undefined)); step(Z, 3); await settle(); global.confirm = () => true; global.location = { reload() {} }; global.removeEventListener = () => {};
+  Z.T.admAct('reset'); const z = JSON.parse(rs.getItem('fishvilleClassicSave3')); ok(z.coins === 250 && z.savedAt > 0, '34) yönetici "Kaydı sıfırla" kaydı gerçekten sıfırlıyor');
+  delete global.confirm; delete global.location; delete global.removeEventListener; use(G);
   }
 
   // ===== 9) uzun koşu ve hata
