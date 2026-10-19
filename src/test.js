@@ -609,7 +609,7 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   const T = G.T; use(G); T.closeSheet(); S().tank = 'fresh'; S().lowGfx = false;
   ok(T.MUTS.glitch && T.MUTS.glitch.mult === 30 && T.MUTS.glitch.p < T.MUTS.gold.p, '32) Glitch mutasyonu tanımlı, altından nadir, 30 kat değer');
   ok(T.MUT_IMG.glitch && T.species.every(s => typeof T.MUT_IMG.glitch[s.id] === 'string' && T.MUT_IMG.glitch[s.id].length > 1000), '32) 20 türün hepsinin glitch görseli var');
-  let n = 0; for (let i = 0; i < 400000; i++) if (T.rollMutation() === 'glitch') n++; ok(n >= 5 && n <= 45, '32) kendiliğinden glitch şansı ~1/20000 (' + n + '/400000)');
+  let n = 0; for (let i = 0; i < 400000; i++) if (T.rollMutation() === 'glitch') n++; ok(n >= 50 && n <= 115, '32) kendiliğinden glitch şansı ~1/5000 (' + n + '/400000)');
   S().fish = ['neon','koi','betta','discus'].map((k, i) => mkFish(1500 + i, k, { mutation: 'glitch', x: .2 + i * .15, y: .4 }));
   const e0 = errors.length; step(G, 900); ok(errors.length === e0 && S().fish.every(q => isFinite(q.x + q.y)), '32) glitch balıklar 15 sn boyunca hatasız çiziliyor');
   ok(T.particles.some(p => p.type === 'px'), '32) glitch balıkların kuyruğundan piksel kopuyor');
@@ -617,8 +617,7 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   const g0 = S().gems; S().mutsFound = S().mutsFound.filter(k => k !== 'glitch_guppy'); const f = T.admFish ? null : null;
   const v1 = T.saleValue(mkFish(1600, 'guppy', { mutation: 'glitch', age: 1 })), v0 = T.saleValue(mkFish(1601, 'guppy', { age: 1 })); ok(v1 > v0 * 20, '32) glitch balık çok daha değerli (' + Math.round(v1) + ' / ' + Math.round(v0) + ')');
   ok(T.ACH.some(a => a.id === 'glitch1'), '32) Sistem Hatası başarımı var');
-  { const gf = S().fish[0]; step(G, 5); T.mutNote(gf, T.getSpecies(gf.type)); await new Promise(r => setTimeout(r, 800)); step(G, 30); const x0 = gf.x; step(G, 90); ok(gf.x === x0, '32) glitch bulununca oyun donuyor');
-    step(G, 200); const x1 = gf.x; step(G, 30); ok(gf.x !== x1, '32) ~3.9 sn sonra oyun devam ediyor'); }
+  { const gf = S().fish[0]; step(G, 5); T.mutNote(gf, T.getSpecies(gf.type)); await new Promise(r => setTimeout(r, 800)); step(G, 30); const x0 = gf.x; step(G, 60); ok(gf.x !== x0 && !errors.length, '32) glitch bulununca efekt çalışıyor, oyun donmuyor'); }
   T.openSheet('book'); step(G, 3); T.closeSheet(); ok(!errors.slice(e0).length, '32) defter glitch satırıyla açılıyor');
   }
 
