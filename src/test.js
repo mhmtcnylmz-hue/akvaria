@@ -742,6 +742,20 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   S().fish = S().fish.slice(0, 4); S().eggs = []; S().eggWait = 0;
   }
 
+  { // ===== 38) iOS ana ekran uygulamasında altta boş şerit kalmaması
+  const m = SRC.match(/window\.__fullHc=(function\(o\)\{[^]*?return h\})/); const fh = m ? eval('(' + m[1] + ')') : null;
+  ok(!!fh, '38) tam yükseklik hesabı sayfada var');
+  if (fh) {
+    ok(fh({ ih: 848, iw: 414, sw: 414, sh: 896, sa: true, st: 48 }) === 896, '38) iPhone ana ekran uygulamasında pencere durum çubuğu kadar kısaysa oyun ekranın altına kadar uzuyor');
+    ok(fh({ ih: 896, iw: 414, sw: 414, sh: 896, sa: true, st: 48 }) === 896, '38) pencere zaten tam boyken değişiklik yok');
+    ok(fh({ ih: 715, iw: 414, sw: 414, sh: 896, sa: false, st: 48 }) === 715, '38) Safari sekmesinde dokunulmuyor');
+    ok(fh({ ih: 414, iw: 848, sw: 414, sh: 896, sa: true, st: 0 }) === 414, '38) yatay ekranda dokunulmuyor');
+    ok(fh({ ih: 820, iw: 414, sw: 414, sh: 896, sa: true, st: 48 }) === 820, '38) fark durum çubuğuyla örtüşmüyorsa dokunulmuyor');
+  }
+  const he = fs.readFileSync(require('path').join(__dirname, '..', 'site', 'head_extra.html'), 'utf8');
+  ok(/apple-mobile-web-app-status-bar-style" content="black-translucent"/.test(he), '38) ana ekran uygulaması durum çubuğunun altına kadar açılıyor (black-translucent)');
+  }
+
   // ===== 9) uzun koşu ve hata
   use(G); S().tank = 'fresh'; S().stash = { salt: { fish: [], dirt: 0 }, cfresh: { fish: [mkFish(990, 'guppy', { vx: 0, vy: 0 })], dirt: 0 } }; S().fish = []; for (let i = 0; i < 25; i++) S().fish.push(mkFish(600 + i, ['neon', 'guppy', 'gold', 'betta'][i % 4]));
   S().stash.salt.fish = []; for (let i = 0; i < 15; i++) S().stash.salt.fish.push(mkFish(700 + i, ['clown', 'ytang', 'btang', 'angel'][i % 4]));

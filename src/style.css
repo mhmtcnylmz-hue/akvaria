@@ -321,3 +321,8 @@ html.land #game .tut{bottom:calc(2% + 56px)}
 #game .sndq{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 #game .sndq button{padding:11px 6px!important}
 #game .sndq #sndTest{background:linear-gradient(180deg,var(--gold),var(--gold2))!important;color:#33230a!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 2px 0 #a8761f!important}
+
+/* iOS ana ekran uygulaması: sistem pencere yüksekliğini durum çubuğu kadar kısa verirse oyun ekranın altına kadar uzar */
+html.fullh,html.fullh body{height:var(--appH)!important}
+html.fullh #bgfill{bottom:auto;height:var(--appH)}
+html.fullh #stage{bottom:auto!important;height:var(--appH)!important}
