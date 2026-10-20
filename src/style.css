@@ -294,9 +294,30 @@ html.land #game .tut{bottom:calc(2% + 56px)}
 
 .tico{display:inline-block;vertical-align:-.3em;margin-right:4px}.tico img.cuimg{width:1.45em!important;height:1.45em!important;max-width:none;object-fit:contain;display:block}
 
-/* ses seviyesi kaydırıcıları (Ayarlar) */
-.volbox{display:grid;gap:6px;margin:0 0 10px;padding:9px 12px;background:#fff;border:1px solid #c6e9eb;border-radius:14px}
-.volbox label{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;color:#0b3a5c}
-.volbox label span{flex:0 0 7.5em;white-space:nowrap}
-.volbox input{flex:1;min-width:0;accent-color:#e9a51f;height:28px;margin:0}
-.volbox b{flex:0 0 3em;text-align:right;font-size:12px}
+
+/* ses paneli */
+#game .sndp{display:grid;gap:10px}
+#game .sndrow{background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:12px 14px 10px;transition:opacity .2s}
+#game .sndh{display:flex;align-items:center;gap:12px}
+#game .sndi{flex:0 0 42px;height:42px;border-radius:14px;display:grid;place-items:center;font-size:22px;background:radial-gradient(circle at 50% 30%,#3aa6c9,#0d4a66);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 3px 8px rgba(0,10,20,.35)}
+#game .sndt{flex:1;min-width:0;display:grid;gap:1px}
+#game .sndt b{font:800 16px/1.15 var(--ff-h);color:#fff}
+#game .sndt small{font-size:12px;color:var(--mist,#9ec4c6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#game .sndp .sndsw{all:unset;box-sizing:border-box;flex:0 0 54px;width:54px;height:30px;padding:0!important;border-radius:99px!important;background:rgba(0,10,20,.5)!important;border:1px solid rgba(255,255,255,.2)!important;box-shadow:inset 0 1px 3px rgba(0,0,0,.45)!important;position:relative;cursor:pointer;transition:background .2s}
+#game .sndp .sndsw i{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:linear-gradient(180deg,#fff,#cfe3ea);box-shadow:0 2px 4px rgba(0,0,0,.35);transition:transform .2s}
+#game .sndp .sndsw.on{background:linear-gradient(180deg,#5fe0a4,#23a56d)!important;border-color:rgba(255,255,255,.4)!important}
+#game .sndp .sndsw.on i{transform:translateX(24px)}
+#game .sndp .sndsw:focus-visible{outline:2px solid #f3c552;outline-offset:2px}
+#game .sndsl{display:flex;align-items:center;gap:12px;margin-top:10px}
+#game .sndsl input{-webkit-appearance:none;appearance:none;flex:1;min-width:0;height:28px;margin:0;background:transparent;cursor:pointer;--p:100%}
+#game .sndsl input::-webkit-slider-runnable-track{height:10px;border-radius:99px;background:linear-gradient(90deg,#8fe0b2,#f3c552) 0/var(--p) 100% no-repeat,rgba(0,10,20,.5);box-shadow:inset 0 1px 2px rgba(0,0,0,.4)}
+#game .sndsl input::-moz-range-track{height:10px;border-radius:99px;background:rgba(0,10,20,.5)}
+#game .sndsl input::-moz-range-progress{height:10px;border-radius:99px;background:linear-gradient(90deg,#8fe0b2,#f3c552)}
+#game .sndsl input::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;margin-top:-7px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff7d6,#f3c552 55%,#d18f12);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.45)}
+#game .sndsl input::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff7d6,#f3c552 55%,#d18f12);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.45)}
+#game .sndsl output{flex:0 0 52px;text-align:center;font:800 13px/1 var(--ff-h);color:#0b3a52;background:#f3c552;border-radius:99px;padding:6px 0}
+#game .sndrow.off .sndsl{opacity:.45}
+#game .sndrow.off .sndsl output{background:rgba(255,255,255,.18);color:#fff}
+#game .sndq{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#game .sndq button{padding:11px 6px!important}
+#game .sndq #sndTest{background:linear-gradient(180deg,var(--gold),var(--gold2))!important;color:#33230a!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 2px 0 #a8761f!important}
