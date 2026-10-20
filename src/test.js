@@ -6,7 +6,7 @@ let CODE = SRC.slice(SRC.lastIndexOf('<script>') + 8, SRC.lastIndexOf('</script>
 const HOOK = 'requestAnimationFrame(frame);netLabel();netInit();\n})();';
 if (!CODE.includes(HOOK)) throw new Error('hook yok');
 CODE = CODE.replace(HOOK, `requestAnimationFrame(frame);netLabel();globalThis.__NETP=netInit();
-globalThis.__T={get gameW(){return W},lokEk,boyOf,fcMeta,infoText,critShopHTML,renderQuests,moveOpts,yasOf,yasTxt,growHours,bookAll,mutNote,getSpecies,buyCrit,critCount,critShrimpK,critXPK,CRIT,critTap,critRT,sellMany,isPrecious,invList,FSEL,ymig,get layoutH(){return H},buyGem,GEMS,setShopTab,get shopTab(){return shopTab},renderShop,lvGems,reportErr,buyMany,TRAIT,foodStep,mkFood,upgradeCap,pickTheme,claimBook,bookClaimable,tutStep,tutOn,THEMES,CAP_COST,wheelReady,wheelPay,WHEEL,dayKey,PROPS,WATER,isAdmin,admAct,admRender,admVis,fishCap,botData,botHelp,BOT_ID,dropFood,feedModeOn,ensureOrders,deliverOrder,skipOrder,findOrderFish,orderReady,newOrder,spitCoin,pickCoin,isSleepy,MUTS,MATURE,serial,get coinsLoose(){return coinsLoose},get coinsFly(){return coinsFly},get drops(){return drops},get particles(){return particles},get state(){return state},set state(v){state=v},get VISIT(){return VISIT},get NET(){return NET},ev,activeEvents,inEvent,EVENTS,rollMutation,rollGene,allele,breed,fillParents,geneTest,species,PH,MUT_IMG,SWP,swimFq,fishW,fishH,CMS,MUTW,ageFactor,incomeRate,feedCost,breedCost,lvCoins,moveFish,switchTank,unlockTank,swapTo,isColl,tankDirt,tw,buy,sell,advance,dailyCheck,claimQuest,claimAch,Q,startVisit,endVisit,helpNeighbor,checkHelps,score,renderNeighbors,renderRank,fetchTanks,save,load,normalize,feed,clean,collect,featureTick,saleValue,openSheet:(k)=>openSheet(k,k),closeSheet,oddsText,dayKey,ACH,QUESTS,allFish,hasTank,tankArr,WATER,cloudSave,publishTank,renderUI,openChest,audio:()=>audio(),sfx:n=>sfx(n),musicTick:()=>musicTick(),startAmbience:()=>startAmbience(),get AU(){return AU},applyVolumes:()=>applyVolumes(),get tapInfo(){return tapInfo},get DN(){return DN},toggleNight,showLevelUp,closeLevelUp,rollSize,inheritSize,fsz,addXP,snapFish};
+globalThis.__T={get gameW(){return W},updateFeatures,setVol,VOL,breedHint,breedable,featureTick,glPxN:f=>{const o=GLS.get(f);return o&&o.px?o.px.length:0},lokEk,boyOf,fcMeta,infoText,critShopHTML,renderQuests,moveOpts,yasOf,yasTxt,growHours,bookAll,mutNote,getSpecies,buyCrit,critCount,critShrimpK,critXPK,CRIT,critTap,critRT,sellMany,isPrecious,invList,FSEL,ymig,get layoutH(){return H},buyGem,GEMS,setShopTab,get shopTab(){return shopTab},renderShop,lvGems,reportErr,buyMany,TRAIT,foodStep,mkFood,upgradeCap,pickTheme,claimBook,bookClaimable,tutStep,tutOn,THEMES,CAP_COST,wheelReady,wheelPay,WHEEL,dayKey,PROPS,WATER,isAdmin,admAct,admRender,admVis,fishCap,botData,botHelp,BOT_ID,dropFood,feedModeOn,ensureOrders,deliverOrder,skipOrder,findOrderFish,orderReady,newOrder,spitCoin,pickCoin,isSleepy,MUTS,MATURE,serial,get coinsLoose(){return coinsLoose},get coinsFly(){return coinsFly},get drops(){return drops},get particles(){return particles},get state(){return state},set state(v){state=v},get VISIT(){return VISIT},get NET(){return NET},ev,activeEvents,inEvent,EVENTS,rollMutation,rollGene,allele,breed,fillParents,geneTest,species,PH,MUT_IMG,SWP,swimFq,fishW,fishH,CMS,MUTW,ageFactor,incomeRate,feedCost,breedCost,lvCoins,moveFish,switchTank,unlockTank,swapTo,isColl,tankDirt,tw,buy,sell,advance,dailyCheck,claimQuest,claimAch,Q,startVisit,endVisit,helpNeighbor,checkHelps,score,renderNeighbors,renderRank,fetchTanks,save,load,normalize,feed,clean,collect,featureTick,saleValue,openSheet:(k)=>openSheet(k,k),closeSheet,oddsText,dayKey,ACH,QUESTS,allFish,hasTank,tankArr,WATER,cloudSave,publishTank,renderUI,openChest,audio:()=>audio(),sfx:n=>sfx(n),musicTick:()=>musicTick(),startAmbience:()=>startAmbience(),get AU(){return AU},applyVolumes:()=>applyVolumes(),get tapInfo(){return tapInfo},get DN(){return DN},toggleNight,showLevelUp,closeLevelUp,rollSize,inheritSize,fsz,addXP,snapFish};
 })();`);
 
 const errors = [];
@@ -22,7 +22,7 @@ function el(tag) {
   t.appendChild = x => { t.children.push(x); return x };
   t.querySelector = () => null; t.querySelectorAll = () => [];
   t.closest = () => null;
-  t.getBoundingClientRect = () => ({ left: 0, top: 0, width: 960, height: 540 });
+  t.getBoundingClientRect = () => (t.id === 'stage' && typeof global.innerWidth === 'number' ? { left: 0, top: 0, width: global.innerWidth, height: global.innerHeight } : { left: 0, top: 0, width: 960, height: 540 });
   t.getContext = () => ctx2d();
   t.click = () => { (h.click || []).forEach(f => f({ target: t })); if (t.onclick) t.onclick({ target: t }) };
   return t;
@@ -612,7 +612,7 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   let n = 0; for (let i = 0; i < 400000; i++) if (T.rollMutation() === 'glitch') n++; ok(n >= 50 && n <= 115, '32) kendiliğinden glitch şansı ~1/5000 (' + n + '/400000)');
   S().fish = ['neon','koi','betta','discus'].map((k, i) => mkFish(1500 + i, k, { mutation: 'glitch', x: .2 + i * .15, y: .4 }));
   const e0 = errors.length; step(G, 900); ok(errors.length === e0 && S().fish.every(q => isFinite(q.x + q.y)), '32) glitch balıklar 15 sn boyunca hatasız çiziliyor');
-  ok(T.particles.some(p => p.type === 'px'), '32) glitch balıkların kuyruğundan piksel kopuyor');
+  ok(S().fish.some(q => T.glPxN(q) > 0), '32) glitch balıkların kuyruğundan piksel kopuyor');
   S().lowGfx = true; step(G, 120); ok(errors.length === e0, '32) düşük grafikte de hatasız'); S().lowGfx = false;
   const g0 = S().gems; S().mutsFound = S().mutsFound.filter(k => k !== 'glitch_guppy'); const f = T.admFish ? null : null;
   const v1 = T.saleValue(mkFish(1600, 'guppy', { mutation: 'glitch', age: 1 })), v0 = T.saleValue(mkFish(1601, 'guppy', { age: 1 })); ok(v1 > v0 * 20, '32) glitch balık çok daha değerli (' + Math.round(v1) + ' / ' + Math.round(v0) + ')');
@@ -680,7 +680,7 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   global.innerWidth = 393; global.innerHeight = 852; const P = boot(makeEnv(store(), undefined)); step(P, 5); await settle();
   ok(P.T.gameW === Math.round(960 * 393 / 852) && P.T.layoutH === 960, '35) uzun iPhone ekranında dikey oyun alanı ekranı tam dolduruyor (' + P.T.gameW + 'x' + P.T.layoutH + ')');
   global.innerWidth = 768; global.innerHeight = 1024; const Q2 = boot(makeEnv(store(), undefined)); step(Q2, 5); await settle();
-  ok(Q2.T.gameW === 540, '35) geniş tablette dikey oran 9:16 kalıyor');
+  ok(Q2.T.gameW === 720, '35) tablette dikey oyun alanı ekranın kendi oranında (' + Q2.T.gameW + ')');
   global.innerWidth = 300; global.innerHeight = 900; const Q3 = boot(makeEnv(store(), undefined)); step(Q3, 5); await settle();
   ok(Q3.T.gameW === Math.round(960 * .42), '35) çok ince ekranda oran sınırlanıyor');
   [global.innerWidth, global.innerHeight] = sz; if (sz[0] === undefined) { delete global.innerWidth; delete global.innerHeight } use(G);
@@ -691,6 +691,39 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   const mk = mu => mkFish(1900, 'napo', { mutation: mu, sizeTrait: 'giant', age: 1, sizeGrowth: .75 });
   const r = T.fishW(mk('glitch')) / T.fishW(mk('melanistic')), want = T.MUTW.glitch_napo / T.MUTW.melanistic_napo;
   ok(Math.abs(r - want) < .01, '36) dev glitch Napolyon üst boy sınırında küçülmüyor (oran ' + r.toFixed(3) + ', olmalı ' + want.toFixed(3) + ')');
+  }
+
+
+  { // ===== 37) kaynak geri yüklemesinde kaybolan düzeltmeler, ses seviyesi, tuzlu su üremesi
+  const T = G.T; use(G); T.closeSheet();
+  S().mutsFound = []; T.species.forEach(sp => ['albino', 'transparent', 'melanistic', 'gold', 'glitch'].forEach(m => S().mutsFound.push(m + '_' + sp.id))); T.updateFeatures();
+  ok(G.els.collectionStatus.textContent.includes(S().mutsFound.length + ' / ' + T.species.length * 5 + ' mutasyon'), '37) koleksiyon sayacı 5 mutasyon üzerinden (' + G.els.collectionStatus.textContent + ')');
+  const g24 = T.ACH.find(a => a.id === 'gen24'); S().mutsFound = T.species.map(sp => 'glitch_' + sp.id).concat(T.species.map(sp => 'albino_' + sp.id), T.species.map(sp => 'transparent_' + sp.id));
+  ok(g24 && !g24.f(), '37) "Mutasyon ustası" glitch balıklarla erken tamamlanmıyor');
+  // ses seviyesi
+  const vs = store(); const V = boot(makeEnv(vs, undefined)); step(V, 3); await settle();
+  ok(V.T.VOL.s === 1 && V.T.VOL.m === 1 && V.els.volSv.textContent === '100%', '37) ses seviyesi varsayılan %100');
+  V.T.setVol('s', 40); V.T.setVol('m', '25'); V.T.setVol('m', 'abc'); V.T.setVol('s', 250);
+  const sv = JSON.parse(vs.getItem('akvVol') || '{}'); ok(V.T.VOL.s === 1 && V.T.VOL.m === .25 && sv.m === .25 && V.els.volMv.textContent === '25%', '37) ses seviyesi ayarlanıyor, bozuk değer yok sayılıyor, sınırlar korunuyor');
+  V.T.setVol('s', 40); const V2 = boot(makeEnv(vs, undefined)); step(V2, 3); await settle();
+  ok(V2.T.VOL.s === .4 && V2.T.VOL.m === .25 && V2.els.volSv.textContent === '40%' && !('vol' in V2.T.state) && !('akvVol' in JSON.parse(vs.getItem('fishvilleClassicSave3') || '{}')), '37) ses seviyesi yeniden açılışta hatırlanıyor, oyun kaydına karışmıyor');
+  vs.setItem('akvVol', '{bozuk'); const V3 = boot(makeEnv(vs, undefined)); step(V3, 3); await settle(); ok(V3.T.VOL.s === 1 && V3.T.VOL.m === 1, '37) bozuk ses ayarı oyunu bozmuyor');
+  use(G);
+  // tuzlu su üremesi uçtan uca
+  S().level = 10; S().coins = 5000; S().eggs = []; S().tank = 'salt'; S().stash = { fresh: { fish: [mkFish(5001, 'neon')], dirt: 0 } }; S().fish = [mkFish(5101, 'clown'), mkFish(5102, 'clown'), mkFish(5103, 'napo'), mkFish(5104, 'napo')];
+  T.openSheet('prod'); G.els.pa.value = '5101'; T.fillParents(); G.els.pb.value = '5102'; T.fillParents(); T.breed(); T.closeSheet();
+  ok(S().eggs.length === 1 && S().eggs[0].tank === 'salt' && S().eggs[0].type === 'clown', '37) tuzlu su çifti yumurta bırakıyor');
+  S().eggs[0].hatchAt = Date.now() - 1; step(G, 90); ok(S().eggs.length === 0 && S().fish.filter(f => f.type === 'clown').length === 3, '37) tuzlu su yumurtası tuzlu su tankında açılıyor');
+  T.openSheet('prod'); G.els.pa.value = '5103'; T.fillParents(); G.els.pb.value = '5104'; T.fillParents(); T.breed(); T.closeSheet(); T.switchTank('fresh'); S().eggs.forEach(e => e.hatchAt = Date.now() - 1); step(G, 90);
+  ok(T.tankArr('salt').filter(f => f.type === 'napo').length === 3 && !S().fish.some(f => f.type === 'napo'), '37) başka tanktayken de tuzlu su yumurtası doğru tankta açılıyor'); T.switchTank('salt');
+  // çiftleşememe nedeni
+  S().fish = [mkFish(5201, 'clown', { age: .5 }), mkFish(5202, 'clown', { health: 30 }), mkFish(5203, 'ytang', { bredAt: Date.now() })];
+  const h = T.breedHint(); ok(/1 balık henüz yetişkin değil/.test(h) && /1 balık hasta ya da zayıf/.test(h) && /1 balık dinleniyor/.test(h), '37) çiftleşme panelinde neden çiftleşemediği yazıyor: "' + h + '"');
+  const t0 = S().tank; S().tank = 'cfresh'; ok(/Koleksiyon tankında/.test(T.breedHint()), '37) koleksiyon tankında çiftleşmenin neden olmadığı yazıyor'); S().tank = t0;
+  // dolu tankta bekleyen yumurta mesajı
+  S().fish = []; for (let i = 0; i < 20; i++) S().fish.push(mkFish(5300 + i, 'clown')); S().eggs = [{ id: 1, hatchAt: Date.now() - 1, tank: 'salt', type: 'clown', pa: { m: 'normal', g: null, z: 'normal' }, pb: { m: 'normal', g: null, z: 'normal' } }]; S().eggWait = 0; step(G, 90);
+  ok(S().eggs.length === 1 && /Tuzlu su tankı dolu/.test(G.els.message.textContent), '37) dolu tankta bekleyen yumurta hangi tankın dolu olduğunu söylüyor: "' + G.els.message.textContent + '"');
+  S().fish = S().fish.slice(0, 4); S().eggs = []; S().eggWait = 0;
   }
 
   // ===== 9) uzun koşu ve hata

@@ -293,3 +293,10 @@ html.land #game .tut{bottom:calc(2% + 56px)}
 }
 
 .tico{display:inline-block;vertical-align:-.3em;margin-right:4px}.tico img.cuimg{width:1.45em!important;height:1.45em!important;max-width:none;object-fit:contain;display:block}
+
+/* ses seviyesi kaydırıcıları (Ayarlar) */
+.volbox{display:grid;gap:6px;margin:0 0 10px;padding:9px 12px;background:#fff;border:1px solid #c6e9eb;border-radius:14px}
+.volbox label{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;color:#0b3a5c}
+.volbox label span{flex:0 0 7.5em;white-space:nowrap}
+.volbox input{flex:1;min-width:0;accent-color:#e9a51f;height:28px;margin:0}
+.volbox b{flex:0 0 3em;text-align:right;font-size:12px}
