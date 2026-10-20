@@ -709,6 +709,14 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   const qg = Q.T.state.fish.find(f => f.id === 7001), qm = Q.T.state.fish.find(f => f.id === 7002);
   ok(qg && qm && Math.abs(Q.T.fishW(qg) / Q.T.fishW(qm) - Q.T.MUTW.glitch_napo / Q.T.MUTW.melanistic_napo) < .01, '37) kayıttaki eski boy önbelleği yok sayılıyor; büyümüş glitch Napolyon güncel boyda (' + (qg ? Q.T.fishW(qg).toFixed(0) : '?') + ' / ' + (qm ? Q.T.fishW(qm).toFixed(0) : '?') + ')');
   ok(!/"_w[a-z]?"/.test(Q.T.serial()), '37) boy önbelleği artık kayda yazılmıyor'); use(G) }
+  { // dev balıklar boy sınırına dayanan türlerde de büyük görünmeli
+  const mkN = (z, mu) => mkFish(1, 'napo', { sizeTrait: z, mutation: mu || 'normal', sizeGrowth: .75 });
+  const rN = T.fishW(mkN('giant')) / T.fishW(mkN('normal')), rG = T.fishW(mkN('giant', 'gold')) / T.fishW(mkN('normal', 'gold')), rD = T.fishW(mkN('dwarf')) / T.fishW(mkN('normal'));
+  ok(rN > 1.3 && rG > 1.3 && Math.abs(rN - rG) < .01, '37) tam büyümüş dev Napolyon normalden belirgin büyük (' + rN.toFixed(2) + 'x, altın ' + rG.toFixed(2) + 'x)');
+  ok(Math.abs(rD - .72) < .01, '37) cüce Napolyon normalin 0.72 katı (' + rD.toFixed(2) + 'x)');
+  ok(Math.abs(T.fishW(mkN('giant', 'glitch')) / T.fishW(mkN('giant', 'melanistic')) - T.MUTW.glitch_napo / T.MUTW.melanistic_napo) < .01, '37) dev glitch ve dev melanistik Napolyon aynı oranda');
+  const cl = mkFish(2, 'clown', { sizeTrait: 'giant' }); ok(Math.abs(T.fishW(cl) / T.fishW(mkFish(3, 'clown')) - 1.38) < .01, '37) sınırdan uzak türlerde dev boyu değişmedi');
+  }
   // ses seviyesi
   const vs = store(); const V = boot(makeEnv(vs, undefined)); step(V, 3); await settle();
   ok(V.T.VOL.s === 1 && V.T.VOL.m === 1 && V.els.volSv.textContent === '100%', '37) ses seviyesi varsayılan %100');
