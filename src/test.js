@@ -700,7 +700,7 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   ok(G.els.collectionStatus.textContent.includes(S().mutsFound.length + ' / ' + T.species.length * 5 + ' mutasyon'), '37) koleksiyon sayacı 5 mutasyon üzerinden (' + G.els.collectionStatus.textContent + ')');
   const g24 = T.ACH.find(a => a.id === 'gen24'); S().mutsFound = T.species.map(sp => 'glitch_' + sp.id).concat(T.species.map(sp => 'albino_' + sp.id), T.species.map(sp => 'transparent_' + sp.id));
   ok(g24 && !g24.f(), '37) "Mutasyon ustası" glitch balıklarla erken tamamlanmıyor');
-  { const r = T.MUTW.glitch_napo / T.MUTW.melanistic_napo; ok(r > 1.36 && r < 1.42, '37) glitch Napolyon gövdesi diğer mutasyonlarla aynı boyda (resim eşleştirmesiyle ölçülen oran 1.39, kodda ' + r.toFixed(3) + ')') }
+  { const r = T.MUTW.glitch_napo / T.MUTW.melanistic_napo; ok(r > .99 && r < 1.05, '37) glitch Napolyon gövdesi diğer mutasyonlarla aynı boyda (yeni resim, eşleştirmeyle ölçülen oran 1.02, kodda ' + r.toFixed(3) + ')') }
   const ng = mkFish(1, 'napo', { mutation: 'glitch' }), nm = mkFish(2, 'napo', { mutation: 'melanistic' }), nn = mkFish(3, 'napo');
   ok(Math.abs(T.fishW(ng) / T.fishW(nm) - T.MUTW.glitch_napo / T.MUTW.melanistic_napo) < .01 && T.fishW(nm) / T.fishW(nn) > .95, '37) normal boy Napolyonda da genişlik oranı korunuyor');
   { // eski sürümün kayda yazdığı boy önbelleği yeni boyu ezmemeli
