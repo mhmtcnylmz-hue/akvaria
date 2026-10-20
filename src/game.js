@@ -99,7 +99,7 @@ function rollSize(){const r=Math.random();if(r<SIZES.giant.p)return"giant";if(r<
 function inheritSize(a,b){a=SIZES[a]?a:"normal";b=SIZES[b]?b:"normal";if(a!=="normal"&&a===b)return Math.random()<.6?a:rollSize();for(const z of [a,b])if(z!=="normal"&&Math.random()<.35)return z;return rollSize()}
 const szOf=f=>SIZES[f.sizeTrait]?f.sizeTrait:"normal";
 function fsz(f){return(25+Math.min(1.4,f.age)*16)*(1+(f.sizeGrowth||0))*SIZES[szOf(f)].m}
-function fishW(f){if(f._wa===f.age&&f._wg===f.sizeGrowth&&f._wm===f.mutation&&f._wz===f.sizeTrait&&f._wt===f.type)return f._w;const s=getSpecies(f.type),m=MUTS[f.mutation]&&f.mutation!=="normal"?f.mutation:"",c=CMS[f.type]||[10,1],v=Math.min(150,58*Math.pow(c[0]/3.5,.3)*c[1]*(25+Math.min(1.15,f.age)*16)/41*(1+.33*(f.sizeGrowth||0))*SIZES[szOf(f)].m)*(m&&MUTW[m+"_"+f.type]||1);f._wa=f.age;f._wg=f.sizeGrowth;f._wm=f.mutation;f._wz=f.sizeTrait;f._wt=f.type;f._w=v;return v}
+const FWC=new WeakMap();function fishW(f){const q=FWC.get(f);if(q&&q.a===f.age&&q.g===f.sizeGrowth&&q.m===f.mutation&&q.z===f.sizeTrait&&q.t===f.type)return q.w;const s=getSpecies(f.type),m=MUTS[f.mutation]&&f.mutation!=="normal"?f.mutation:"",c=CMS[f.type]||[10,1],v=Math.min(150,58*Math.pow(c[0]/3.5,.3)*c[1]*(25+Math.min(1.15,f.age)*16)/41*(1+.33*(f.sizeGrowth||0))*SIZES[szOf(f)].m)*(m&&MUTW[m+"_"+f.type]||1);FWC.set(f,{a:f.age,g:f.sizeGrowth,m:f.mutation,z:f.sizeTrait,t:f.type,w:v});return v}
 function fishH(f){const im=fishImgs[f.type];return fishW(f)*(im&&im.naturalWidth?im.naturalHeight/im.naturalWidth:.75)}
 function fext(f){return Math.max(fsz(f),fishW(f)*.4)}
 function sizeNote(f,s){const z=szOf(f);if(z==="normal")return;Q("size_"+z);sfx("rare");setTimeout(()=>notify(SIZES[z].icon+" "+SIZES[z].tier+" boy mutasyonu: "+SIZES[z].n+" "+s.name+" ("+SIZES[z].m+"x)"),z==="giant"?1700:1500)}
@@ -294,7 +294,7 @@ $("tankList").innerHTML=TKEYS.map(t).join("")}
 
 const SPM=new Map();function getSpecies(id){let s=SPM.get(id);if(!s){s=species.find(x=>x.id===id);if(!s)return species[0];SPM.set(id,s)}return s}
 function notify(text){$("message").textContent=text;$("message").classList.add("show");clearTimeout(messageTimer);messageTimer=setTimeout(()=>$("message").classList.remove("show"),2200)}
-const TRANSIENT=new Set(["chase","flee","chT","fleeT","wake","slp","vx","vy","tx","ty","tt","rest","ang","fs","tp","sn","st"]);
+const TRANSIENT=new Set(["_w","_wa","_wg","_wm","_wz","_wt","chase","flee","chT","fleeT","wake","slp","vx","vy","tx","ty","tt","rest","ang","fs","tp","sn","st"]);
 function serial(){const ls=coinsLoose.reduce((a,c)=>a+c.v,0);return JSON.stringify(state,function(k,v){if(TRANSIENT.has(k))return undefined;return k==="pending"&&this===state?(v||0)+ls:v})}
 function save(silent=false){if(VISIT||window.__nosave)return;state.savedAt=Date.now();cloudSave();try{localStorage.setItem("fishvilleClassicSave3",serial());$("lastSaved").textContent="Kaydedildi · "+new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});if(!silent)notify("Akvaryumun kaydedildi! 💾")}catch(e){$("lastSaved").textContent="Kayıt kullanılamıyor"}}
 function validSave(p){return p&&typeof p==="object"&&Array.isArray(p.fish)&&Array.isArray(p.discovered)}

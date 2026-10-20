@@ -703,6 +703,12 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   { const r = T.MUTW.glitch_napo / T.MUTW.melanistic_napo; ok(r > 1.36 && r < 1.42, '37) glitch Napolyon gövdesi diğer mutasyonlarla aynı boyda (resim eşleştirmesiyle ölçülen oran 1.39, kodda ' + r.toFixed(3) + ')') }
   const ng = mkFish(1, 'napo', { mutation: 'glitch' }), nm = mkFish(2, 'napo', { mutation: 'melanistic' }), nn = mkFish(3, 'napo');
   ok(Math.abs(T.fishW(ng) / T.fishW(nm) - T.MUTW.glitch_napo / T.MUTW.melanistic_napo) < .01 && T.fishW(nm) / T.fishW(nn) > .95, '37) normal boy Napolyonda da genişlik oranı korunuyor');
+  { // eski sürümün kayda yazdığı boy önbelleği yeni boyu ezmemeli
+  const ss = store(); const base = JSON.parse(G.T.serial()); const gf = mkFish(7001, 'napo', { mutation: 'glitch', sizeGrowth: .75, _w: 150, _wa: 1, _wg: .75, _wm: 'glitch', _wz: 'normal', _wt: 'napo' }), mf = mkFish(7002, 'napo', { mutation: 'melanistic', sizeGrowth: .75 });
+  ss.setItem('fishvilleClassicSave3', JSON.stringify({ ...base, tank: 'salt', fish: [gf, mf], stash: {}, savedAt: Date.now() + 1e6 })); const Q = boot(makeEnv(ss, undefined)); step(Q, 3); await settle();
+  const qg = Q.T.state.fish.find(f => f.id === 7001), qm = Q.T.state.fish.find(f => f.id === 7002);
+  ok(qg && qm && Math.abs(Q.T.fishW(qg) / Q.T.fishW(qm) - Q.T.MUTW.glitch_napo / Q.T.MUTW.melanistic_napo) < .01, '37) kayıttaki eski boy önbelleği yok sayılıyor; büyümüş glitch Napolyon güncel boyda (' + (qg ? Q.T.fishW(qg).toFixed(0) : '?') + ' / ' + (qm ? Q.T.fishW(qm).toFixed(0) : '?') + ')');
+  ok(!/"_w[a-z]?"/.test(Q.T.serial()), '37) boy önbelleği artık kayda yazılmıyor'); use(G) }
   // ses seviyesi
   const vs = store(); const V = boot(makeEnv(vs, undefined)); step(V, 3); await settle();
   ok(V.T.VOL.s === 1 && V.T.VOL.m === 1 && V.els.volSv.textContent === '100%', '37) ses seviyesi varsayılan %100');
