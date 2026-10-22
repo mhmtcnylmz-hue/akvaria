@@ -15,7 +15,7 @@ button:disabled:not(.tl){--o:#2c3440;opacity:1;cursor:not-allowed;background:lin
 #bgfill{position:fixed;inset:0;background:#06324a center/cover no-repeat;z-index:0}#stage{position:relative;z-index:1}@media (max-width:700px){body{padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}#game{border-radius:0;box-shadow:none}}#feed.on{filter:drop-shadow(0 0 8px #ffd34d) brightness(1.15);animation:fpulse 1s ease-in-out infinite}@keyframes fpulse{50%{transform:scale(1.07)}}
 .admd{background:#fff;border:1px solid #c6e9eb;border-radius:14px;padding:8px 10px;margin-bottom:8px}.admd summary{font:800 13px system-ui;cursor:pointer;color:#1d5a73}.admck{display:block;font-size:12px;margin:6px 0}.admev{display:grid;gap:2px}.admta{width:100%;height:70px;margin-top:6px;border:1px solid #9cd;border-radius:12px;padding:8px;font:11px monospace;user-select:text;-webkit-user-select:text}.admfps{position:absolute;left:50%;transform:translateX(-50%);top:17%;z-index:4;background:#000a;color:#7dffb0;font:700 11px monospace;padding:3px 8px;border-radius:8px;pointer-events:none}
 
-#shop2,#achBtn,#cupBtn,#book{display:none}
+
 #stabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:-2px 0 10px;padding:4px;background:#bfe6ee;border-radius:14px}#stabs[hidden]{display:none}
 .stab{background:none;border:0;box-shadow:none;color:#3b7d92;font:800 13px system-ui;padding:9px 6px;border-radius:11px}.stab.on{background:#fff;color:#1d5a73;box-shadow:0 2px 6px #0002}
 .fc{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;background:#fff;border:1px solid #c6e9eb;border-radius:18px;padding:11px;margin-bottom:10px;box-shadow:0 2px 8px #1d5a7312}.fc.sick{border-color:#f0a0ab;background:#fff6f7}
@@ -174,7 +174,7 @@ body.editing .dock,body.editing .side,body.editing .rside{display:none}#editbar 
 #game .mood{top:12.4%}
 
 /* QA düzeltmeleri */
-#game #shop2,#game #achBtn,#game #cupBtn,#game #book{display:none!important}
+
 html,body{touch-action:manipulation}
 #game .hud .bar:nth-child(3) b{padding-left:36%;font-size:clamp(13px,4.2vw,21px);white-space:nowrap;letter-spacing:-.3px}
 #game .tll{font-size:clamp(8.5px,2.45vw,12.5px);letter-spacing:-.2px}
@@ -326,3 +326,120 @@ html.land #game .tut{bottom:calc(2% + 56px)}
 html.fullh,html.fullh body{height:var(--appH)!important}
 html.fullh #bgfill{bottom:auto;height:var(--appH)}
 html.fullh #stage{bottom:auto!important;height:var(--appH)!important}
+
+/* ================= v3 · premium cam arayüz ================= */
+#stage #game{--tbH:clamp(46px,12.5cqw,60px);--navH:clamp(62px,17cqw,80px);--bubW:clamp(68px,20cqw,92px);--sT:env(safe-area-inset-top,0px);--sB:env(safe-area-inset-bottom,0px);--sL:env(safe-area-inset-left,0px);--sR:env(safe-area-inset-right,0px);--g1:rgba(22,62,104,.84);--g2:rgba(7,25,48,.9);--gb:rgba(120,200,255,.3);--blue:#2f8fff;--blue2:#145fd0;--glow:rgba(70,170,255,.55)}
+#stage #game .glass,#stage #game .lvbox,#stage #game .tbr,#stage #game .dock,#stage #game .cntpill{background:linear-gradient(180deg,var(--g1),var(--g2));border:1px solid var(--gb);box-shadow:0 6px 18px rgba(0,8,20,.45),inset 0 1px 0 rgba(255,255,255,.16)}
+/* üst çubuk */
+#stage #game .tb{position:absolute;z-index:6;left:calc(8px + var(--sL));right:calc(8px + var(--sR));top:calc(8px + var(--sT));height:var(--tbH);display:flex;align-items:center;justify-content:space-between;gap:6px;pointer-events:none}
+#stage #game .tb>*{pointer-events:auto}
+#stage #game .lvbox{flex:1 1 auto;min-width:0;max-width:340px;height:100%;display:flex;align-items:center;gap:6px;padding:0 10px 0 3px;border-radius:99px}
+#stage #game .lvring{position:relative;flex:none;width:calc(var(--tbH) - 6px);height:calc(var(--tbH) - 6px);border-radius:50%;background:conic-gradient(#ffd34d calc(var(--xp,0)*1turn),rgba(255,255,255,.14) 0);box-shadow:0 0 10px rgba(255,200,60,.35)}
+#stage #game .lvring::before{content:"";position:absolute;inset:4px;border-radius:50%;background:radial-gradient(circle at 50% 35%,#1d4f86,#0a2442 70%);box-shadow:inset 0 2px 4px rgba(255,255,255,.18)}
+#stage #game .lvring b.lv{position:absolute;inset:0;display:grid;place-items:center;transform:none;margin:0;padding:0;width:auto;font:800 clamp(16px,4.6cqw,22px)/1 var(--ff-h);color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6);z-index:1}
+#stage #game .xpw{flex:1;min-width:0;display:grid;gap:3px}
+#stage #game .xpt{position:relative;height:clamp(8px,2.4cqw,11px);border-radius:99px;background:rgba(0,10,25,.55);box-shadow:inset 0 1px 3px rgba(0,0,0,.5);overflow:hidden}
+#stage #game .xpt .fill{position:absolute;left:0;top:0;height:100%;transform:none;border-radius:99px;background:linear-gradient(90deg,#46d8ff,#2f8fff);box-shadow:0 0 8px rgba(70,200,255,.7)}
+#stage #game #xptxt{font:700 clamp(9.5px,2.6cqw,12.5px)/1 var(--ff-b);letter-spacing:-.2px;color:#cfe6ff;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#stage #game .tbr{flex:none;height:100%;display:flex;align-items:center;gap:4px;padding:0 4px 0 5px;border-radius:99px}
+#stage #game button.cpill{display:inline-flex!important;align-items:center;gap:3px;height:calc(var(--tbH) - 16px);min-width:0;padding:0 3px 0 2px!important;border-radius:99px!important;background:rgba(0,10,25,.5)!important;border:1px solid rgba(255,255,255,.12)!important;box-shadow:none!important;color:#fff!important;font:800 clamp(12.5px,3.6cqw,15.5px)/1 var(--ff-h)!important;cursor:pointer}
+#stage #game .cpill img{width:calc(var(--tbH) - 20px);height:calc(var(--tbH) - 20px);flex:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+#stage #game .cpill b{white-space:nowrap;max-width:9ch;overflow:hidden;padding:0 1px}
+#stage #game .cpill .plus{flex:none;width:clamp(15px,4.4cqw,18px);height:clamp(15px,4.4cqw,18px);border-radius:50%;display:grid;place-items:center;font:800 15px/1 var(--ff-b);color:#fff;background:rgba(70,160,255,.35);border:1px solid rgba(160,220,255,.6)}
+#stage #game .tl.tbg{width:calc(var(--tbH) - 12px);height:calc(var(--tbH) - 12px);flex:none;border-radius:50%;display:grid;place-items:center}
+#stage #game .tl.tbg img{width:100%;height:100%;padding:12%;border-radius:50%;background:radial-gradient(circle at 50% 35%,#1d4f86,#0a2442);border:1px solid var(--gb);box-shadow:none;aspect-ratio:1}
+#stage #game .tbg .tll{display:none}
+#stage #game .cntpill{position:absolute;z-index:4;left:calc(10px + var(--sL));top:calc(var(--sT) + 14px + var(--tbH));display:flex;align-items:center;gap:4px;padding:2px 10px 2px 3px;border-radius:99px;font:800 clamp(12px,3.4cqw,14.5px)/1 var(--ff-h);color:#fff;pointer-events:none}
+#stage #game .cntpill img{width:clamp(22px,6.4cqw,28px);height:clamp(22px,6.4cqw,28px)}
+/* yan sütunlar */
+#stage #game .side,#stage #game .rside{position:absolute;z-index:3;width:clamp(48px,13.5cqw,62px);display:flex;flex-direction:column;gap:clamp(8px,2.4cqw,12px);margin:0}
+#stage #game .side{left:calc(10px + var(--sL));top:calc(var(--sT) + 54px + var(--tbH));right:auto}
+#stage #game .rside{right:calc(10px + var(--sR));top:calc(var(--sT) + 16px + var(--tbH));left:auto}
+#stage #game .tl.sq{width:100%;filter:none}
+#stage #game .tl.sq img{width:100%;aspect-ratio:1;padding:14%;border-radius:28%;background:linear-gradient(180deg,rgba(28,74,122,.88),rgba(8,28,52,.92));border:1px solid var(--gb);box-shadow:0 5px 12px rgba(0,8,20,.45),inset 0 1px 0 rgba(255,255,255,.2)}
+#stage #game .tl.sq .tll{display:none}
+#stage #game #nightBtn .i-moon,#stage #game #nightBtn.isn .i-sun{display:none}
+#stage #game #nightBtn.isn .i-moon{display:block}
+/* yemle / temizle kabarcıkları */
+#stage #game .acts2{position:absolute;z-index:3;left:50%;transform:translateX(-50%);bottom:calc(var(--sB) + 22px + var(--navH));display:flex;gap:clamp(26px,12cqw,70px)}
+#stage #game .tl.bub{width:var(--bubW);filter:none;gap:4px}
+#stage #game .tl.bub img{width:100%;aspect-ratio:1;padding:18%;border-radius:50%;background:radial-gradient(circle at 35% 28%,rgba(170,235,255,.55),rgba(30,110,190,.5) 48%,rgba(6,32,66,.82));border:2px solid rgba(170,230,255,.65);box-shadow:0 0 18px rgba(80,180,255,.45),inset 0 -8px 16px rgba(0,0,0,.3),inset 0 5px 10px rgba(255,255,255,.28)}
+#stage #game .tl.bub .tll{display:block;font:800 clamp(13px,3.9cqw,17px)/1 var(--ff-h);color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.85),0 0 10px rgba(0,0,0,.5)}
+#stage #game .tl.bub .chip{right:0;top:0;font-size:11px}
+/* alt menü */
+#stage #game .dock{position:absolute;z-index:6;left:calc(8px + var(--sL));right:calc(8px + var(--sR));bottom:calc(8px + var(--sB));top:auto;transform:none;width:auto;height:var(--navH);margin:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:minmax(0,1fr);gap:2px;padding:5px;border-radius:24px;overflow:visible}
+#stage #game .dock>.tl{flex:none;width:auto;min-width:0;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-radius:18px;padding:2px 1px;filter:none}
+#stage #game .dock .tl img{width:calc(var(--navH)*.5);height:calc(var(--navH)*.5);max-width:100%;aspect-ratio:1;object-fit:contain;padding:0;background:none;border:0;box-shadow:none;filter:drop-shadow(0 3px 4px rgba(0,0,0,.45))}
+#stage #game .dock .tll{display:block;font:700 clamp(9px,2.6cqw,12.5px)/1.05 var(--ff-h);color:#d8ecff;white-space:normal;text-align:center;letter-spacing:-.2px;max-width:100%}
+#stage #game .dock>.tl.on{background:linear-gradient(180deg,rgba(64,156,255,.6),rgba(20,86,190,.5));border:1px solid rgba(150,220,255,.75);box-shadow:0 0 16px var(--glow),inset 0 1px 0 rgba(255,255,255,.3)}
+#stage #game .dock>.tl.on .tll{color:#fff}
+#stage #game .dock .badge{right:12%;top:2px}
+/* durum, rehber, bildirim */
+#stage #game #statusRow{bottom:calc(var(--sB) + 40px + var(--navH) + var(--bubW) + 22px);margin:0}
+#stage #game .tut{bottom:calc(var(--sB) + 36px + var(--navH) + var(--bubW) + 20px);margin:0;left:calc(10px + var(--sL));right:calc(10px + var(--sR));transform:none;width:auto}
+#stage #game .message{top:calc(var(--sT) + 16px + var(--tbH));margin:0;max-width:72%;z-index:9}
+#stage #game #sheet.show~.message{top:auto;bottom:calc(var(--sB) + 20px + var(--navH))}
+/* paneller: üst çubuk ile alt menü arasında */
+#stage #game #sheet{inset:auto;left:calc(8px + var(--sL));right:calc(8px + var(--sR));top:calc(var(--sT) + 14px + var(--tbH));bottom:calc(var(--sB) + 14px + var(--navH));background:none;align-items:stretch;justify-content:center;z-index:5}
+#stage #game #sheet .card{width:100%;max-width:none;height:100%;max-height:none;border-radius:22px;border:1px solid var(--gb);background:linear-gradient(180deg,#10345a,#06182e);box-shadow:0 10px 30px rgba(0,8,20,.55),inset 0 1px 0 rgba(255,255,255,.14);padding:14px 14px 16px}
+#stage #game #sheet .card::before{display:none}
+#stage #game .ch{position:relative;justify-content:center;min-height:36px;margin-bottom:12px}
+#stage #game .ch strong{font:800 clamp(19px,5.4cqw,24px)/1.1 var(--ff-h);color:#fff;text-shadow:0 0 14px rgba(80,170,255,.45);text-align:center;padding:0 40px}
+#stage #game .ch button#sclose{position:absolute;right:0;top:50%;transform:translateY(-50%);background:rgba(70,160,255,.18)!important;border:1px solid rgba(150,215,255,.45)!important}
+/* sekmeler ve çipler */
+#stage #game #stabs,#stage #game .stabs2{background:rgba(0,10,25,.5);border:1px solid rgba(120,200,255,.18);border-radius:16px;padding:4px}
+#stage #game #stabs button.stab.on:not(.tl),#stage #game .stabs2 button.stab.on:not(.tl){background:linear-gradient(180deg,var(--blue),var(--blue2))!important;color:#fff!important;box-shadow:0 0 12px var(--glow),inset 0 1px 0 rgba(255,255,255,.3)!important}
+#stage #game button.chip2.on:not(.tl){background:linear-gradient(180deg,var(--blue),var(--blue2))!important;color:#fff!important;border-color:rgba(150,220,255,.7)!important;box-shadow:0 0 10px var(--glow)!important}
+/* kartlar */
+#stage #game .fish-card,#stage #game .nrow{background:linear-gradient(180deg,rgba(30,80,130,.42),rgba(10,34,62,.5));border:1px solid rgba(120,200,255,.2);border-radius:16px;padding:9px 10px;margin:0 0 8px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+#stage #game .shop-list{gap:0}
+#stage #game .fish-card.cur{border-color:rgba(255,211,77,.7);box-shadow:0 0 0 1px rgba(255,211,77,.5)}
+#stage #game .fish-icon{width:64px;height:54px;border-radius:14px;background:radial-gradient(circle at 50% 30%,rgba(90,170,240,.45),rgba(10,40,80,.6));border:1px solid rgba(140,210,255,.25)}
+#stage #game .fish-card{grid-template-columns:64px 1fr auto}
+#stage #game .fc{background:linear-gradient(180deg,rgba(30,80,130,.42),rgba(10,34,62,.5));border:1px solid rgba(120,200,255,.2)}
+#stage #game .fc-ico{background:radial-gradient(circle at 50% 30%,rgba(90,170,240,.45),rgba(10,40,80,.6));border:1px solid rgba(140,210,255,.25)}
+#stage #game .mini,#stage #game .evt,#stage #game .admd,#stage #game .thm,#stage #game .sndrow{background:linear-gradient(180deg,rgba(30,80,130,.38),rgba(10,34,62,.45));border:1px solid rgba(120,200,255,.2)}
+#stage #game .invbar{background:rgb(12,40,70)}
+#stage #game .sellbar{background:rgba(8,26,48,.98)}
+/* ziyaret ve düzenleme: ana ekran düğmeleri gizli */
+body.visiting #stage #game .dock,body.visiting #stage #game .side,body.visiting #stage #game .rside,body.visiting #stage #game .acts2,body.editing #stage #game .dock,body.editing #stage #game .side,body.editing #stage #game .rside,body.editing #stage #game .acts2{display:none}
+/* ===== v3 yatay ===== */
+html.land #stage #game{--tbH:clamp(40px,9cqh,54px);--navH:clamp(52px,12.5cqh,70px);--bubW:clamp(52px,12.5cqh,74px)}
+html.land #stage #game .tb{left:calc(10px + var(--sL));right:calc(10px + var(--sR));width:auto}
+html.land #stage #game .lvbox{max-width:min(320px,38%)}
+html.land #stage #game .lvring b.lv{font-size:clamp(15px,3.4cqh,22px)}
+html.land #stage #game #xptxt{font-size:clamp(10px,2.3cqh,12.5px)}
+html.land #stage #game .xpt{height:clamp(7px,1.8cqh,11px)}
+html.land #stage #game button.cpill{font-size:clamp(12.5px,2.9cqh,16px)!important}
+html.land #stage #game .cntpill{font-size:clamp(12px,2.7cqh,15px)}
+html.land #stage #game .cntpill img{width:clamp(20px,5cqh,28px);height:clamp(20px,5cqh,28px)}
+html.land #stage #game .side,html.land #stage #game .rside{width:clamp(42px,10.5cqh,62px);gap:clamp(6px,1.8cqh,12px)}
+html.land #stage #game .side{top:calc(var(--sT) + 50px + var(--tbH))}
+html.land #stage #game .acts2{left:auto;right:calc(12px + var(--sR));transform:none;bottom:calc(10px + var(--sB));flex-direction:column;gap:clamp(4px,1.6cqh,12px)}
+html.land #stage #game .tl.bub .tll{font-size:clamp(11px,2.6cqh,15px)}
+html.land #stage #game .dock{left:50%;right:auto;transform:translateX(-50%);width:min(560px,54%);border-radius:20px}
+html.land #stage #game .dock .tll{font-size:clamp(9px,2.1cqh,12px)}
+html.land #stage #game #statusRow{bottom:calc(var(--sB) + 18px + var(--navH))}
+html.land #stage #game .tut{left:50%;right:auto;transform:translateX(-50%);width:min(560px,54%);bottom:calc(var(--sB) + 18px + var(--navH))}
+html.land #stage #game .message{top:calc(var(--sT) + 14px + var(--tbH))}
+html.land #stage #game #sheet{left:50%;right:auto;transform:translateX(-50%);width:min(760px,calc(100% - 2*clamp(42px,10.5cqh,62px) - 48px - var(--sL) - var(--sR)));justify-content:stretch;background:none}
+html.land #stage #game #sheet .card{width:100%;height:100%;border-radius:20px;border:1px solid var(--gb);padding:12px 14px 14px}
+@media (max-height:520px){
+html.land #stage #game{--navH:46px;--tbH:40px}
+html.land #stage #game .dock{width:min(400px,46%);padding:3px}
+html.land #stage #game .dock .tll{display:none}
+html.land #stage #game .dock .tl img{width:34px;height:34px}
+html.land #stage #game .tl.bub .tll{font-size:11px}
+html.land #stage #game .tl.bub .chip{transform:scale(.85);transform-origin:right top}
+}
+body.tuton #stage #game #statusRow{opacity:0}
+@media (max-width:359px){html:not(.land) #stage #game .cpill .plus{display:none}html:not(.land) #stage #game .lvbox{padding-right:8px}}
+@media (max-height:520px){
+html.land #stage #game #sheet{top:calc(6px + var(--sT));bottom:calc(6px + var(--sB));z-index:7}
+html.land #stage #game #sheet .card{padding:8px 12px 10px}
+html.land #stage #game .ch{min-height:30px;margin-bottom:8px}
+html.land #stage #game .ch strong{font-size:18px}
+html.land #stage #game #stabs,html.land #stage #game .stabs2{margin-bottom:8px}
+html.land #stage #game #stabs button.stab:not(.tl),html.land #stage #game .stabs2 button.stab:not(.tl){padding:6px 4px!important}
+html.land #stage #game #sheet.show~.message{bottom:calc(var(--sB) + 14px)}
+}
