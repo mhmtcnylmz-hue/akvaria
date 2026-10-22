@@ -902,7 +902,7 @@ dragon:[[.224,.5,.006],[.251,.5,.005],[.274,.5,.005],[.3,.496,.004],[.325,.491,.
 const PHS={lantern:{c:[120,232,255],m:"wave",env:.34},hatchet:{c:[135,220,255],m:"steady",env:.3,down:1},
  angler:{c:[110,228,255],m:"dim",env:.16,lure:[.912,.254,.04],lc:[175,255,238],lr:150},viper:{c:[105,185,255],m:"breath",env:.26,lr:70},
  dragon:{c:[178,142,255],m:"ripple",env:.22,lure:[.957,.772,.016],lc:[218,178,255],lr:100,red:[.872,.565]}};
-const DEEP_DARK=.66;let EM=[],ENV=[],SPK=[],SNOW=null,ISO_EYES=[],lastLT=0,lastDT=.016;const PHST=new WeakMap();
+let DEEP_DARK=.66;let EM=[],ENV=[],SPK=[],SNOW=null,ISO_EYES=[],lastLT=0,lastDT=.016;const PHST=new WeakMap();
 function phState(f){let o=PHST.get(f);if(!o){o={fl:rand(3,10),flT:-99,bo:rand(25,70),boT:-99,px:null,py:null,sp:0};PHST.set(f,o)}return o}
 function phInt(P,o,i,n,t,ph){let a;switch(P.m){
  case"wave":{a=.7+.22*Math.sin(t*2.1-i*.55+ph);const q=(t-o.flT)*2.4-(i/n)*1.3;if(q>0&&q<1.5)a+=1.15*Math.exp(-(q-.6)*(q-.6)*14);break}
@@ -1125,9 +1125,9 @@ function frame(now){try{gfxWatch(now)}catch(e){}try{frameBody(now)}catch(e){repo
 function frameBody(now){if(now-lastDraw<14.5){requestAnimationFrame(frame);return}adaptK(now,now-lastDraw);admFpsTick(now);lastDraw=now;const dt=Math.min(.05,(now-last)/1000||0);last=now;const t=now/1000;
 if(now-lastAdv>1000&&!VISIT){lastAdv=now;if(state.daily&&state.daily.date!==dayKey()){dailyCheck();badges()}featureTick(Date.now());const r=advance((Date.now()-state.lastTick)/1000);if(r.dead.length){sfx("death");notify(r.dead[0]+" öldü 💀 Tankı temiz, balıkları tok tut!")}else if(r.sick){sfx("sick");notify("Bir balığın hastalandı 🤒 İlaç ver!")}if(r.dead.length||r.sick)renderUI();updateLive();if(now-lastSave>30000){lastSave=now;save(true)}}
 musicTick();musUpdate();if(AU&&!state.muted&&!(ambience&&ambience.file)&&Math.random()<dt*.3)sfx("amb");
-const P0=performance.now();acc+=dt;let ns=0;while(acc>=STEP&&ns<4){physics(STEP);acc-=STEP;ns++}if(ns>=4)acc=0;const P1=performance.now();
+const P0=performance.now();acc+=dt*ADM.speed;let ns=0;const NSM=Math.max(4,Math.ceil(4*ADM.speed));while(acc>=STEP&&ns<NSM){physics(STEP);acc-=STEP;ns++}if(ns>=NSM)acc=0;admTick(now);const P1=performance.now();
 bubbles.forEach(b=>{b.y-=b.speed*dt;b.x+=Math.sin(t+b.phase)*b.drift*dt;if(b.y<-10){b.y=H+10;b.x=rand(0,W)}});
-const OFF=state.admOff||{};ctx.setTransform(K,0,0,K,0,0);drawBackground(t);drawFloor(t);try{critDraw(dt)}catch(e){reportErr(e,"omurgasız")}const P2=performance.now();if(!OFF.fish)for(const f of state.fish){try{drawFish(f,t)}catch(e){try{ctx.restore()}catch(_){}reportErr(e,"balık "+f.type)}}const P3=performance.now();if(!OFF.plants)drawPlants2(t,1);if(curWater()==="deep")try{drawDeepLight(t)}catch(e){reportErr(e,"ışık")}const P4=performance.now();drawCoins(t);drawStatus(t);const fo=feedModeOn()&&!VISIT;if(fo!==feedOnC){feedOnC=fo;$("feed").classList.toggle("on",fo)}drawParticles(dt);drawTapInfo();drawDN();
+const OFF=state.admOff||{};ctx.setTransform(K,0,0,K,0,0);drawBackground(t);drawFloor(t);try{critDraw(dt)}catch(e){reportErr(e,"omurgasız")}const P2=performance.now();if(!OFF.fish)for(const f of state.fish){try{drawFish(f,t)}catch(e){try{ctx.restore()}catch(_){}reportErr(e,"balık "+f.type)}}const P3=performance.now();if(!OFF.plants)drawPlants2(t,1);if(curWater()==="deep")try{drawDeepLight(t)}catch(e){reportErr(e,"ışık")}const P4=performance.now();drawCoins(t);drawStatus(t);const fo=feedModeOn()&&!VISIT;if(fo!==feedOnC){feedOnC=fo;$("feed").classList.toggle("on",fo)}drawParticles(dt);drawTapInfo();if(ADM.on)try{admDebug(t)}catch(e){}drawDN();
 const P5=performance.now();if(admFps){PRF.n++;PRF.ph+=P1-P0;PRF.fl+=P2-P1;PRF.fi+=P3-P2;PRF.pl+=P4-P3;PRF.ot+=P5-P4;PRF.all+=P5-P0+(P0-now>0?0:0);PRF.ns+=ns}
 requestAnimationFrame(frame)}
 canvas.addEventListener("pointerdown",e=>{audio();startAmbience();const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;if(EDIT){editDown(e,x,y);return}if(!VISIT){let cc=null,cd=1e9;for(const c of coinsLoose){const d=Math.hypot(x-c.x,y-c.y);if(d<34&&d<cd){cc=c;cd=d}}if(cc){pickCoin(cc);return}}
@@ -1406,14 +1406,133 @@ const ADM_SEC=[
 ["🏆 İlerleme",[["Tüm türleri keşfet","disc"],["Tüm mutasyonları bul","muts"],["Tüm başarımlar","ach"],["Günlük görevleri bitir","quests"],["Başarımları sıfırla","achOff"],["Çarkı sıfırla","wheelReset"]]],
 ["⚙️ Performans",[["FPS göstergesi","fps"],["Bitkileri kapat/aç","off","plants"],["Dekorları kapat/aç","off","props"],["Işık desenini kapat/aç","off","caust"],["Balık çizimini kapat/aç","off","fish"],["Arka planı kapat/aç","off","bg"],["K = 1","k",1],["K = 1.5","k",1.5],["K = 2","k",2],["Otomatik kalite aç/kapa","adapt"],["Balık sınırı aç/kapa","cap"],["+20 balık (stres)","stress",20],["+40 balık (stres)","stress",40]]],
 ["💾 Kayıt",[["Kaydı dışa aktar","exp"],["Kaydı içe aktar","imp"],["Kaydı sıfırla","reset"]]]];
-function admRender(){const b=$("admBox");if(!b)return;if(!isAdmin()){b.innerHTML="";return}
-const sp=species.map(s=>'<option value="'+s.id+'">'+s.name+(WATER[s.id]==="salt"?" 🌊":" 💧")+'</option>').join(""),mu=Object.keys(MUTS).map(k=>'<option value="'+k+'">'+MUTS[k].name+'</option>').join(""),sz=Object.keys(SIZES).map(k=>'<option value="'+k+'">'+SIZES[k].n+'</option>').join("");
-const evs=EVENTS.map(e=>'<label class="admck"><input type="checkbox" data-ev="'+e.id+'"'+((state.admEv||[]).includes(e.id)?" checked":"")+'> '+e.n+'</label>').join("");
-let h='<p class="note">Sadece sana görünür · kimlik: '+ADMIN_ID.slice(0,6)+'…</p>';
-h+='<details open class="admd"><summary>🐠 Balık ekle</summary><div class="pair"><select id="admSp">'+sp+'</select><select id="admMu">'+mu+'</select></div><div class="pair" style="margin-top:6px"><select id="admSz">'+sz+'</select><select id="admAge"><option value=".12">Yavru</option><option value=".5">Yarı büyük</option><option value="1" selected>Yetişkin</option></select></div><label class="admck"><input type="checkbox" id="admRare"> Nadir (parlak)</label><div class="buttons"><button data-a="spawn">Ekle</button><button data-a="spawn5">5 tane ekle</button></div></details>';
-h+='<details class="admd"><summary>🎉 Etkinlikleri zorla</summary><div class="admev">'+evs+'</div></details>';
-for(const [t,list] of ADM_SEC){h+='<details class="admd"><summary>'+t+'</summary><div class="buttons">'+list.map(x=>'<button data-a="'+x[1]+'"'+(x[2]!==undefined?' data-v="'+x[2]+'"':'')+'>'+x[0]+'</button>').join("")+'</div></details>'}
-h+='<textarea id="admTxt" class="admta" placeholder="İçe aktarma için kayıt JSON\'u buraya"></textarea>';b.innerHTML=h}
+// ===== Yönetim paneli v2: sekmeli, canlı durum ekranı, balık düzenleyici, zaman/hız kontrolü, şans simülatörü,
+// hata ayıklama katmanları, ekran görüntüsü modu, kayıt anlık görüntüleri ve işlem günlüğü
+const ADM=(()=>{let o={};try{o=JSON.parse(localStorage.getItem("akvAdm")||"{}")}catch(e){}return{tab:o.tab||"dash",speed:1,dbg:o.dbg||{},log:[],q:"",fc:0,fps:0,fT:0,on:false}})();
+function admPersist(){try{localStorage.setItem("akvAdm",JSON.stringify({tab:ADM.tab,dbg:ADM.dbg}))}catch(e){}}
+const ADM_TABS=[["dash","📊 Durum"],["fish","🐠 Balıklar"],["eco","💰 Ekonomi"],["time","⏩ Zaman"],["luck","🎲 Şans"],["view","🎨 Görüntü"],["tank","🌊 Tank"],["prog","🏆 İlerleme"],["save","💾 Kayıt"],["log","📝 Günlük"]];
+const ADM_TABSEC={eco:["💰 Ekonomi","📈 Pazar"],time:["⏩ Zaman","👥 Deniz 🤖"],tank:["🌊 Tank","🪸 Dekor"],prog:["🏆 İlerleme"],view:["⚙️ Performans"],fish:["🐟 Balık"],save:["💾 Kayıt"]};
+const _rollMut=rollMutation;
+rollMutation=function(){if(state&&state.admNextMut){const m=state.admNextMut;state.admNextMut=null;setTimeout(()=>{if(openKey==="adm")admRender()},50);return m}const x=state&&state.admMutX||1;if(x===1)return _rollMut();const sv={};for(const k in MUTS){sv[k]=MUTS[k].p;if(k!=="normal")MUTS[k].p=Math.min(.45,MUTS[k].p*x)}try{return _rollMut()}finally{for(const k in sv)MUTS[k].p=sv[k]}};
+const aEsc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const aNum=n=>Math.round(n).toLocaleString("tr-TR");
+function admBtn(lbl,a,v,cls){return '<button class="sm'+(cls?" "+cls:"")+'" data-a="'+a+'"'+(v!==undefined?' data-v="'+aEsc(v)+'"':"")+">"+lbl+"</button>"}
+function admSecBtns(title){const s=ADM_SEC.find(x=>x[0]===title);if(!s)return"";return '<div class="admsub">'+title+'</div><div class="admbtns">'+s[1].map(x=>admBtn(x[0],x[1],x[2])).join("")+"</div>"}
+function admCard(t,body,open){return '<details class="admd"'+(open===false?"":" open")+"><summary>"+t+"</summary>"+body+"</details>"}
+function admDashHTML(){const all=allFish(),wk=workFish(),inc=wk.filter(f=>f.age>=MATURE&&!f.sick).reduce((a,f)=>a+incomeRate(getSpecies(f.type))*3600,0),val=all.reduce((a,f)=>a+saleValue(f),0),mutN=all.filter(f=>mutOf(f)!=="normal").length;
+ const kv=(k,v)=>"<div><span>"+k+"</span><b>"+v+"</b></div>";let h='<div class="admkv">';
+ h+=kv("Seviye",state.level+" · "+aNum(state.xp)+" / "+aNum(xpNeed(state.level))+" XP")+kv("Altın",aNum(state.coins)+" 🪙")+kv("Zümrüt",aNum(state.gems||0)+" 💎")+kv("Biriken gelir",aNum(state.pending||0)+" 🪙")+kv("Saatlik gelir",aNum(inc)+" 🪙/sa")+kv("Balıkların değeri",aNum(val)+" 🪙")+kv("Toplam balık",all.length+" ("+mutN+" mutasyonlu)")+kv("Keşfedilen tür",state.discovered.length+" / "+species.length)+kv("Bulunan mutasyon",state.mutsFound.length+" / "+MSP().length*5)+kv("Başarım",Object.keys(state.ach||{}).filter(k=>state.ach[k]==="done").length+" / "+ACH.length)+kv("Sonraki sandık",state.chest?"hazır 🎁":fmtTime((state.chestAt-Date.now())/1000))+kv("Etkinlikler",activeEvents().map(e=>e.n).join(", ")||"yok");
+ h+="</div><div class='admsub'>Tanklar</div><div class='admkv'>";for(const k of TKEYS){const T=TANKS[k];if(!hasTank(k)){h+=kv(T.icon+" "+T.name,"kilitli");continue}const a=tankArr(k);h+=kv(T.icon+" "+T.name+(state.tank===k?" ◀":""),a.length+" / "+fishCap(k)+" balık · kir %"+Math.round(tankDirt(k)))}
+ const pre=window.__AKV_PRE||[],ok=pre.filter(i=>i.complete&&i.naturalWidth).length;let ss=0;try{ss=serial().length}catch(e){}
+ h+="</div><div class='admsub'>Cihaz ve oyun</div><div class='admkv'>"+kv("Sürüm",(($("verNote")||{}).textContent||"").replace("Akvaria · ",""))+kv("Akıcılık",ADM.fps+" fps · kalite K="+K)+kv("Ekran",innerWidth+"×"+innerHeight+" @"+(devicePixelRatio||1))+kv("Ekran kartı",aEsc(gpuName()))+kv("Bellek",(navigator.deviceMemory?navigator.deviceMemory+" GB":"?"))+kv("Yüklenen resim",ok+" / "+pre.length)+kv("Kayıt boyutu",(ss/1024).toFixed(1)+" KB")+kv("Bulut",NET.on?"bağlı ✅":"kapalı · "+aEsc(NET.why||"-"))+kv("Hareket hızı",ADM.speed+"×")+"</div>";return h}
+function admFishHTML(){const sp=species.map(s=>'<option value="'+s.id+'">'+s.name+" "+TANKS[WATER[s.id]].icon+"</option>").join(""),mu=Object.keys(MUTS).map(k=>'<option value="'+k+'">'+MUTS[k].name+"</option>").join(""),sz=Object.keys(SIZES).map(k=>'<option value="'+k+'">'+SIZES[k].n+"</option>").join("");
+ let h=admCard("➕ Balık ekle",'<div class="pair"><select id="admSp">'+sp+'</select><select id="admMu">'+mu+'</select></div><div class="pair" style="margin-top:6px"><select id="admSz">'+sz+'</select><select id="admAge"><option value=".12">Yavru</option><option value=".5">Yarı büyük</option><option value="1" selected>Yetişkin</option></select></div><label class="admck"><input type="checkbox" id="admRare"> Nadir (parlak)</label><div class="admbtns">'+admBtn("Ekle","spawn")+admBtn("5 tane","spawn5")+admBtn("Rastgele 10 (bu tank)","rnd10")+admBtn("Her mutasyondan 1","eachMut")+"</div>");
+ const mo=k=>'<option value="'+k+'">'+MUTS[k].name+"</option>",so=k=>'<option value="'+k+'">'+SIZES[k].n+"</option>";
+ const rows=state.fish.map(f=>{const s=getSpecies(f.type),moves=TKEYS.filter(k=>k!==state.tank&&hasTank(k)).map(k=>'<option value="'+k+'">'+TANKS[k].icon+" "+TANKS[k].name+"</option>").join("");
+  return '<div class="admfish" data-fid="'+f.id+'"><div class="admfh"><span class="admfi">'+fishIcon(f)+'</span><div><b>'+aEsc(f.name||s.name)+'</b><small>#'+f.id+" · "+aNum(saleValue(f))+" 🪙"+(f.sick?" · 🤒":"")+'</small></div></div>'+
+  '<div class="pair"><select data-ff="mutation">'+Object.keys(MUTS).map(mo).join("").replace('value="'+mutOf(f)+'"','value="'+mutOf(f)+'" selected')+'</select><select data-ff="sizeTrait">'+Object.keys(SIZES).map(so).join("").replace('value="'+szOf(f)+'"','value="'+szOf(f)+'" selected')+"</select></div>"+
+  '<div class="admsl"><label>Büyüme <input type="range" min="0" max="100" data-ff="age" value="'+Math.round(Math.min(1,f.age)*100)+'"></label><label>Tokluk <input type="range" min="0" max="100" data-ff="hunger" value="'+Math.round(f.hunger)+'"></label><label>Sağlık <input type="range" min="0" max="100" data-ff="health" value="'+Math.round(f.health)+'"></label><label>Boy <input type="range" min="0" max="75" data-ff="sizeGrowth" value="'+Math.round((f.sizeGrowth||0)*100)+'"></label></div>'+
+  '<div class="admbtns">'+admBtn("📍 Göster","fShow",f.id)+admBtn("🩺 İyileştir","fHeal",f.id)+admBtn("🧬 Kopyala","fDup",f.id)+admBtn(f.rarity==="Nadir"?"✨ Parlak: açık":"✨ Parlak: kapalı","fRare",f.id)+admBtn("🍽️ Yemle","fFeed",f.id)+admBtn("🗑️ Sil","fDel",f.id,"admdanger")+(moves?'<select data-ff="move"><option value="">Taşı…</option>'+moves+"</select>":"")+"</div></div>"}).join("");
+ h+=admCard("🐟 Bu tanktaki balıklar ("+state.fish.length+")",rows||'<p class="note">Bu tankta balık yok</p>');
+ h+=admSecBtns("🐟 Balık");return h}
+function admEcoHTML(){const inp=(id,v,l)=>'<label class="admin">'+l+'<input id="'+id+'" type="number" inputmode="numeric" value="'+v+'"></label>';
+ return admCard("✏️ Değerleri doğrudan ayarla",'<div class="pair">'+inp("admVC",Math.round(state.coins),"Altın")+inp("admVG",state.gems||0,"Zümrüt")+inp("admVL",state.level,"Seviye")+inp("admVX",Math.round(state.xp),"XP")+'</div><div class="admbtns">'+admBtn("Uygula","setv")+admBtn("Altın ×10","cmul",10)+admBtn("Zümrüt +1.000","gems",1000)+admBtn("Seviye 40","lvlset",40)+"</div>")+admSecBtns("💰 Ekonomi")+admSecBtns("📈 Pazar")}
+function admTimeHTML(){const sp=[0,.25,.5,1,2,5,10];
+ return admCard("🎬 Hareket hızı",'<p class="note">Balıkların ve efektlerin hızı (ekonomi gerçek saatle işlemeye devam eder)</p><div class="admbtns admseg">'+sp.map(v=>admBtn(v===0?"⏸ Durdur":v+"×","speed",v,ADM.speed===v?"on":"")).join("")+"</div>")+
+  admCard("⏭️ Zamanı ileri al",'<div class="pair"><label class="admin">Saat<input id="admTH" type="number" value="3" step="0.5"></label><div class="admbtns">'+admBtn("İleri al","tskip")+"</div></div>")+admSecBtns("⏩ Zaman")+admSecBtns("👥 Deniz 🤖")}
+function admLuckHTML(){const x=state.admMutX||1,mu=Object.keys(MUTS).filter(k=>k!=="normal").map(k=>'<option value="'+k+'"'+(state.admNextMut===k?" selected":"")+">"+MUTS[k].icon+" "+MUTS[k].name+"</option>").join("");
+ const evs=EVENTS.map(e=>'<label class="admck"><input type="checkbox" data-ev="'+e.id+'"'+((state.admEv||[]).includes(e.id)?" checked":"")+"> "+e.n+' <small>'+aEsc(e.d||"")+"</small></label>").join("");
+ return admCard("🎰 Mutasyon şansı çarpanı",'<p class="note">Şu an: '+x+'× · Doğan ve satın alınan bütün balıklara uygulanır</p><div class="admbtns admseg">'+[1,2,5,10,50,100,1000].map(v=>admBtn(v+"×","mutx",v,x===v?"on":"")).join("")+"</div>")+
+  admCard("🎯 Sıradaki mutasyonu zorla",'<div class="pair"><select id="admNM"><option value="">— yok —</option>'+mu+'</select><div class="admbtns">'+admBtn("Ayarla","nextMut")+"</div></div><p class=\"note\">"+(state.admNextMut?"Sıradaki balık: "+MUTS[state.admNextMut].name:"Ayarlı değil")+"</p>")+
+  admCard("📊 Şans simülatörü",'<p class="note">Mutasyon zarını 200.000 kez atar, gerçek oranları gösterir (etkinlikler ve çarpan dahil)</p><div class="admbtns">'+admBtn("Simüle et","sim")+'</div><div id="admSim"></div>',false)+
+  admCard("🎉 Etkinlikleri zorla",'<div class="admev">'+evs+"</div>",false)}
+function admViewHTML(){const D=ADM.dbg,tg=(k,l)=>'<label class="admck"><input type="checkbox" data-dbg="'+k+'"'+(D[k]?" checked":"")+"> "+l+"</label>";
+ return admCard("🔍 Hata ayıklama katmanları",tg("hit","Dokunma alanları")+tg("mouth","Ağız noktaları ve yem")+tg("target","Hedef çizgileri")+tg("label","Balık bilgileri (tür, açlık, hız)")+tg("grid","Tank sınırları ve zemin çizgisi"))+
+  admCard("📸 Ekran görüntüsü modu",'<p class="note">Bütün düğmeleri gizler, sadece akvaryum kalır. Çıkmak için sol üstteki küçük düğmeye dokun.</p><div class="admbtns">'+admBtn("Arayüzü gizle","clean")+"</div>")+
+  admCard("🌑 Derin Okyanus karanlığı",'<input type="range" min="0" max="95" id="admDark" value="'+Math.round(DEEP_DARK*100)+'" style="width:100%"><p class="note">%'+Math.round(DEEP_DARK*100)+"</p>")+
+  admCard("✨ Efekt önizleme",'<div class="admbtns">'+admBtn("Altın kutlaması","fxGold")+admBtn("Glitch bulunuşu","fxGlitch")+admBtn("Seviye atlama","fxLevel")+admBtn("Plankton patlaması","fxSpark")+admBtn("Efsanevi ses","fxLegend")+admBtn("Gece/gündüz geçişi","night")+"</div>")+admSecBtns("⚙️ Performans")}
+function admTankHTML(){const tb=TKEYS.map(k=>admBtn(TANKS[k].icon+" "+TANKS[k].name+(state.tank===k?" ◀":""),"tankGo",k,state.tank===k?"on":"")).join("");
+ const cr=CRIT.filter(d=>d.w===tw(state.tank)).map(d=>admBtn("+ "+d.n,"critAdd",d.id)).join("");
+ return admCard("🔁 Tanka geç",'<div class="admbtns">'+tb+"</div>")+
+  admCard("💧 Kirlilik",'<input type="range" min="0" max="100" id="admDirt" value="'+Math.round(state.dirt)+'" style="width:100%"><p class="note">%'+Math.round(state.dirt)+"</p>")+
+  admCard("🦐 Omurgasızlar",'<div class="admbtns">'+(cr||'<span class="note">Bu tank için yok</span>')+admBtn("Hepsini kaldır","critClear")+"</div>")+
+  admCard("🍤 Yem ve sandık",'<div class="admbtns">'+admBtn("Yem yağmuru","foodRain")+admBtn("Sandık çıkar","chest")+admBtn("Yerdeki yemleri temizle","foodClear")+admBtn("Para yağmuru","coinRain")+"</div>")+admSecBtns("🌊 Tank")+admSecBtns("🪸 Dekor")}
+function admSaveHTML(){let snaps=[];try{snaps=JSON.parse(localStorage.getItem("akvSnap")||"[]")}catch(e){}
+ const rows=snaps.map((s,i)=>'<div class="admsnap"><div><b>'+aEsc(s.n)+"</b><small>"+new Date(s.t).toLocaleString("tr-TR")+" · Sv "+s.lv+" · "+aNum(s.c)+' 🪙</small></div><div class="admbtns">'+admBtn("Geri yükle","snapLoad",i)+admBtn("Sil","snapDel",i,"admdanger")+"</div></div>").join("");
+ return admCard("📌 Anlık görüntüler",'<p class="note">Oyunun şu anki hâlini kaydet, istediğin zaman geri dön (en fazla 6)</p><div class="pair"><input id="admSnapN" placeholder="Ad (isteğe bağlı)"><div class="admbtns">'+admBtn("Kaydet","snapSave")+"</div></div>"+(rows||'<p class="note">Henüz yok</p>'))+
+  admCard("☁️ Bulut",'<p class="note">'+(NET.on?"Bağlı":"Kapalı")+(NET.uid?" · kimlik "+aEsc(String(NET.uid).slice(0,8))+"…":"")+(NET.saveErr?" · hata: "+aEsc(NET.saveErr):"")+'</p><div class="admbtns">'+admBtn("Şimdi buluta kaydet","cloudNow")+admBtn("Yerel kaydet","saveNow")+"</div>")+
+  admSecBtns("💾 Kayıt")+'<textarea id="admTxt" class="admta" placeholder="İçe aktarma için kayıt JSON\'u buraya"></textarea>'}
+function admLogHTML(){let er=null;try{er=JSON.parse(localStorage.getItem("fvErr")||"null")}catch(e){}
+ return admCard("⚠️ Son hata",er?'<p class="note">'+aEsc(er.m)+"<br>"+new Date(er.t).toLocaleString("tr-TR")+" · "+aEsc(er.v||"")+" · "+er.n+' kez</p><div class="admbtns">'+admBtn("Temizle","errClear")+"</div>":'<p class="note">Kayıtlı hata yok ✅</p>')+
+  admCard("📝 Bu oturumdaki işlemler",ADM.log.length?'<div class="admlog">'+ADM.log.slice().reverse().map(l=>"<div><small>"+l.t+"</small> "+aEsc(l.a)+"</div>").join("")+"</div>":'<p class="note">Henüz işlem yok</p>')}
+function admSearchHTML(q){q=q.toLocaleLowerCase("tr-TR");const hits=[];for(const [t,l] of ADM_SEC)for(const x of l)if((x[0]+" "+t).toLocaleLowerCase("tr-TR").includes(q))hits.push(admBtn(x[0]+' <small>'+t.split(" ")[0]+"</small>",x[1],x[2]));return '<div class="admsub">Arama sonuçları</div><div class="admbtns">'+(hits.join("")||'<span class="note">Bulunamadı</span>')+"</div>"}
+function admRender(){const b=$("admBox");if(!b)return;if(!isAdmin()){b.innerHTML="";return}ADM.on=true;
+ const st=b.querySelector(".admbody"),sc=st?st.scrollTop:0,open=[...b.querySelectorAll("details.admd")].map(d=>d.open);
+ let h='<div class="admtop"><input id="admQ" placeholder="🔎 İşlem ara…" value="'+aEsc(ADM.q)+'"><div class="admtabs">'+ADM_TABS.map(t=>'<button data-at="'+t[0]+'" class="'+(ADM.tab===t[0]?"on":"")+'">'+t[1]+"</button>").join("")+"</div></div>";
+ const T=ADM.tab;let body=ADM.q?admSearchHTML(ADM.q):T==="dash"?'<div id="admDash">'+admDashHTML()+"</div>":T==="fish"?admFishHTML():T==="eco"?admEcoHTML():T==="time"?admTimeHTML():T==="luck"?admLuckHTML():T==="view"?admViewHTML():T==="tank"?admTankHTML():T==="prog"?admSecBtns("🏆 İlerleme"):T==="save"?admSaveHTML():admLogHTML();
+ h+='<div class="admbody">'+body+'</div><p class="note">Sadece sana görünür · '+ADMIN_ID.slice(0,6)+"…</p>";b.innerHTML=h;
+ const ds=b.querySelectorAll("details.admd");if(open.length===ds.length)ds.forEach((d,i)=>d.open=open[i]);const nb=b.querySelector(".admbody");if(nb)nb.scrollTop=sc}
+function admLogA(a){const d=new Date();ADM.log.push({t:d.toLocaleTimeString("tr-TR"),a});if(ADM.log.length>60)ADM.log.shift()}
+function admFindF(id){id=+id;return state.fish.find(f=>f.id===id)}
+function admAct2(a,v,btn){const lbl=btn?btn.textContent.trim():a;admLogA(lbl);
+ switch(a){
+ case"speed":ADM.speed=+v;notify("🛠️ Hareket hızı: "+(+v===0?"durdu":v+"×"));admRender();return;
+ case"tskip":{const hh=+($("admTH")||{}).value||0;if(hh>0){admShift(hh*3600);admDone(hh+" saat ileri alındı")}admRender();return}
+ case"setv":{const g=id=>{const e=$(id);return e&&e.value!==""?+e.value:null};const c=g("admVC"),gm=g("admVG"),l=g("admVL"),x=g("admVX");if(c!=null)state.coins=Math.max(0,c);if(gm!=null)state.gems=Math.max(0,gm);if(l!=null)state.level=Math.max(1,l|0);if(x!=null)state.xp=Math.max(0,x);admDone("Değerler ayarlandı");admRender();return}
+ case"cmul":state.coins*=+v;break;
+ case"mutx":state.admMutX=+v;save(true);notify("🛠️ Mutasyon şansı "+v+"×");admRender();return;
+ case"nextMut":state.admNextMut=($("admNM")||{}).value||null;save(true);notify(state.admNextMut?"🛠️ Sıradaki balık "+MUTS[state.admNextMut].name:"🛠️ Zorlama kaldırıldı");admRender();return;
+ case"sim":{const N=200000,c={};const nm=state.admNextMut;state.admNextMut=null;for(let i=0;i<N;i++){const m=rollMutation();c[m]=(c[m]||0)+1}state.admNextMut=nm;const el=$("admSim");if(el)el.innerHTML='<div class="admkv">'+Object.keys(MUTS).map(k=>"<div><span>"+(MUTS[k].icon||"🐟")+" "+MUTS[k].name+"</span><b>"+aNum(c[k]||0)+(c[k]?" · 1/"+aNum(N/c[k]):"")+"</b></div>").join("")+"</div>";return}
+ case"rnd10":{const ids=species.filter(s=>WATER[s.id]===tw(state.tank)&&!isColl(state.tank)||isColl(state.tank)).map(s=>s.id);let n=0;for(let i=0;i<10;i++)if(admFish(ids[Math.random()*ids.length|0],{age:rand(.2,1)}))n++;admDone(n+" balık eklendi");admRender();return}
+ case"eachMut":{const sid=($("admSp")||{}).value;let n=0;for(const m of Object.keys(MUTS))if(admFish(sid,{mut:m,age:1}))n++;admDone(n+" balık eklendi");admRender();return}
+ case"fShow":{const f=admFindF(v);if(f){selectedFish=f.id;tapInfo={id:f.id,until:performance.now()+5000};closeSheet();for(let k=0;k<12;k++)particles.push({x:f.x*W+rand(-20,20),y:f.y*H+rand(-20,20),vx:rand(-30,30),vy:rand(-50,-10),life:rand(.8,1.4),type:"heart"})}return}
+ case"fHeal":{const f=admFindF(v);if(f){f.sick=false;f.health=100;f.hunger=100}break}
+ case"fFeed":{const f=admFindF(v);if(f)f.hunger=100;break}
+ case"fRare":{const f=admFindF(v);if(f)f.rarity=f.rarity==="Nadir"?"Normal":"Nadir";break}
+ case"fDup":{const f=admFindF(v);if(f){const c=JSON.parse(JSON.stringify(f));c.id=state.nextId++;c.x=Math.min(.9,f.x+.05);if(state.fish.length<fishCap(state.tank)||state.admNoCap)state.fish.push(c);else notify("Tank dolu")}break}
+ case"fDel":{const i=state.fish.findIndex(f=>f.id===+v);if(i>=0)state.fish.splice(i,1);break}
+ case"clean":{closeSheet();document.body.classList.add("admclean");let x=$("admExit");if(!x){x=document.createElement("button");x.id="admExit";x.textContent="✕";x.onclick=()=>{document.body.classList.remove("admclean");x.remove()};document.body.appendChild(x)}return}
+ case"fxGold":closeSheet();goldFx();sfx("legend");return;case"fxGlitch":closeSheet();sfx("crash");glitchFx();return;case"fxLevel":closeSheet();showLevelUp(state.level,0);sfx("level");return;case"fxLegend":sfx("legend");return;
+ case"fxSpark":closeSheet();for(let i=0;i<14;i++)deepTap(rand(W*.1,W*.9),rand(H*.2,H*.75));if(curWater()!=="deep")for(let i=0;i<40;i++)particles.push({x:rand(0,W),y:rand(H*.2,H*.8),vx:rand(-40,40),vy:rand(-40,10),life:rand(.8,1.6),l0:1.6,type:"px",s:rand(2,5),c:["#7fe9ff","#b9a2ff","#ffffff"][i%3]});return;
+ case"tankGo":closeSheet();if(state.tank!==v){if(!hasTank(v))state.stash[v]={fish:[],dirt:0};switchTank(v)}return;
+ case"critAdd":{const d=CRIT.find(x=>x.id===v);if(d){if(!state.crit||typeof state.crit!=="object")state.crit={};const L=state.crit[state.tank]||(state.crit[state.tank]=[]);L.push({id:"a"+Date.now().toString(36)+(Math.random()*1e4|0),k:d.id})}break}
+ case"critClear":if(state.crit)state.crit[state.tank]=[];break;
+ case"foodRain":closeSheet();{const c0=state.coins;state.coins=Math.max(state.coins,500);for(let i=0;i<5;i++)dropFood(rand(W*.15,W*.85),rand(H*.25,H*.5),5);state.coins=c0}return;
+ case"foodClear":drops.length=0;break;
+ case"coinRain":closeSheet();for(const f of state.fish)spitCoin(f,f.x*W,f.y*H,fishW(f));return;
+ case"snapSave":{let a=[];try{a=JSON.parse(localStorage.getItem("akvSnap")||"[]")}catch(e){}const n=(($("admSnapN")||{}).value||"").trim()||("Görüntü "+(a.length+1));a.unshift({n,t:Date.now(),lv:state.level,c:state.coins,j:serial()});a=a.slice(0,6);try{localStorage.setItem("akvSnap",JSON.stringify(a));notify("🛠️ Anlık görüntü kaydedildi")}catch(e){notify("🛠️ Yer yok, eski görüntülerden birini sil")}admRender();return}
+ case"snapLoad":{let a=[];try{a=JSON.parse(localStorage.getItem("akvSnap")||"[]")}catch(e){}const s=a[+v];if(!s||!confirm("“"+s.n+"” geri yüklensin mi? Şu anki ilerleme bu görüntüyle değişir."))return;try{const p=JSON.parse(s.j);if(!validSave(p))throw 0;p.savedAt=Date.now();localStorage.setItem("fishvilleClassicSave3",JSON.stringify(p));window.__nosave=true;removeEventListener("pagehide",flush);removeEventListener("beforeunload",flush);location.reload()}catch(e){notify("🛠️ Görüntü bozuk")}return}
+ case"snapDel":{let a=[];try{a=JSON.parse(localStorage.getItem("akvSnap")||"[]")}catch(e){}a.splice(+v,1);try{localStorage.setItem("akvSnap",JSON.stringify(a))}catch(e){}admRender();return}
+ case"cloudNow":save(true);cloudSave(true);notify("🛠️ Buluta gönderiliyor");return;case"saveNow":save(true);notify("🛠️ Kaydedildi");return;
+ case"errClear":try{localStorage.removeItem("fvErr")}catch(e){}admRender();return;
+ }
+ if(["fHeal","fFeed","fRare","fDup","fDel","critAdd","critClear","foodClear","cmul"].includes(a)){renderUI();save(true);admRender();notify("🛠️ Tamam");return}
+ admAct(a,v);if(openKey==="adm")admRender()}
+function admFishField(fid,k,val){const f=admFindF(fid);if(!f)return;if(k==="move"){if(!val)return;moveFishAdm(f,val);return}
+ if(k==="mutation"){f.mutation=val;f.gene=val!=="normal"?val:null;if(val!=="normal")mutNote(f,getSpecies(f.type))}else if(k==="sizeTrait")f.sizeTrait=val;else if(k==="age")f.age=Math.max(.05,+val/100);else if(k==="sizeGrowth")f.sizeGrowth=+val/100;else f[k]=+val;
+ if(k==="health"&&f.health>40)f.sick=false;save(true);admLogA("#"+f.id+" "+k+" → "+val)}
+function moveFishAdm(f,k){const d=tankArr(k);if(!d)return;const i=state.fish.indexOf(f);if(i<0)return;state.fish.splice(i,1);d.push(f);notify("🛠️ "+getSpecies(f.type).name+" → "+TANKS[k].name);renderUI();save(true);admRender()}
+function admInit(){const b=$("admBox");if(!b)return;
+ b.addEventListener("click",e=>{const tb=e.target.closest("[data-at]");if(tb){ADM.tab=tb.dataset.at;ADM.q="";admPersist();sfx("click");admRender();const bd=b.querySelector(".admbody");if(bd)bd.scrollTop=0;return}const t=e.target.closest("button[data-a]");if(t){sfx("click");admAct2(t.dataset.a,t.dataset.v,t)}});
+ b.addEventListener("input",e=>{const t=e.target;if(t.id==="admQ"){ADM.q=t.value;const pos=t.selectionStart;admRender();const q=$("admQ");if(q){q.focus();try{q.setSelectionRange(pos,pos)}catch(_){}}return}
+  if(t.id==="admDark"){DEEP_DARK=+t.value/100;t.nextElementSibling&&(t.nextElementSibling.textContent="%"+t.value);return}
+  if(t.id==="admDirt"){state.dirt=+t.value;t.nextElementSibling&&(t.nextElementSibling.textContent="%"+t.value);return}
+  const fr=t.closest("[data-fid]");if(fr&&t.dataset.ff&&t.type==="range")admFishField(fr.dataset.fid,t.dataset.ff,t.value)});
+ b.addEventListener("change",e=>{const t=e.target;if(t.dataset&&t.dataset.ev){const s=new Set(state.admEv||[]);t.checked?s.add(t.dataset.ev):s.delete(t.dataset.ev);state.admEv=[...s];evC={t:0,l:[]};save(true);admLogA("Etkinlik "+t.dataset.ev+(t.checked?" açık":" kapalı"));return}
+  if(t.dataset&&t.dataset.dbg){ADM.dbg[t.dataset.dbg]=t.checked;admPersist();return}if(t.id==="admDirt"){save(true);return}
+  const fr=t.closest("[data-fid]");if(fr&&t.dataset.ff&&t.tagName==="SELECT"){admFishField(fr.dataset.fid,t.dataset.ff,t.value);renderUI();if(t.dataset.ff!=="move")admRender()}});
+ $("admBtn").addEventListener("click",()=>openSheet("adm","🛠️ Yönetim paneli"));
+ setInterval(()=>{if(openKey==="adm"&&ADM.tab==="dash"&&!ADM.q){const d=$("admDash");if(d)d.innerHTML=admDashHTML()}},1000)}
+function admTick(now){ADM.fc++;if(now-ADM.fT>=1000){ADM.fps=Math.round(ADM.fc*1000/(now-(ADM.fT||now-1000)));ADM.fc=0;ADM.fT=now}}
+function admDebug(t){const D=ADM.dbg;if(!(D.hit||D.mouth||D.target||D.label||D.grid)||!isAdmin())return;ctx.save();ctx.lineWidth=1;ctx.font="700 10px system-ui";
+ if(D.grid){ctx.strokeStyle="rgba(255,220,0,.7)";ctx.setLineDash([4,4]);ctx.strokeRect(BX0,BY0,BX1-BX0,BY1-BY0);ctx.beginPath();ctx.moveTo(0,FLOOR);ctx.lineTo(W,FLOOR);ctx.moveTo(0,SURF);ctx.lineTo(W,SURF);ctx.stroke();ctx.setLineDash([])}
+ for(const f of state.fish){const x=f.x*W,y=f.y*H,w=fishW(f);
+  if(D.hit){ctx.strokeStyle="rgba(0,255,160,.8)";ctx.beginPath();ctx.arc(x,y,Math.max(55,w*.42),0,7);ctx.stroke()}
+  if(D.mouth&&f._mx!=null){ctx.fillStyle="#ff3b5c";ctx.beginPath();ctx.arc(f._mx,f._my,3,0,7);ctx.fill();if(f._gx!=null){ctx.fillStyle="#ffd34d";ctx.beginPath();ctx.arc(f._gx,f._gy,2.5,0,7);ctx.fill()}}
+  if(D.target&&f.tx!=null){ctx.strokeStyle="rgba(120,200,255,.7)";ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(f.tx,f.ty);ctx.stroke();ctx.fillStyle="rgba(120,200,255,.9)";ctx.fillRect(f.tx-2,f.ty-2,4,4)}
+  if(D.label){const s=getSpecies(f.type),txt=s.name+(mutOf(f)!=="normal"?" · "+MUTS[mutOf(f)].name:"")+" · tok %"+Math.round(f.hunger)+" · can %"+Math.round(f.health)+" · hız "+Math.round(Math.hypot(f.vx||0,f.vy||0));ctx.fillStyle="rgba(0,0,0,.6)";const tw2=ctx.measureText(txt).width;ctx.fillRect(x-tw2/2-3,y-w*.45-16,tw2+6,13);ctx.fillStyle="#fff";ctx.textAlign="center";ctx.fillText(txt,x,y-w*.45-6)}}
+ if(D.mouth){ctx.fillStyle="#ffb04d";for(const d of drops){if(d.eaten)continue;ctx.beginPath();ctx.arc(d.x,d.y,2,0,7);ctx.fill()}}
+ ctx.restore()}
 function admAct(a,v){if(a==="off"){const o=state.admOff||(state.admOff={});o[v]=!o[v];notify("🛠️ "+v+": "+(o[v]?"kapalı":"açık"));save(true);return}v=+v;
 switch(a){
 case"coins":state.coins+=v;break;case"coins0":state.coins=0;break;case"gems":state.gems+=v;break;
@@ -1455,7 +1574,6 @@ case"reset":if(confirm("Bütün oyun sıfırlansın mı?")){window.__nosave=true
 case"spawn":case"spawn5":{const n=a==="spawn5"?5:1;let c=0;for(let i=0;i<n;i++){if(admFish($("admSp").value,{mut:$("admMu").value,size:$("admSz").value,age:+$("admAge").value,rare:$("admRare").checked}))c++}notify(c?"🛠️ "+c+" balık eklendi":"🛠️ Eklenemedi (tank yok/dolu)");renderUI();save(true);return}
 }
 admDone("Tamam")}
-function admInit(){const b=$("admBox");if(!b)return;b.addEventListener("click",e=>{const t=e.target.closest("button[data-a]");if(t)admAct(t.dataset.a,t.dataset.v)});b.addEventListener("change",e=>{const t=e.target;if(t.dataset&&t.dataset.ev){const s=new Set(state.admEv||[]);t.checked?s.add(t.dataset.ev):s.delete(t.dataset.ev);state.admEv=[...s];evC={t:0,l:[]};save(true)}});$("admBtn").addEventListener("click",()=>openSheet("adm","🛠️ Yönetim paneli"))}
 admInit();v31Init();
 $("bkBtn").addEventListener("click",()=>{audio();openBackup()});$("bkCopy").addEventListener("click",doBackupCopy);$("bkLoad").addEventListener("click",doBackupLoad);
 $("shopTabs").addEventListener("click",e=>{const b=e.target.closest("[data-st]");if(b){audio();setShopTab(b.dataset.st)}});$("fishChips").addEventListener("click",e=>{const b=e.target.closest("[data-fw]");if(b){audio();fishWat=b.dataset.fw;sfx("click");renderUI()}});$("gemShop").addEventListener("click",e=>{const b=e.target.closest("[data-gem]");if(b){audio();buyGem(b.dataset.gem)}});document.querySelectorAll("[data-sheet=shop]").forEach(b=>b.addEventListener("click",()=>{shopTab="fish"},true));
