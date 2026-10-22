@@ -6,7 +6,7 @@ let CODE = SRC.slice(SRC.lastIndexOf('<script>') + 8, SRC.lastIndexOf('</script>
 const HOOK = 'requestAnimationFrame(frame);netLabel();netInit();\n})();';
 if (!CODE.includes(HOOK)) throw new Error('hook yok');
 CODE = CODE.replace(HOOK, `requestAnimationFrame(frame);netLabel();globalThis.__NETP=netInit();
-globalThis.__T={get gameW(){return W},fitNum,numK,get openKey(){return openKey},updateFeatures,setVol,VOL,ambOn,sndToggle,sndAll,breedHint,breedable,featureTick,glPxN:f=>{const o=GLS.get(f);return o&&o.px?o.px.length:0},lokEk,boyOf,fcMeta,infoText,critShopHTML,renderQuests,moveOpts,yasOf,yasTxt,growHours,bookAll,mutNote,getSpecies,buyCrit,critCount,critShrimpK,critXPK,CRIT,critTap,critRT,sellMany,isPrecious,invList,FSEL,ymig,get layoutH(){return H},buyGem,GEMS,setShopTab,get shopTab(){return shopTab},renderShop,lvGems,reportErr,buyMany,TRAIT,foodStep,mkFood,upgradeCap,pickTheme,claimBook,bookClaimable,tutStep,tutOn,THEMES,CAP_COST,wheelReady,wheelPay,WHEEL,dayKey,PROPS,WATER,isAdmin,admAct,admRender,admVis,fishCap,botData,botHelp,BOT_ID,dropFood,feedModeOn,ensureOrders,deliverOrder,skipOrder,findOrderFish,orderReady,newOrder,spitCoin,pickCoin,isSleepy,MUTS,MATURE,serial,get coinsLoose(){return coinsLoose},get coinsFly(){return coinsFly},get drops(){return drops},get particles(){return particles},get state(){return state},set state(v){state=v},get VISIT(){return VISIT},get NET(){return NET},ev,activeEvents,inEvent,EVENTS,rollMutation,rollGene,allele,breed,fillParents,geneTest,species,PH,MUT_IMG,SWP,swimFq,fishW,fishH,CMS,MUTW,ageFactor,incomeRate,feedCost,breedCost,lvCoins,moveFish,switchTank,unlockTank,swapTo,isColl,tankDirt,tw,buy,sell,advance,dailyCheck,claimQuest,claimAch,Q,startVisit,endVisit,helpNeighbor,checkHelps,score,renderNeighbors,renderRank,fetchTanks,save,load,normalize,feed,clean,collect,featureTick,saleValue,openSheet:(k)=>openSheet(k,k),closeSheet,oddsText,dayKey,ACH,QUESTS,allFish,hasTank,tankArr,WATER,cloudSave,publishTank,renderUI,openChest,audio:()=>audio(),sfx:n=>sfx(n),musicTick:()=>musicTick(),startAmbience:()=>startAmbience(),get AU(){return AU},applyVolumes:()=>applyVolumes(),get tapInfo(){return tapInfo},get DN(){return DN},toggleNight,showLevelUp,closeLevelUp,rollSize,inheritSize,fsz,addXP,snapFish};
+globalThis.__T={get gameW(){return W},fitNum,numK,xpNeed,mutOK,noMut,deepNow,NIGHT,nightAmt,deepLights,LITE,mkKrill,musWant,deepSeen,deepEvK,inEvent,spReq,TANKS,renderBook,BASESP,get openKey(){return openKey},updateFeatures,setVol,VOL,ambOn,sndToggle,sndAll,breedHint,breedable,featureTick,glPxN:f=>{const o=GLS.get(f);return o&&o.px?o.px.length:0},lokEk,boyOf,fcMeta,infoText,critShopHTML,renderQuests,moveOpts,yasOf,yasTxt,growHours,bookAll,mutNote,getSpecies,buyCrit,critCount,critShrimpK,critXPK,CRIT,critTap,critRT,sellMany,isPrecious,invList,FSEL,ymig,get layoutH(){return H},buyGem,GEMS,setShopTab,get shopTab(){return shopTab},renderShop,lvGems,reportErr,buyMany,TRAIT,foodStep,mkFood,upgradeCap,pickTheme,claimBook,bookClaimable,tutStep,tutOn,THEMES,CAP_COST,wheelReady,wheelPay,WHEEL,dayKey,PROPS,WATER,isAdmin,admAct,admRender,admVis,fishCap,botData,botHelp,BOT_ID,dropFood,feedModeOn,ensureOrders,deliverOrder,skipOrder,findOrderFish,orderReady,newOrder,spitCoin,pickCoin,isSleepy,MUTS,MATURE,serial,get coinsLoose(){return coinsLoose},get coinsFly(){return coinsFly},get drops(){return drops},get particles(){return particles},get state(){return state},set state(v){state=v},get VISIT(){return VISIT},get NET(){return NET},ev,activeEvents,inEvent,EVENTS,rollMutation,rollGene,allele,breed,fillParents,geneTest,species,PH,MUT_IMG,SWP,swimFq,fishW,fishH,CMS,MUTW,ageFactor,incomeRate,feedCost,breedCost,lvCoins,moveFish,switchTank,unlockTank,swapTo,isColl,tankDirt,tw,buy,sell,advance,dailyCheck,claimQuest,claimAch,Q,startVisit,endVisit,helpNeighbor,checkHelps,score,renderNeighbors,renderRank,fetchTanks,save,load,normalize,feed,clean,collect,featureTick,saleValue,openSheet:(k)=>openSheet(k,k),closeSheet,oddsText,dayKey,ACH,QUESTS,allFish,hasTank,tankArr,WATER,cloudSave,publishTank,renderUI,openChest,audio:()=>audio(),sfx:n=>sfx(n),musicTick:()=>musicTick(),startAmbience:()=>startAmbience(),get AU(){return AU},applyVolumes:()=>applyVolumes(),get tapInfo(){return tapInfo},get DN(){return DN},toggleNight,showLevelUp,closeLevelUp,rollSize,inheritSize,fsz,addXP,snapFish};
 })();`);
 
 const errors = [];
@@ -364,8 +364,8 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
 
   // ===== 13) yeni türler ve ekonomi dengesi
   use(G); G.T.closeSheet(); S().tank = 'fresh'; S().stash = { salt: { fish: [], dirt: 0 } }; S().fish = []; S().level = 1; S().xp = 0; S().coins = 5000; S().market = {};
-  ok(G.T.species.length === 20 && new Set(G.T.species.map(s => s.id)).size === 20, '13) 20 tür var');
-  ok(G.T.species.every(s => G.T.WATER[s.id] && G.T.PH[s.id] && s.img.length > 100 && ['albino', 'transparent', 'melanistic'].every(m => G.T.MUT_IMG[m][s.id] && G.T.MUT_IMG[m][s.id].length > 100)), '13) her türün suyu, fiziği, normal ve 3 mutasyon görseli tanımlı');
+  ok(G.T.species.filter(s => !s.deep).length === 20 && G.T.species.filter(s => s.deep).length === 6 && new Set(G.T.species.map(s => s.id)).size === 26, '13) 20 klasik + 6 derin okyanus türü var');
+  ok(G.T.species.every(s => G.T.WATER[s.id] && G.T.PH[s.id] && s.img.length > 100) && G.T.species.filter(s => !s.deep).every(s => ['albino', 'transparent', 'melanistic'].every(m => G.T.MUT_IMG[m][s.id] && G.T.MUT_IMG[m][s.id].length > 100)), '13) her türün suyu, fiziği, normal ve 3 mutasyon görseli tanımlı');
   ok(G.T.species.filter(s => G.T.WATER[s.id] === 'fresh').length === 8 && G.T.species.filter(s => G.T.WATER[s.id] === 'salt').length === 12, '13) 8 tatlı su, 12 tuzlu su türü');
   const cb = S().coins; G.T.buy('mandarin'); ok(S().coins === cb && !G.T.allFish().some(f => f.type === 'mandarin'), '13) Mandarin Seviye 7 olmadan alınamıyor');
   G.T.buy('cichlid'); ok(S().coins === cb, '13) Çiklit Seviye 3 olmadan alınamıyor');
@@ -531,12 +531,12 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
     use(G); const T = G.T; S().fish = []; T.drops.length = 0; const d = T.mkFood(270); T.drops.push(d); const ph = new Set(); const dirt0 = 10;
     S().dirt = 10; for (let i = 0; i < 16000 && T.drops.length; i++) { T.foodStep(1 / 120); ph.add(d.ph) }
     ok(['fall', 'surf', 'sink', 'floor'].every(k => ph.has(k)) && T.drops.length === 0 && S().dirt > dirt0, '21) yem: düşer, yüzer, batar, dipte çürür ve suyu kirletir (' + [...ph].join(',') + ')');
-    ok(Object.keys(T.TRAIT).length === 20 && Object.values(T.TRAIT).every(x => /s|m|b|a/.test(x.feed) && x.txt), '21) 20 türün hepsinin karakteri ve beslenme bölgesi var');
+    ok(Object.keys(T.TRAIT).length === 26 && Object.values(T.TRAIT).every(x => /s|m|b|a/.test(x.feed) && x.txt), '21) 20 türün hepsinin karakteri ve beslenme bölgesi var');
   }
   {
     use(G); const T = G.T; let n = 0; const N = 200000; for (let i = 0; i < N; i++) if (T.rollMutation() === 'gold') n++;
     ok(n > 30 && n < 140 && T.MUTS.gold.mult === 15 && T.MUTS.melanistic.mult === 6, '22) altın %0,04 civarı (' + (n / N * 100).toFixed(3) + '%), 15 kat; melanistik 6 kat');
-    ok(T.species.every(s => T.MUT_IMG.gold[s.id] && T.MUT_IMG.gold[s.id].length > 100), '22) 20 türün altın görseli var');
+    ok(T.species.filter(s => !s.deep).every(s => T.MUT_IMG.gold[s.id] && T.MUT_IMG.gold[s.id].length > 100), '22) 20 türün altın görseli var');
     S().fish = [mkFish(7001, 'clown', { mutation: 'gold', gene: 'gold', age: 1 })]; S().tank = 'fresh'; step(G, 30); ok(errors.length === 0, '22) altın balık çizimi hatasız');
   }
   {
@@ -552,7 +552,7 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   }
   {
     use(G); const T = G.T; S().tank = 'fresh'; S().gems = 20; S().level = 9; S().xp = 0; S().wheel = null;
-    const g0 = S().gems; T.addXP(900); ok(S().level === 10 && S().gems === g0 + 5, '25) seviye 10 olunca +5 zümrüt');
+    const g0 = S().gems; T.addXP(T.xpNeed(9)); ok(S().level === 10 && S().gems === g0 + 5, '25) seviye 10 olunca +5 zümrüt');
     S().gems = 10; S().fish = [mkFish(9500, 'neon', { age: .3 })]; T.buyGem('grow'); ok(S().gems === 6 && Math.abs(S().fish[0].age - .6) < 1e-9, '25) büyüme iksiri 4 💎, +%30 büyüme');
     S().gems = 1; T.buyGem('coins'); ok(S().gems === 1, '25) zümrüt yetmezse alınmıyor');
     S().gems = 6; S().luck = 0; T.buyGem('luck'); ok(S().luck === 10 && S().gems === 0, '25) şans yemi 10 alım');
@@ -608,7 +608,7 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   { // ===== 32) glitch mutasyonu
   const T = G.T; use(G); T.closeSheet(); S().tank = 'fresh'; S().lowGfx = false;
   ok(T.MUTS.glitch && T.MUTS.glitch.mult === 30 && T.MUTS.glitch.p < T.MUTS.gold.p, '32) Glitch mutasyonu tanımlı, altından nadir, 30 kat değer');
-  ok(T.MUT_IMG.glitch && T.species.every(s => typeof T.MUT_IMG.glitch[s.id] === 'string' && T.MUT_IMG.glitch[s.id].length > 1000), '32) 20 türün hepsinin glitch görseli var');
+  ok(T.MUT_IMG.glitch && T.species.filter(s => !s.deep).every(s => typeof T.MUT_IMG.glitch[s.id] === 'string' && T.MUT_IMG.glitch[s.id].length > 1000), '32) 20 türün hepsinin glitch görseli var');
   let n = 0; for (let i = 0; i < 400000; i++) if (T.rollMutation() === 'glitch') n++; ok(n >= 50 && n <= 115, '32) kendiliğinden glitch şansı ~1/5000 (' + n + '/400000)');
   S().fish = ['neon','koi','betta','discus'].map((k, i) => mkFish(1500 + i, k, { mutation: 'glitch', x: .2 + i * .15, y: .4 }));
   const e0 = errors.length; step(G, 900); ok(errors.length === e0 && S().fish.every(q => isFinite(q.x + q.y)), '32) glitch balıklar 15 sn boyunca hatasız çiziliyor');
@@ -661,7 +661,7 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   // metinler koddaki ödüllerle aynı
   T.dailyCheck(); T.renderQuests(); ok(/\+40 🪙 · \+2 💎 bonus/.test(G.els.quests.innerHTML) && !/\+60/.test(G.els.quests.innerHTML), '34) görev bonusu yazısı gerçek ödülle aynı');
   S().streak.count = 6; T.renderQuests(); ok(/\+56 🪙$/.test(G.els.streak.textContent), '34) seri ödülü yazısı gerçek ödülle aynı (' + G.els.streak.textContent + ')');
-  const g12 = T.ACH.find(a => a.id === 'gen12'); ok(g12.d.startsWith(T.species.length * 5 + ' mutasyonun'), '34) Genetikçi başarımı doğru mutasyon sayısını yazıyor (' + g12.d + ')');
+  const g12 = T.ACH.find(a => a.id === 'gen12'); ok(g12.d.startsWith(T.species.filter(s => T.mutOK(s.id)).length * 5 + ' mutasyonun'), '34) Genetikçi başarımı doğru mutasyon sayısını yazıyor (' + g12.d + ')');
   // boy etiketi her yerde aynı
   const big = mkFish(1800, 'koi', { sizeTrait: 'giant', sizeGrowth: .75 }), bs = T.boyOf(big);
   ok(T.fcMeta(big).includes('boy ' + bs + 'x') && T.infoText(big).includes('boy ' + bs + 'x') && bs === '1.72', '34) boy etiketi listede ve bilgi satırında aynı (' + bs + 'x)');
@@ -696,8 +696,8 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
 
   { // ===== 37) kaynak geri yüklemesinde kaybolan düzeltmeler, ses seviyesi, tuzlu su üremesi
   const T = G.T; use(G); T.closeSheet();
-  S().mutsFound = []; T.species.forEach(sp => ['albino', 'transparent', 'melanistic', 'gold', 'glitch'].forEach(m => S().mutsFound.push(m + '_' + sp.id))); T.updateFeatures();
-  ok(G.els.collectionStatus.textContent.includes(S().mutsFound.length + ' / ' + T.species.length * 5 + ' mutasyon'), '37) koleksiyon sayacı 5 mutasyon üzerinden (' + G.els.collectionStatus.textContent + ')');
+  S().mutsFound = []; T.species.filter(sp => T.mutOK(sp.id)).forEach(sp => ['albino', 'transparent', 'melanistic', 'gold', 'glitch'].forEach(m => S().mutsFound.push(m + '_' + sp.id))); T.updateFeatures();
+  ok(G.els.collectionStatus.textContent.includes(S().mutsFound.length + ' / ' + T.species.filter(sp => T.mutOK(sp.id)).length * 5 + ' mutasyon'), '37) koleksiyon sayacı 5 mutasyon üzerinden (' + G.els.collectionStatus.textContent + ')');
   const g24 = T.ACH.find(a => a.id === 'gen24'); S().mutsFound = T.species.map(sp => 'glitch_' + sp.id).concat(T.species.map(sp => 'albino_' + sp.id), T.species.map(sp => 'transparent_' + sp.id));
   ok(g24 && !g24.f(), '37) "Mutasyon ustası" glitch balıklarla erken tamamlanmıyor');
   { const r = T.MUTW.glitch_napo / T.MUTW.melanistic_napo; ok(r > .99 && r < 1.05, '37) glitch Napolyon gövdesi diğer mutasyonlarla aynı boyda (yeni resim, eşleştirmeyle ölçülen oran 1.02, kodda ' + r.toFixed(3) + ')') }
@@ -788,7 +788,7 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   { // ===== 40) yeni arayüz (v3): üst çubuk, alt menü, kısayollar
   use(G); const s0 = { level: S().level, xp: S().xp, night: S().night };
   ok(['0', '268', '99.999', '100B', '125B', '1,2Mn', '12,3Mn', '2,5Mr'].join() === [0, 268, 99999, 100000, 125430, 1234567, 12345678, 2.5e9].map(T.numK).join(), '40) büyük sayılar üst çubukta kısaltılıyor (125B, 1,2Mn)');
-  S().level = 12; S().xp = 430; T.renderUI(); ok(G.els.xptxt.textContent === '430 / 1.200', '40) XP çubuğunun altında ilerleme yazıyor (' + G.els.xptxt.textContent + ')');
+  S().level = 12; S().xp = 430; T.renderUI(); ok(G.els.xptxt.textContent === '430 / ' + T.xpNeed(12).toLocaleString('tr-TR'), '40) XP çubuğunun altında ilerleme yazıyor (' + G.els.xptxt.textContent + ')');
   T.closeSheet(); G.els.coinPill.click(); ok(T.openKey === 'shop' && T.shopTab === 'gem' && G.els.sheet.classList.contains('show'), '40) altın/zümrüt yanındaki + özel mağazayı açıyor'); T.closeSheet();
   T.openSheet('fish', 'x'); ok(/data-tab="prod"/.test(G.els.stabs.innerHTML), '40) Üretim, Balıklarım panelinde sekme olarak duruyor');
   S().level = 2; T.openSheet('fish', 'x'); ok(!/data-tab="prod"/.test(G.els.stabs.innerHTML), '40) Üretim sekmesi 4. seviyeden önce görünmüyor'); T.closeSheet();
@@ -800,6 +800,43 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   { const rs = bd.slice(bd.indexOf('<div class="rside">')), re = rs.slice(0, rs.indexOf('</div>')); ok(/id="feed"/.test(re) && /id="clean"/.test(re) && !/class="acts2"/.test(bd), '40) Yemle ve Temizle sağ sütunda; tabandaki sandık ve paraların üstünü kapatmıyor') }
   const ab = JSON.parse(fs.readFileSync(require('path').join(__dirname, 'assets.json'), 'utf8')); ok(['u_home','u_shop','u_fish','u_ach','u_bowl','u_gift','u_quest','u_cup','u_sun','u_moon','u_cam','u_set','u_coin','u_gem','u_feed','u_clean'].every(k => typeof ab[k] === 'string' && ab[k].length > 1000), '40) 16 yeni simge görsellerde var');
   Object.assign(S(), s0); T.renderUI(); }
+
+  { // ===== 41) Derin Okyanus tankı
+  use(G); const T = G.T, keep = JSON.parse(T.serial()), e0 = errors.length;
+  const D = T.species.filter(s => s.deep), lv = D.map(s => T.spReq(s));
+  ok(T.TANKS.deep && T.TANKS.deep.lv === 35 && T.TANKS.deep.w === 'deep' && D.length === 6 && D.every(s => T.WATER[s.id] === 'deep'), '41) Derin Okyanus tankı 35. seviyede, 6 türüyle');
+  ok(lv[0] === 35 && lv.every((v, i) => i === 0 || v > lv[i - 1]) && lv[lv.length - 1] >= 45, '41) derin türler aynı anda değil, kademeli açılıyor (' + lv.join(', ') + ')');
+  ok(T.xpNeed(1) === 100 && T.xpNeed(5) === 506 && T.xpNeed(10) === 1050 && T.xpNeed(35) > 35 * 100 * 1.5, '41) seviye eğrisi: ilk seviyeler aynı, ileri seviyeler zor (Sv35: ' + T.xpNeed(35) + ' XP)');
+  { S().level = 9; S().xp = 910; T.addXP(0); ok(S().level === 9 && S().xp === 910, '41) yeni eğride 910 XP artık 10. seviyeye yetmiyor (eskiden 900 yeterdi)'); S().xp = T.xpNeed(9); T.addXP(0); ok(S().level === 10 && S().xp === 0, '41) tam ' + T.xpNeed(9) + ' XP ile 10. seviye') }
+  S().level = 46; S().coins = 1e6; S().night = false; S().stash.deep = { fish: [], dirt: 0 }; T.switchTank('deep'); step(G, 3);
+  ok(S().tank === 'deep' && T.deepNow() && T.NIGHT() && T.nightAmt() === 1 && S().night === false, '41) derin okyanusta hep gece (gündüz ayarı bozulmadan)');
+  S().music = true; ok(T.musWant() === 'night', '41) derin okyanusta gece müziği çalıyor');
+  T.toggleNight(); ok(S().night === false && T.NIGHT(), '41) derin okyanusta gündüz moduna geçilemiyor');
+  S().luck = 0; for (let i = 0; i < 8; i++) T.buy('lantern', null, true); T.buy('dragon', null, true);
+  ok(S().fish.length === 9 && S().fish.every(f => f.mutation === 'normal' && f.gene === null), '41) varyasyon görseli gelene kadar derin balıklar mutasyonsuz doğuyor');
+  ok(T.noMut({ type: 'oar', mutation: 'gold', gene: 'gold' }).mutation === 'normal' && T.noMut({ type: 'neon', mutation: 'gold', gene: 'gold' }).mutation === 'gold', '41) mutasyon koruması yalnızca görseli olmayan türlerde');
+  S().fish = [mkFish(7001, 'lantern', { x: .3, y: .5 }), mkFish(7002, 'angler', { x: .6, y: .6, dir: 1 }), mkFish(7003, 'oar', { x: .5, y: .4 })]; S().chest = { x: .5 }; step(G, 5);
+  const L = T.deepLights(1), an = S().fish[1];
+  ok(L.length >= 4 && L.some(l => l[0] > an.x * T.gameW + 10 && l[2] >= 100), '41) ışıklı balıklar ve sandık karanlığı aydınlatıyor (fener balığında ışık yemin ucunda)');
+  const d0 = T.drops.length; T.dropFood(T.gameW / 2, 500, 3); const kr = T.drops.slice(d0);
+  ok(kr.length === 3 && kr.every(d => d.tp === 'k' && d.live > 30), '41) derin okyanusta yem canlı yem (küçük karides) oluyor');
+  const kx = kr.map(d => [d.x, d.y]); S().fish = []; step(G, 120);
+  ok(kr.some((d, i) => Math.hypot(d.x - kx[i][0], d.y - kx[i][1]) > 5) && kr.every(d => d.y < 960 * .8 && d.y > 960 * .15), '41) canlı yem suda kendi kendine yüzüyor');
+  S().daily = null; T.dailyCheck(); const dq = S().daily.ids.map(id => T.QUESTS.find(q => q.id === id));
+  ok(dq.filter(q => q.deep).length === 1 && dq.filter(q => !q.deep).length === 2, '41) derin okyanus açıkken günlük görevlerden biri derin okyanusa özel (' + dq.map(q => q.t).join(' · ') + ')');
+  ok(T.QUESTS.filter(q => q.deep).length >= 5, '41) 5 farklı derin okyanus görevi var');
+  const wed = new Date(2026, 9, 21), thu = new Date(2026, 9, 22), ev = id => T.EVENTS.find(e => e.id === id);
+  ok(T.inEvent(ev('biolum'), wed) && !T.inEvent(ev('biolum'), thu) && T.inEvent(ev('abyss'), new Date(2026, 10, 3)) && !T.inEvent(ev('abyss'), new Date(2026, 10, 9)) && T.inEvent(ev('dragonm'), new Date(2026, 10, 15)), '41) derin okyanus etkinlikleri: her çarşamba, ayın 1–7\'si, 10–24 Kasım');
+  ok(['deep', 'dcol', 'dragon'].every(id => T.ACH.some(a => a.id === id)) && T.ACH.find(a => a.id === 'col').d.includes('(20)'), '41) derin okyanus başarımları eklendi, eski Koleksiyoncu başarımı 20 türde kaldı');
+  const iso = T.CRIT.find(c => c.id === 'iso'), jd = T.CRIT.find(c => c.id === 'jdeep');
+  ok(iso && jd && iso.w === 'deep' && jd.w === 'deep', '41) dev izopod ve derin denizanası derin okyanusta');
+  const k0 = T.critShrimpK(), c0 = S().coins; T.buyCrit('iso'); step(G, 30);
+  ok(S().coins === c0 - iso.p && T.critShrimpK() < k0, '41) dev izopod alınıyor ve suyun kirlenmesini yavaşlatıyor');
+  T.openSheet('book', 'x'); ok(/Nadir varyasyonları yakında/.test(G.els.bookList.innerHTML), '41) defterde derin balıkların varyasyonları "yakında" yazıyor'); T.closeSheet();
+  ok(errors.length === e0, '41) derin okyanusta çizim ve fizik hatasız' + (errors.length > e0 ? ': ' + errors[e0].message : ''));
+  { const st = store(), sv = JSON.parse(JSON.stringify(keep)); sv.stash = sv.stash || {}; sv.stash.deep = { fish: [mkFish(7100, 'viper', { mutation: 'albino', gene: 'albino' })], dirt: 3 }; st.setItem('fishvilleClassicSave3', JSON.stringify(sv)); const E2 = boot(makeEnv(st, undefined)); step(E2, 3); const df = E2.T.state.stash.deep;
+    ok(df && df.fish.length === 1 && df.fish[0].mutation === 'normal', '41) kayıttaki derin okyanus tankı ve balıkları korunuyor'); use(G) }
+  T.switchTank('fresh'); delete S().stash.deep; S().chest = null; Object.assign(S(), { level: keep.level, coins: keep.coins, xp: keep.xp, night: keep.night, daily: keep.daily, crit: keep.crit || {} }); T.renderUI(); }
 
   // ===== 9) uzun koşu ve hata
   use(G); S().tank = 'fresh'; S().stash = { salt: { fish: [], dirt: 0 }, cfresh: { fish: [mkFish(990, 'guppy', { vx: 0, vy: 0 })], dirt: 0 } }; S().fish = []; for (let i = 0; i < 25; i++) S().fish.push(mkFish(600 + i, ['neon', 'guppy', 'gold', 'betta'][i % 4]));

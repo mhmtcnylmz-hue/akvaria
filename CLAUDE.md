@@ -22,5 +22,7 @@ Oyun tek dosyadır: `src/build.py`, `src/*.html|css|js` ve `src/assets.json` (ba
 ## Notlar
 - Oyuncu dili Türkçe; kullanıcıya görünen bütün yazılar Türkçe.
 - Arayüz (v3, sürüm 107): üst çubuk `#topbar` (seviye halkası, XP, altın/zümrüt, ayar), sol `.side`, sağ `.rside`, Yemle/Temizle sağ sütunda (`.rside .bub`, tabanı boş bırakır), alt menü `#nav` (`navSync()` seçili düğmeyi işaretler). Simgeler `assets.json` içinde `u_*`. Yeni kurallar `style.css` sonundaki "v3" bölümünde (`#stage #game` öneki).
+- Derin Okyanus (sürüm 109): `TANKS.deep` (Sv35), türler `deep:1` (Sv35–46 kademeli), hep gece (`NIGHT()`/`deepNow()`), ışık örtüsü `drawDeepLight`/`LITE`, canlı yem `mkKrill` (tp "k"), görevler `q.deep`, etkinlikler `dp:1`. Görselleri: `sp_lantern…sp_dragon`, `jb_deep`/`ja_deep`, `cr_iso`, `css_deep`/`css_deepL`, `ic_tankD`. Mutasyon görseli yok: `mutOK()`/`noMut()` mutasyonu engeller; görseller gelince `MUT_IMG`'e eklenmesi yeter.
+- Seviye eğrisi `xpNeed(l)=100l+⌊l³/20⌋`.
 - Ekran yönü: `ORI` (yatay/dikey), yatay düzen CSS'i `html.land` altında.
 - Hata günlüğü: oyun içi hatalar `localStorage["fvErr"]` ve Ayarlar'daki `#errNote`.
