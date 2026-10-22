@@ -6,7 +6,7 @@ let CODE = SRC.slice(SRC.lastIndexOf('<script>') + 8, SRC.lastIndexOf('</script>
 const HOOK = 'requestAnimationFrame(frame);netLabel();netInit();\n})();';
 if (!CODE.includes(HOOK)) throw new Error('hook yok');
 CODE = CODE.replace(HOOK, `requestAnimationFrame(frame);netLabel();globalThis.__NETP=netInit();
-globalThis.__T={get gameW(){return W},updateFeatures,setVol,VOL,ambOn,sndToggle,sndAll,breedHint,breedable,featureTick,glPxN:f=>{const o=GLS.get(f);return o&&o.px?o.px.length:0},lokEk,boyOf,fcMeta,infoText,critShopHTML,renderQuests,moveOpts,yasOf,yasTxt,growHours,bookAll,mutNote,getSpecies,buyCrit,critCount,critShrimpK,critXPK,CRIT,critTap,critRT,sellMany,isPrecious,invList,FSEL,ymig,get layoutH(){return H},buyGem,GEMS,setShopTab,get shopTab(){return shopTab},renderShop,lvGems,reportErr,buyMany,TRAIT,foodStep,mkFood,upgradeCap,pickTheme,claimBook,bookClaimable,tutStep,tutOn,THEMES,CAP_COST,wheelReady,wheelPay,WHEEL,dayKey,PROPS,WATER,isAdmin,admAct,admRender,admVis,fishCap,botData,botHelp,BOT_ID,dropFood,feedModeOn,ensureOrders,deliverOrder,skipOrder,findOrderFish,orderReady,newOrder,spitCoin,pickCoin,isSleepy,MUTS,MATURE,serial,get coinsLoose(){return coinsLoose},get coinsFly(){return coinsFly},get drops(){return drops},get particles(){return particles},get state(){return state},set state(v){state=v},get VISIT(){return VISIT},get NET(){return NET},ev,activeEvents,inEvent,EVENTS,rollMutation,rollGene,allele,breed,fillParents,geneTest,species,PH,MUT_IMG,SWP,swimFq,fishW,fishH,CMS,MUTW,ageFactor,incomeRate,feedCost,breedCost,lvCoins,moveFish,switchTank,unlockTank,swapTo,isColl,tankDirt,tw,buy,sell,advance,dailyCheck,claimQuest,claimAch,Q,startVisit,endVisit,helpNeighbor,checkHelps,score,renderNeighbors,renderRank,fetchTanks,save,load,normalize,feed,clean,collect,featureTick,saleValue,openSheet:(k)=>openSheet(k,k),closeSheet,oddsText,dayKey,ACH,QUESTS,allFish,hasTank,tankArr,WATER,cloudSave,publishTank,renderUI,openChest,audio:()=>audio(),sfx:n=>sfx(n),musicTick:()=>musicTick(),startAmbience:()=>startAmbience(),get AU(){return AU},applyVolumes:()=>applyVolumes(),get tapInfo(){return tapInfo},get DN(){return DN},toggleNight,showLevelUp,closeLevelUp,rollSize,inheritSize,fsz,addXP,snapFish};
+globalThis.__T={get gameW(){return W},fitNum,updateFeatures,setVol,VOL,ambOn,sndToggle,sndAll,breedHint,breedable,featureTick,glPxN:f=>{const o=GLS.get(f);return o&&o.px?o.px.length:0},lokEk,boyOf,fcMeta,infoText,critShopHTML,renderQuests,moveOpts,yasOf,yasTxt,growHours,bookAll,mutNote,getSpecies,buyCrit,critCount,critShrimpK,critXPK,CRIT,critTap,critRT,sellMany,isPrecious,invList,FSEL,ymig,get layoutH(){return H},buyGem,GEMS,setShopTab,get shopTab(){return shopTab},renderShop,lvGems,reportErr,buyMany,TRAIT,foodStep,mkFood,upgradeCap,pickTheme,claimBook,bookClaimable,tutStep,tutOn,THEMES,CAP_COST,wheelReady,wheelPay,WHEEL,dayKey,PROPS,WATER,isAdmin,admAct,admRender,admVis,fishCap,botData,botHelp,BOT_ID,dropFood,feedModeOn,ensureOrders,deliverOrder,skipOrder,findOrderFish,orderReady,newOrder,spitCoin,pickCoin,isSleepy,MUTS,MATURE,serial,get coinsLoose(){return coinsLoose},get coinsFly(){return coinsFly},get drops(){return drops},get particles(){return particles},get state(){return state},set state(v){state=v},get VISIT(){return VISIT},get NET(){return NET},ev,activeEvents,inEvent,EVENTS,rollMutation,rollGene,allele,breed,fillParents,geneTest,species,PH,MUT_IMG,SWP,swimFq,fishW,fishH,CMS,MUTW,ageFactor,incomeRate,feedCost,breedCost,lvCoins,moveFish,switchTank,unlockTank,swapTo,isColl,tankDirt,tw,buy,sell,advance,dailyCheck,claimQuest,claimAch,Q,startVisit,endVisit,helpNeighbor,checkHelps,score,renderNeighbors,renderRank,fetchTanks,save,load,normalize,feed,clean,collect,featureTick,saleValue,openSheet:(k)=>openSheet(k,k),closeSheet,oddsText,dayKey,ACH,QUESTS,allFish,hasTank,tankArr,WATER,cloudSave,publishTank,renderUI,openChest,audio:()=>audio(),sfx:n=>sfx(n),musicTick:()=>musicTick(),startAmbience:()=>startAmbience(),get AU(){return AU},applyVolumes:()=>applyVolumes(),get tapInfo(){return tapInfo},get DN(){return DN},toggleNight,showLevelUp,closeLevelUp,rollSize,inheritSize,fsz,addXP,snapFish};
 })();`);
 
 const errors = [];
@@ -719,11 +719,11 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   }
   // ses seviyesi
   const vs = store(); const V = boot(makeEnv(vs, undefined)); step(V, 3); await settle();
-  ok(V.T.VOL.s === 1 && V.T.VOL.m === 1 && V.els.volSv.textContent === '100%', '37) ses seviyesi varsayılan %100');
+  ok(V.T.VOL.s === 1 && V.T.VOL.m === 1 && V.els.volSv.textContent === '%100', '37) ses seviyesi varsayılan %100');
   V.T.setVol('s', 40); V.T.setVol('m', '25'); V.T.setVol('m', 'abc'); V.T.setVol('s', 250);
-  const sv = JSON.parse(vs.getItem('akvVol') || '{}'); ok(V.T.VOL.s === 1 && V.T.VOL.m === .25 && sv.m === .25 && V.els.volMv.textContent === '25%', '37) ses seviyesi ayarlanıyor, bozuk değer yok sayılıyor, sınırlar korunuyor');
+  const sv = JSON.parse(vs.getItem('akvVol') || '{}'); ok(V.T.VOL.s === 1 && V.T.VOL.m === .25 && sv.m === .25 && V.els.volMv.textContent === '%25', '37) ses seviyesi ayarlanıyor, bozuk değer yok sayılıyor, sınırlar korunuyor');
   V.T.setVol('s', 40); const V2 = boot(makeEnv(vs, undefined)); step(V2, 3); await settle();
-  ok(V2.T.VOL.s === .4 && V2.T.VOL.m === .25 && V2.els.volSv.textContent === '40%' && !('vol' in V2.T.state) && !('akvVol' in JSON.parse(vs.getItem('fishvilleClassicSave3') || '{}')), '37) ses seviyesi yeniden açılışta hatırlanıyor, oyun kaydına karışmıyor');
+  ok(V2.T.VOL.s === .4 && V2.T.VOL.m === .25 && V2.els.volSv.textContent === '%40' && !('vol' in V2.T.state) && !('akvVol' in JSON.parse(vs.getItem('fishvilleClassicSave3') || '{}')), '37) ses seviyesi yeniden açılışta hatırlanıyor, oyun kaydına karışmıyor');
   vs.setItem('akvVol', '{bozuk'); const V3 = boot(makeEnv(vs, undefined)); step(V3, 3); await settle(); ok(V3.T.VOL.s === 1 && V3.T.VOL.m === 1, '37) bozuk ses ayarı oyunu bozmuyor');
   { const ps = store(); const P = boot(makeEnv(ps, undefined)); step(P, 3); await settle(); const T4 = P.T;
   T4.state.muted = true; ok(T4.ambOn() === false, '37) efektleri önceden kapatmış oyuncuda ortam sesi de kapalı başlıyor');
@@ -763,6 +763,27 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   const he = fs.readFileSync(require('path').join(__dirname, '..', 'site', 'head_extra.html'), 'utf8');
   ok(/apple-mobile-web-app-status-bar-style" content="black-translucent"/.test(he), '38) ana ekran uygulaması durum çubuğunun altına kadar açılıyor (black-translucent)');
   }
+
+  { // ===== 39) günlük bakım: bozuk sayılar, taşan altın yazısı, Türkçe yazımlar
+  const e0 = errors.length, bs = store();
+  bs.setItem('fishvilleClassicSave3', JSON.stringify({ coins: null, xp: 'abc', level: 0, fish: [{ id: 1, type: 'neon', age: .5 }], discovered: ['neon'], nextId: 2, tank: 'fresh' }));
+  const BZ = boot(makeEnv(bs, undefined)); step(BZ, 5); await settle();
+  const bt = BZ.T && BZ.T.state;
+  ok(errors.length === e0 && bt && isFinite(bt.coins) && bt.coins >= 0 && isFinite(bt.xp) && bt.level >= 1 && BZ.els.coins.textContent !== '', '39) kayıtta bozuk altın/XP/seviye (null) oyunu açılışta çökertmiyor');
+  use(BZ); { const ns = global.__nosave; global.__nosave = 0; BZ.T.save(true); global.__nosave = ns } ok(typeof JSON.parse(bs.getItem('fishvilleClassicSave3')).coins === 'number', '39) bozuk altın değeri kayda geri yazılmıyor');
+  errors.length = e0;
+  const gcs = global.getComputedStyle, iw = global.innerWidth, ih = global.innerHeight;
+  global.getComputedStyle = () => ({ fontSize: '20px', getPropertyValue: () => '' }); global.innerWidth = 360; global.innerHeight = 640;
+  const fe = { textContent: '12.345.678', style: { fontSize: '' }, clientWidth: 80, get scrollWidth() { return Math.round(this.textContent.length * .55 * (parseFloat(this.style.fontSize) || 20)) } };
+  T.fitNum(fe); ok(fe.scrollWidth <= 81 && parseFloat(fe.style.fontSize) >= 9, '39) büyük altın sayısı kutusuna sığacak kadar küçülüyor (' + fe.style.fontSize + ')');
+  fe.textContent = '268'; T.fitNum(fe); ok(fe.style.fontSize === '', '39) küçük sayıda yazı boyu normale dönüyor');
+  global.getComputedStyle = gcs; global.innerWidth = iw; global.innerHeight = ih;
+  const gs = SRC.slice(SRC.lastIndexOf('<script>'));
+  ok(!/ Lv\. /.test(gs), '39) ekipman seviyesinde İngilizce "Lv." kalmadı');
+  ok(!/id="vol[SMA]v">\d+%</.test(SRC) && /l\.textContent=on\[k\]\?"%"\+p/.test(gs), '39) ses panelinde yüzde işareti Türkçe yazımla (%100)');
+  ok(/1\.000 balığı/.test(gs) && /"\/1\.000"/.test(gs), '39) "Bin Balık Ustası" binlik ayırıcıyla yazılıyor');
+  ok(/\(\+d\.score\|\|0\)\.toLocaleString\("tr-TR"\)\+" puan/.test(gs), '39) sıralamadaki puan binlik ayırıcıyla yazılıyor');
+  use(G); }
 
   // ===== 9) uzun koşu ve hata
   use(G); S().tank = 'fresh'; S().stash = { salt: { fish: [], dirt: 0 }, cfresh: { fish: [mkFish(990, 'guppy', { vx: 0, vy: 0 })], dirt: 0 } }; S().fish = []; for (let i = 0; i < 25; i++) S().fish.push(mkFish(600 + i, ['neon', 'guppy', 'gold', 'betta'][i % 4]));
