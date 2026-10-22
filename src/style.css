@@ -443,3 +443,13 @@ html.land #stage #game #stabs,html.land #stage #game .stabs2{margin-bottom:8px}
 html.land #stage #game #stabs button.stab:not(.tl),html.land #stage #game .stabs2 button.stab:not(.tl){padding:6px 4px!important}
 html.land #stage #game #sheet.show~.message{bottom:calc(var(--sB) + 14px)}
 }
+
+/* v3.1: Yemle/Temizle sağ sütunda, küçük — tabandaki sandık ve paraları kapatmasın */
+#stage #game .rside .tl.bub{width:100%;gap:2px;margin-top:2px}
+#stage #game .rside .tl.bub img{padding:16%;border-width:1.5px}
+#stage #game .rside .tl.bub .tll{font-size:clamp(10.5px,3cqw,13px)}
+#stage #game .rside .tl.bub .chip{right:-4px;top:-4px;font-size:10px;padding:1px 4px}
+#stage #game #statusRow{bottom:calc(var(--sB) + 22px + var(--navH))}
+#stage #game .tut{bottom:calc(var(--sB) + 18px + var(--navH))}
+html.land #stage #game .rside .tl.bub .tll{font-size:clamp(9.5px,2.2cqh,12px)}
+@media (max-height:520px){html.land #stage #game .rside{gap:5px}html.land #stage #game .rside .tl.bub .tll{font-size:9.5px}}

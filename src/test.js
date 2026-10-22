@@ -797,6 +797,7 @@ const mkFish = (id, type, o = {}) => ({ id, type, mutation: 'normal', gene: null
   const bd = fs.readFileSync(require('path').join(__dirname, 'body.html'), 'utf8');
   ok(['homeBtn', 'dshop', 'fishes', 'achBtn', 'mapBtn'].every(id => new RegExp('id="' + id + '"[^>]*>\\s*<img src="data:image/webp;base64,«u_').test(bd)), '40) alt menüde 5 düğme yeni simgelerle');
   ok(['surprise', 'questBtn', 'cupBtn', 'nightBtn', 'camBtn', 'feed', 'clean', 'set'].every(id => new RegExp('id="' + id + '"').test(bd)) && !/id="(shop2|book|prod|decor|sndBtn)"/.test(bd), '40) ana ekran kısayolları yerinde, eski gizli düğmeler kaldırıldı');
+  { const rs = bd.slice(bd.indexOf('<div class="rside">')), re = rs.slice(0, rs.indexOf('</div>')); ok(/id="feed"/.test(re) && /id="clean"/.test(re) && !/class="acts2"/.test(bd), '40) Yemle ve Temizle sağ sütunda; tabandaki sandık ve paraların üstünü kapatmıyor') }
   const ab = JSON.parse(fs.readFileSync(require('path').join(__dirname, 'assets.json'), 'utf8')); ok(['u_home','u_shop','u_fish','u_ach','u_bowl','u_gift','u_quest','u_cup','u_sun','u_moon','u_cam','u_set','u_coin','u_gem','u_feed','u_clean'].every(k => typeof ab[k] === 'string' && ab[k].length > 1000), '40) 16 yeni simge görsellerde var');
   Object.assign(S(), s0); T.renderUI(); }
 

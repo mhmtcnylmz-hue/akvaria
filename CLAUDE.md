@@ -21,6 +21,6 @@ Oyun tek dosyadır: `src/build.py`, `src/*.html|css|js` ve `src/assets.json` (ba
 
 ## Notlar
 - Oyuncu dili Türkçe; kullanıcıya görünen bütün yazılar Türkçe.
-- Arayüz (v3, sürüm 107): üst çubuk `#topbar` (seviye halkası, XP, altın/zümrüt, ayar), sol `.side`, sağ `.rside`, Yemle/Temizle `.acts2`, alt menü `#nav` (`navSync()` seçili düğmeyi işaretler). Simgeler `assets.json` içinde `u_*`. Yeni kurallar `style.css` sonundaki "v3" bölümünde (`#stage #game` öneki).
+- Arayüz (v3, sürüm 107): üst çubuk `#topbar` (seviye halkası, XP, altın/zümrüt, ayar), sol `.side`, sağ `.rside`, Yemle/Temizle sağ sütunda (`.rside .bub`, tabanı boş bırakır), alt menü `#nav` (`navSync()` seçili düğmeyi işaretler). Simgeler `assets.json` içinde `u_*`. Yeni kurallar `style.css` sonundaki "v3" bölümünde (`#stage #game` öneki).
 - Ekran yönü: `ORI` (yatay/dikey), yatay düzen CSS'i `html.land` altında.
 - Hata günlüğü: oyun içi hatalar `localStorage["fvErr"]` ve Ayarlar'daki `#errNote`.
