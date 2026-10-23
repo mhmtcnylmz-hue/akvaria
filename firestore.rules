@@ -1,0 +1,50 @@
+rules_version = '2';
+// Akvaria bulut kuralları (sürüm 115).
+// Firebase konsolu > Firestore Database > Kurallar sekmesine yapıştırılıp "Yayınla"ya basılır.
+// Oyunun kullandığı her alan burada: kayıt, tank, profil, yardım, sohbet, hediye.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signed() { return request.auth != null; }
+    function me(uid) { return signed() && request.auth.uid == uid; }
+    function admin() {
+      return signed() && request.auth.token.email == "mhmtcnylmz@gmail.com"
+        && request.auth.token.email_verified == true;
+    }
+
+    // Kişisel kayıt: sadece sahibi okur ve yazar
+    match /data/users/{uid}/save { allow read, write: if me(uid); }
+
+    // Komşuların gördüğü tank, profil ve günlük yardım: herkes okur, sadece sahibi yazar
+    match /tanks/{uid}    { allow read: if signed(); allow write: if me(uid); }
+    match /profiles/{uid} { allow read: if signed(); allow write: if me(uid); }
+    match /helps/{uid}    { allow read: if signed(); allow write: if me(uid); }
+
+    // Genel sohbet: herkes okur, herkes kendi adına kısa mesaj yazar,
+    // mesajı sadece yazan kişi ya da yönetici siler, kimse değiştiremez
+    match /chat/{id} {
+      allow read: if signed();
+      allow create: if signed()
+        && request.resource.data.keys().hasOnly(['u', 'n', 'av', 'lv', 'm', 'at'])
+        && request.resource.data.u == request.auth.uid
+        && request.resource.data.m is string
+        && request.resource.data.m.size() > 0 && request.resource.data.m.size() <= 200
+        && request.resource.data.n is string && request.resource.data.n.size() <= 32
+        && request.resource.data.at == request.time;
+      allow delete: if admin() || (signed() && resource.data.u == request.auth.uid);
+      allow update: if false;
+    }
+
+    // Balık hediyesi: gönderen kendi adına oluşturur, alıcı okuyup siler
+    match /gifts/{id} {
+      allow create: if signed()
+        && request.resource.data.keys().hasOnly(['to', 'from', 'fn', 'f', 'at'])
+        && request.resource.data.from == request.auth.uid
+        && request.resource.data.to is string
+        && request.resource.data.to != request.auth.uid
+        && request.resource.data.at == request.time;
+      allow read, delete: if signed()
+        && (resource.data.to == request.auth.uid || resource.data.from == request.auth.uid);
+      allow update: if false;
+    }
+  }
+}
