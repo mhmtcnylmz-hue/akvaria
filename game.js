@@ -532,8 +532,8 @@ try{addEventListener("orientationchange",oriWatch);addEventListener("resize",ori
 
 // arka plan yumuşatma (derinlik hissi): hafif bulanık, biraz soluk, kenarları koyu
 function bgSoftOn(){return state.bgSoft!==false}
-function bgSoftF(){return bgSoftOn()?"blur("+(PORT?1.1:1.4)+"px) saturate(.78) brightness(.93)":""}
-let vigEl=null;function vigSync(){try{if(!vigEl){vigEl=document.createElement("div");vigEl.className="cvl";vigEl.style.cssText="position:absolute;pointer-events:none;background:radial-gradient(ellipse 72% 70% at 50% 46%,rgba(4,20,30,0) 55%,rgba(4,20,30,.42) 100%)";canvas.before(vigEl)}vigEl.style.display=bgSoftOn()?"":"none"}catch(e){}}
+function bgSoftF(){return ""}
+let vigEl=null;function vigSync(){try{if(!vigEl){vigEl=document.createElement("div");vigEl.className="cvl";vigEl.style.cssText="position:absolute;pointer-events:none;background:radial-gradient(ellipse 72% 70% at 50% 46%,rgba(4,20,30,0) 55%,rgba(4,20,30,.42) 100%),rgba(34,52,62,.13)";canvas.before(vigEl)}vigEl.style.display=bgSoftOn()?"":"none"}catch(e){}}
 function bgSoftLabel(){const b=$("bgSoftBtn");if(b)b.textContent="🌫️ Arka plan: "+(bgSoftOn()?"Yumuşak":"Net")}
 function oriLabel(){const b=$("oriBtn");if(!b)return;b.textContent="🖥️ Ekran: "+(ORI_PREF==="auto"?"Otomatik ("+(PORT?"dikey":"yatay")+")":ORI_PREF==="land"?"Yatay":"Dikey")}
 function setOri(v){try{if(v==="auto")localStorage.removeItem("akvOri");else localStorage.setItem("akvOri",v)}catch(e){}save(true);setTimeout(()=>location.reload(),120)}
@@ -609,6 +609,7 @@ if(!tb){const sg=ctx.createRadialGradient(0,0,0,0,0,w*.5);sg.addColorStop(0,"rgb
 function drawProps(){const nf=nightAmt(),fr=/fresh/.test(state.tank),own=PROPS.filter(p=>pk(p.id));if(!own.length)return;let rd=0;own.forEach(p=>{const a=propImgs[p.id],b=(fr?propImgsF:propImgsN)[p.id];if(a&&a.complete&&a.naturalWidth)rd++;if(b&&b.complete&&b.naturalWidth)rd+=2});const t0=own.some(p=>state.propPos&&state.propPos[p.id])?60:FLOOR-240;if(t0!==PY0){PY0=t0;PHH=H-PY0;propKey=""}const key=JSON.stringify(state.propPos)+own.map(p=>p.id).join()+"|"+fr+"|"+Math.round(nf*30)+"|"+K+"|"+rd;if(key!==propKey||!propL){propKey=key;try{if(!propL)propL=document.createElement("canvas");propL.width=Math.round(W*K);propL.height=Math.round(PHH*K);const c=propL.getContext("2d");c.setTransform(K,0,0,K,0,-PY0*K);try{c.imageSmoothingQuality="high"}catch(e){}paintProps(c,nf)}catch(e){propL=null;paintProps(ctx,nf);return}}ctx.drawImage(propL,0,PY0,W,PHH)}
 function drawFloor(t){
 drawPlants2(t,0);
+if(curWater()!=="deep")try{drawShadows()}catch(e){}
 if(!(state.admOff||{}).props)drawProps();if(!(state.admOff||{}).caust)drawCaustics(t);
 const dnf=nightAmt();[...state.decor].sort((p,q)=>decY(p)-decY(q)).forEach(d=>{const im=decImg(d.k);if(!im)return;const b=decBox(d);ctx.save();ctx.globalAlpha=.32;ctx.fillStyle="#001a28";ctx.beginPath();ctx.ellipse(d.x*W,b.y+b.h-2,b.w*.42,b.w*.08,0,0,7);ctx.fill();ctx.restore();drawTinted(im,"dec"+d.k,b.x,b.y,b.w,b.h,.05,dnf)});if(EDIT&&EDIT.mode==="deco")editOverlay();
 {const si=eimg("🐌");if(si)for(let i=0;i<state.snails;i++){const sx=((t*6+i*300)%(W+60))-30,sw=40,sh=sw*si.naturalHeight/si.naturalWidth,bob=Math.sin(t*1.7+i)*.6;ctx.drawImage(si,sx-sw/2,FLOOR+40-sh+bob,sw,sh)}}
@@ -837,7 +838,7 @@ function bgDomStep(){const cw=curWater(),k=cw==="deep"?"Dn":(cw==="fresh"?"F":"S
 clearTimeout(bgTm);if(prev&&prev[0]===k[0]&&DN){bgSet(bgB,k);bgB.style.transition="none";bgB.style.opacity="0";void bgB.offsetWidth;bgB.style.transition="opacity 1.6s ease-in-out";bgB.style.opacity="1";bgTm=setTimeout(()=>{bgSet(bgA,k);bgB.style.transition="none";bgB.style.opacity="0"},1700)}else{bgSet(bgA,k);bgB.style.transition="none";bgB.style.opacity="0"}}
 function drawBackground(){
 if(bgInit()){dnP();bgDomStep();const bgo=!!(state.admOff||{}).bg;if(bgo!==bgOffC){bgOffC=bgo;bgA.style.display=bgB.style.display=bgo?"none":""}const tf=((VISIT?"":themeF())+" "+bgSoftF()).trim();if(tf!==curTF){curTF=tf;bgA.style.filter=tf;bgB.style.filter=tf;vigSync()}ctx.clearRect(0,0,W,H)}else{const p=dnP();if(DN){bgImg(DN.from);const e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;ctx.globalAlpha=e;bgImg(state.night);ctx.globalAlpha=1}else bgImg(state.night)}
-ctx.lineWidth=1.5;bubbles.forEach(b=>{ctx.strokeStyle="rgba(210,250,255,"+b.alpha+")";ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);ctx.stroke()})
+const BS=bubSpr();bubbles.forEach(b=>{const r=b.r*1.15,wb=1+.06*Math.sin(b.y*.08+b.phase);ctx.globalAlpha=Math.min(1,b.alpha*1.9);ctx.drawImage(BS,b.x-r*wb,b.y-r/wb,r*2*wb,r*2/wb)});ctx.globalAlpha=1
 }
 // yüzme animasyonu ayarları (tek yerden): n=dilim, amp=kuyruk genliği, wave=gövdedeki dalga boyu (rad), rest=dururken genlik, roll=gövde sallanması
 const SWIM={amp:.06,rest:.016,wave:3.2,roll:.03,turn:.07,stretch:.035};
@@ -867,26 +868,39 @@ const s=getSpecies(f.type),mu=MUTS[f.mutation]&&f.mutation!=="normal"?f.mutation
 const size=fsz(f),vf=mi&&im===mi?(MUTW[mu+"_"+s.id]||1):1,w=fishW(f),h=w*im.naturalHeight/im.naturalWidth,sn=f.sn||0,tp=f.tp||0,fs=f.fs||f.dir||1,turn=1-Math.min(1,Math.abs(fs));
 const GX=mu==='glitch'?glitchSt(f,t,w):null;if(GX)glPx(f,t);if(GX&&GX.hide)return;
 ctx.save();ctx.translate(f.x*W,f.y*H+Math.sin(t*1.4+f.phase)*(2+3*(1-sn)));if(GX&&GX.tel)ctx.translate(GX.tel[0],GX.tel[1]);
-ctx.globalAlpha=.15;ctx.fillStyle="#001d30";ctx.beginPath();ctx.ellipse(0,w*.3,w*.42*Math.max(.35,Math.abs(fs)),w*.08,0,0,7);ctx.fill();ctx.globalAlpha=1;
 const gk=f.gulp>0?Math.sin(Math.PI*(1-f.gulp/.24)):0;ctx.scale((fs>=0?Math.max(.4,fs):Math.min(-.4,fs))*(1+SWIM.stretch*sn)*(1-.07*gk),(1-SWIM.stretch*.6*sn)*(1+SWIM.turn*turn)*(1+.06*gk));
 ctx.rotate((f.ang||0)+Math.sin(tp+1.9)*(SWIM.roll*.35+SWIM.roll*sn)*(SWP[f.type]||SWP.clown)[3]);
 const M=mu?MUTS[mu]:null,hc=state.lowGfx||mu==="glitch"?null:M?{c:M.glow,b:M.blur,k:mu}:(f.rarity==="Nadir"?{c:"#ffe46b",b:14,k:"rare"}:null);
 if(hc){const hs=lodImg(im,w*K*.6),hw=hs.naturalWidth||hs.width,H0=halo(hs,hc.k+"_"+s.id+"_"+hw,hc.c,hc.b*1.6*hw/190);if(H0){const k=w/hw,pu=(.75+.25*Math.sin(t*2+f.phase))*(mu==="transparent"?.45:1);ctx.globalAlpha=pu;ctx.drawImage(H0.cv,-w/2-H0.pad*k,-h/2-H0.pad*k,H0.cv.width*k,H0.cv.height*k);ctx.globalAlpha=1}}
 const GL=mu==="glitch",src0=lodImg(im,w*K),LT=litOn(),src=GL?src0:LT?litTex(src0):src0,N=s.sl?(state.lowGfx?10:s.sl):state.lowGfx?(w<90?4:5):(w<70?6:w<110?8:10),iw=src.naturalWidth||src.width,ih=src.naturalHeight||src.height,sw=iw/N,dw=w/N,P=SWP[f.type]||SWP.clown,amp=w*(SWIM.rest+SWIM.amp*sn)*P[0]*Math.pow(90/w,.15),ov=1.2;
 const Ycf=fx=>{const u=1-fx;return Math.sin(tp-u*SWIM.wave*P[4])*amp*Math.pow(u,P[2])};
-const drawS=(img,ox,oy,ww)=>{ww=ww||w;const iw2=img.naturalWidth||img.width,ih2=img.naturalHeight||img.height,sw2=iw2/N,ov2=ov*iw2/iw,dx=ww/N,od=ov*ww/iw,Y=b=>{const u=1-b/N;return Math.sin(tp-u*SWIM.wave*P[4])*amp*Math.pow(u,P[2])};let y0=Y(0);for(let i=0;i<N;i++){const y1=Y(i+1),last=i===N-1;ctx.save();ctx.transform(1,(y1-y0)/dx,0,1,-ww/2+i*dx+ox,y0+oy);ctx.drawImage(img,i*sw2,0,last?sw2:sw2+ov2,ih2,0,-h/2,last?dx:dx+od,h);ctx.restore();y0=y1}};
+const drawS=(img,ox,oy,ww,live)=>bendDraw(f,img,ox,oy,ww||w,h,N,tp,amp,P,live);
 if(GX){const T2=state.lowGfx?null:glTint(src),R=T2&&!GX.b?glRest(T2,src):null;if(T2&&GX.b){ctx.globalAlpha=.95;ctx.drawImage(T2.c,-w/2-GX.sp,-h/2+rand(-2,2),w,h);ctx.drawImage(T2.m,-w/2+GX.sp,-h/2+rand(-2,2),w,h);ctx.globalAlpha=1}
 if(GX.bands){const n=GX.bands.length,bh=h/n;for(let i=0;i<n;i++){const off=GX.bands[i];if(GX.bands.cut&&i%3===1&&off)continue;ctx.drawImage(src,0,ih*i/n,iw,ih/n,-w/2+off,-h/2+bh*i,w,bh+.6)}if(!state.lowGfx){ctx.save();ctx.globalCompositeOperation="lighter";for(let i=0;i<3;i++){ctx.globalAlpha=rand(.15,.45);ctx.fillStyle=["#00f6ff","#ff2bd6","#7dff4f"][i];ctx.fillRect(rand(-w*.6,w*.3),rand(-h*.5,h*.45),rand(w*.15,w*.6),rand(1.5,4))}ctx.restore()}}
 else if(R)drawS(R,0,0,w*R.width/iw);else drawS(src,0,0);
 if(!state.lowGfx&&Math.sin(t*9+(f.phase||0)*5)>.6){ctx.save();ctx.globalCompositeOperation="lighter";ctx.globalAlpha=.18;ctx.fillStyle="#00f6ff";const yy=((t*60+(f.phase||0)*40)%h)-h/2;ctx.fillRect(-w/2,yy,w,2);ctx.restore()}}
 else{const jo=NOJAW[f.type]?0:jawOpen(f);if(jo>.02)drawJaw(f,src,w,h,Ycf,drawS,jo);else drawS(src,0,0);
- if(!state.lowGfx&&mi&&im===mi&&SHEEN[mu]){ctx.save();ctx.globalCompositeOperation="lighter";ctx.globalAlpha=SHEEN[mu].a;drawS(sheenTex(src,mu,t,(f.phase||0)*1.7),0,0);ctx.restore()}}
+ if(!state.lowGfx&&mi&&im===mi&&SHEEN[mu]){ctx.save();ctx.globalCompositeOperation="lighter";ctx.globalAlpha=SHEEN[mu].a;drawS(sheenTex(src,mu,t,(f.phase||0)*1.7),0,0,0,1);ctx.restore()}}
 if(mu==="gold"&&!state.lowGfx&&!(mi&&im===mi)){const sh=(t*.45+f.phase*.13)%1.6;if(sh<1){ctx.save();ctx.globalCompositeOperation="lighter";ctx.globalAlpha=.32*Math.sin(sh*Math.PI);const gx=-w/2+w*sh,gr=ctx.createLinearGradient(gx-w*.18,0,gx+w*.18,0);gr.addColorStop(0,"rgba(255,240,170,0)");gr.addColorStop(.5,"rgba(255,248,210,1)");gr.addColorStop(1,"rgba(255,240,170,0)");ctx.fillStyle=gr;ctx.beginPath();ctx.ellipse(gx,0,w*.16,h*.36,-.5,0,7);ctx.fill();ctx.restore()}}
 if(mu&&!state.lowGfx){ctx.shadowBlur=0;const k=mu==="gold"?5:mu==="melanistic"?3:mu==="transparent"?2:1;for(let i=0;i<k;i++){const a=Math.sin(t*1.6+f.phase*3+i*2.1);if(a<.55)continue;const px=Math.sin(f.phase*7+i*4.3)*w*.32,py=Math.cos(f.phase*5+i*3.7)*h*.22,r=(a-.55)*w*.09;ctx.globalAlpha=(a-.55)*2.2;ctx.fillStyle=mu==="gold"?"#fff6c8":mu==="melanistic"?"#c9d6ff":mu==="transparent"?"#e8fbff":"#fff0f6";ctx.beginPath();ctx.moveTo(px,py-r);ctx.lineTo(px+r*.25,py);ctx.lineTo(px,py+r);ctx.lineTo(px-r*.25,py);ctx.closePath();ctx.moveTo(px-r,py);ctx.lineTo(px,py+r*.25);ctx.lineTo(px+r,py);ctx.lineTo(px,py-r*.25);ctx.fill()}ctx.globalAlpha=1}
 {const MO=mouthOf(f),mt=ctx.getTransform(),ki=1/K,lx=-w/2+MO[0]*w,ly=-h/2+MO[1]*h+Ycf(MO[0]),gx=-w/2+(MO[0]-.3)*w,gy=-h/2+MO[1]*h+Ycf(MO[0]-.3);f._mx=(mt.a*lx+mt.c*ly+mt.e)*ki;f._my=(mt.b*lx+mt.d*ly+mt.f)*ki;f._gx=(mt.a*gx+mt.c*gy+mt.e)*ki;f._gy=(mt.b*gx+mt.d*gy+mt.f)*ki}
 if(PHOT[f.type])phCollect(f,w,h,Ycf,t,im,mu,N);
 ctx.restore()
 }
+// ===== Kıvrılan balık çizimi (sürüm 114)
+// Balık her karede doğrudan ekrana 8-10 şerit halinde çizilmiyor: kıvrılmış hali balığın kendi küçük tuvaline bir kez hazırlanıyor
+// (şeritler tam piksel sınırlarında, üst üste binmeden birleşir; bu yüzden ara çizgiler oluşmaz), sonra ekrana tek parça konuyor.
+// Kuyruk duruşu ve genliği çok küçük adımlara yuvarlanır; duruş değişmedikçe aynı çizim tekrar kullanılır.
+const BND=new WeakMap();let BNDN=0,BNDB=9;
+function bendRec(f,img){let m=BND.get(f);if(!m){m=new Map();BND.set(f,m)}let r=m.get(img);if(!r){if(m.size>=4){for(const v of m.values())v.cv.width=v.cv.height=0;m.clear()}r={cv:document.createElement("canvas"),k:""};m.set(img,r)}return r}
+function bendDraw(f,img,ox,oy,ww,h,N,tp,amp,P,live){const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height;if(!iw||!ih)return;
+ const TAU=6.283185307179586,qp=Math.round(((tp%TAU)+TAU)%TAU/TAU*64)%64,tq=qp/64*TAU,qa=Math.round(amp/ww*512),aq=qa/512*ww,sy=ih/h,pad=Math.ceil(Math.abs(aq)*sy)+2,r=bendRec(f,img),key=live?"":N+"|"+qp+"|"+qa+"|"+iw+"|"+ih;
+ const now=performance.now(),age=now-(r.t||0);let go=live?age>33:r.k!==key;if(go&&r.k&&age<70){if(BNDB>0)BNDB--;else go=false}
+ if(go){r.t=now;const c=r.cv;if(c.width!==iw||c.height!==ih+2*pad){c.width=iw;c.height=ih+2*pad}const x=c.getContext("2d");x.setTransform(1,0,0,1,0,0);x.globalCompositeOperation="source-over";x.globalAlpha=1;x.clearRect(0,0,c.width,c.height);try{x.imageSmoothingQuality="high"}catch(e){}
+  const Y=b=>{const u=1-b/N;return Math.sin(tq-u*SWIM.wave*P[4])*aq*Math.pow(u,P[2])*sy};let x0=0,y0=Y(0);
+  for(let i=0;i<N;i++){const x1=i===N-1?iw:Math.round((i+1)*iw/N),y1=Y(i+1),cw=x1-x0;if(cw>0){x.setTransform(1,(y1-y0)/cw,0,1,x0,pad+y0);x.drawImage(img,x0,0,cw,ih,0,0,cw,ih)}x0=x1;y0=y1}
+  r.k=key;BNDN++}
+ const ps=pad/sy;ctx.drawImage(r.cv,-ww/2+ox,-h/2+oy-ps,ww,h+2*ps)}
 let selectedFish=null;
 // ===== Derin okyanus ışık sistemi v2
 // Biyolüminesans gerçek ışık organlarından (fotofor) gelir: noktalar balığın kendi resmindeki yerlerinden yanar ve balık kıvrıldıkça
@@ -902,7 +916,7 @@ dragon:[[.224,.5,.006],[.251,.5,.005],[.274,.5,.005],[.3,.496,.004],[.325,.491,.
 const PHS={lantern:{c:[120,232,255],m:"wave",env:.34},hatchet:{c:[135,220,255],m:"steady",env:.3,down:1},
  angler:{c:[110,228,255],m:"dim",env:.16,lure:[.912,.254,.04],lc:[175,255,238],lr:150},viper:{c:[105,185,255],m:"breath",env:.26,lr:70},
  dragon:{c:[178,142,255],m:"ripple",env:.22,lure:[.957,.772,.016],lc:[218,178,255],lr:100,red:[.872,.565]}};
-let DEEP_DARK=.66;let EM=[],ENV=[],SPK=[],SNOW=null,ISO_EYES=[],lastLT=0,lastDT=.016;const PHST=new WeakMap();
+let DEEP_DARK=.78;let EM=[],ENV=[],SPK=[],SNOW=null,ISO_EYES=[],lastLT=0,lastDT=.016;const PHST=new WeakMap();
 function phState(f){let o=PHST.get(f);if(!o){o={fl:rand(3,10),flT:-99,bo:rand(25,70),boT:-99,px:null,py:null,sp:0};PHST.set(f,o)}return o}
 function phInt(P,o,i,n,t,ph){let a;switch(P.m){
  case"wave":{a=.7+.22*Math.sin(t*2.1-i*.55+ph);const q=(t-o.flT)*2.4-(i/n)*1.3;if(q>0&&q<1.5)a+=1.15*Math.exp(-(q-.6)*(q-.6)*14);break}
@@ -937,7 +951,40 @@ function coreSpr(c){const k="c"+c.join();let s=GLS2[k];if(s)return s;s=document.
 function holeSpr(){if(holeS)return holeS;holeS=document.createElement("canvas");holeS.width=holeS.height=64;const x=holeS.getContext("2d"),g=x.createRadialGradient(32,32,0,32,32,32);g.addColorStop(0,"rgba(255,255,255,1)");g.addColorStop(.25,"rgba(255,255,255,.78)");g.addColorStop(.55,"rgba(255,255,255,.3)");g.addColorStop(.8,"rgba(255,255,255,.08)");g.addColorStop(1,"rgba(255,255,255,0)");x.fillStyle=g;x.fillRect(0,0,64,64);return holeS}
 let darkC=null,blA=null,blB=null,blC=null;function cv2(c,w,h){if(!c||c.width!==w||c.height!==h){c=document.createElement("canvas");c.width=w;c.height=h}return c}
 function deepTap(x,y){if(curWater()!=="deep"||state.lowGfx)return;for(let i=0;i<12&&SPK.length<170;i++){const a=rand(0,6.3),r=rand(2,16);SPK.push({x:x+Math.cos(a)*r,y:y+Math.sin(a)*r,vx:Math.cos(a)*rand(4,14),vy:Math.sin(a)*rand(4,14),life:rand(.5,1.3),l0:1.3})}}
-function drawDeepLight(t){const dt=lastLT?Math.min(.05,Math.max(.001,t-lastLT)):.016;lastLT=t;lastDT=dt;const lo=state.lowGfx;
+
+// ===== Derin okyanus sahnesi (sürüm 114)
+// Dipte bir hidrotermal baca: çatlakları turuncu yanar, etrafını ısıtıp aydınlatır, ağzından kıvılcımlar yükselir.
+// Arada bir uzaktan dev bir balina geçer: karanlıkta sadece silüeti ve böğründeki ışık noktaları seçilir.
+// Belli aralıklarla bir biyolüminesans dalgası tankı boydan boya geçer ve planktonları yakar.
+let WHALE=null,WHN=0,WAVE=null,WVN=0,EMB=[];
+function ventPos(){return[W*.5,FLOOR+46]}
+function smoothPath(x,P){const n=P.length,M=i=>[(P[i][0]+P[(i+1)%n][0])/2,(P[i][1]+P[(i+1)%n][1])/2];let m=M(n-1);x.moveTo(m[0],m[1]);for(let i=0;i<n;i++){m=M(i);x.quadraticCurveTo(P[i][0],P[i][1],m[0],m[1])}x.closePath()}
+// balina köpekbalığı yandan: yassı baş, iki sırt yüzgeci, göğüs yüzgeci, dikey kuyruk
+function whalePath(x,fl){x.beginPath();smoothPath(x,[[.5,-.005],[.47,-.06],[.36,-.095],[.2,-.115],[.04,-.122],[-.14,-.1],[-.3,-.058],[-.4,-.032],[-.47,-.1+fl*.6],[-.565,-.215+fl],[-.52,-.085+fl*.5],[-.49,-.008],[-.535,.09+fl*.6],[-.455,.035],[-.4,.024],[-.24,.05],[-.04,.085],[.2,.088],[.4,.06],[.49,.03]]);
+ x.moveTo(.03,-.118);x.quadraticCurveTo(-.05,-.17,-.1,-.205);x.quadraticCurveTo(-.11,-.14,-.13,-.098);x.closePath();
+ x.moveTo(-.27,-.064);x.quadraticCurveTo(-.31,-.09,-.335,-.105);x.lineTo(-.33,-.05);x.closePath();
+ x.moveTo(.23,.072);x.quadraticCurveTo(.15,.15,.07,.2);x.quadraticCurveTo(.1,.12,.11,.08);x.closePath()}function drawDeepBack(t,dt){if(state.lowGfx)return;const[vx,vy]=ventPos();
+ // dev balina (balıkların arkasında)
+ if(!WHN)WHN=t+rand(14,26);if(!WHALE&&t>WHN){const L=W*rand(.82,1.02),d=Math.random()<.5?1:-1;WHALE={L,d,x:d>0?-L*.6:W+L*.6,y:rand(H*.3,H*.5),sp:(W+L*1.2)/rand(36,46),ph:rand(0,6)}}
+ if(WHALE){const B=WHALE;B.x+=B.d*B.sp*dt;if((B.d>0&&B.x>W+B.L*.65)||(B.d<0&&B.x<-B.L*.65)){WHALE=null;WHN=t+rand(45,90)}else{const fl=Math.sin(t*1.25+B.ph)*.05;ctx.save();ctx.translate(B.x,B.y+Math.sin(t*.4+B.ph)*8);ctx.scale(B.L*B.d,B.L);ctx.rotate(Math.sin(t*.3+B.ph)*.02);
+  ctx.globalAlpha=.72;const g=ctx.createLinearGradient(0,-.2,0,.12);g.addColorStop(0,"rgba(92,132,178,.75)");g.addColorStop(.3,"rgba(30,48,74,.92)");g.addColorStop(1,"rgba(5,9,18,.96)");ctx.fillStyle=g;whalePath(ctx,fl);ctx.fill();
+  ctx.save();whalePath(ctx,fl);ctx.clip();ctx.fillStyle="rgba(215,235,255,.16)";for(let i=0;i<70;i++){const u=.44-((i*.61803)%1)*.82,v=-.1+((i*.38197*7)%1)*.17,r=.0045+(i%3)*.0015;if(u<-.36)continue;ctx.beginPath();ctx.arc(u,v,r,0,7);ctx.fill()}
+  ctx.strokeStyle="rgba(150,190,230,.18)";ctx.lineWidth=.004;for(let i=0;i<4;i++){ctx.beginPath();ctx.arc(.33-i*.022,.005,.07,-.9,.9);ctx.stroke()}ctx.restore();ctx.globalAlpha=1;
+  const m=ctx.getTransform(),k=1/K;for(let i=0;i<16;i++){const u=.4-i*.052,yy=.015+Math.sin(u*3)*.01,px=(m.a*u+m.c*yy+m.e)*k,py=(m.b*u+m.d*yy+m.f)*k,a=.22+.4*Math.max(0,Math.sin(t*2.2-i*.55+B.ph));EM.push([px,py,1.1,[120,205,255],a,0])}
+  ENV.push([(m.a*.1+m.e)*k,(m.b*.1+m.f)*k,B.L*.45,[90,150,230],.1]);ctx.restore()}}
+ // sıcak su kaynağı: kumun içinden yükselen titrek ışık sütunu
+ const fk=.82+.1*Math.sin(t*7.3)+.08*Math.sin(t*13.1),G=glowSpr([255,120,50]);ctx.save();ctx.globalCompositeOperation="lighter";
+ for(let i=0;i<5;i++){const yy=vy-18-i*34,sw=34+i*12+Math.sin(t*2.1+i*1.7)*6,xx=vx+Math.sin(t*1.3+i*.9)*(4+i*3);ctx.globalAlpha=(.16-i*.025)*fk;ctx.drawImage(G,xx-sw/2,yy-30,sw,60)}
+ ctx.globalAlpha=.5*fk;ctx.drawImage(G,vx-46,vy-22,92,40);ctx.restore()}
+function deepLights(t,dt){if(state.lowGfx)return;const[vx,vy]=ventPos(),fk=.82+.1*Math.sin(t*7.3)+.08*Math.sin(t*13.1);
+ ENV.push([vx,vy-40,200,[255,118,46],.5*fk]);ENV.push([vx,vy-6,120,[255,96,40],.4*fk]);EM.push([vx,vy-6,2.6,[255,170,90],.8*fk,0]);EM.push([vx-14,vy-2,1.6,[255,150,70],.5*fk,0]);EM.push([vx+12,vy-4,1.4,[255,150,70],.5*fk,0]);
+ if(Math.random()<dt*14&&EMB.length<40)EMB.push({x:vx+rand(-12,12),y:vy-8,vx:rand(-3,3),vy:-rand(16,30),life:rand(2.2,4.2),l0:4.2});
+ for(const e of EMB){e.life-=dt;e.x+=(e.vx+Math.sin(t*2+e.y*.05)*5)*dt;e.y+=e.vy*dt}EMB=EMB.filter(e=>e.life>0);
+ // biyolüminesans dalgası
+ if(!WVN)WVN=t+rand(10,18);if(!WAVE&&t>WVN){const d=Math.random()<.5?1:-1;WAVE={d,x:d>0?-20:W+20}}
+ if(WAVE){WAVE.x+=WAVE.d*80*dt;for(let i=0;i<6&&SPK.length<240;i++)SPK.push({x:WAVE.x+rand(-10,10),y:rand(H*.08,FLOOR+10),vx:WAVE.d*rand(2,10),vy:rand(-5,5),life:rand(.7,1.6),l0:1.6});if(WAVE.x<-30||WAVE.x>W+30){WAVE=null;WVN=t+rand(22,40)}}}
+function drawEmbers(){if(!EMB.length)return;const C=coreSpr([255,160,80]);for(const e of EMB){const u=e.life/e.l0;ctx.globalAlpha=Math.min(1,u*1.6)*.9;const r=1.2+u*1.4;ctx.drawImage(C,e.x-r,e.y-r,r*2,r*2)}}
+function drawDeepLight(t){const dt=lastLT?Math.min(.05,Math.max(.001,t-lastLT)):.016;lastLT=t;lastDT=dt;const lo=state.lowGfx;deepLights(t,dt);
  // diğer ışık kaynakları: derin denizanası, sandık, paralar, canlı yem (kril), izopod gözleri
  for(const o of CRT.values())if(o.d.id==="jdeep"){const pu=.55+.3*Math.max(0,Math.sin(((o.ph||0)%1)*Math.PI*2+1.2));ENV.push([o.x,o.y-o.r*.3,125,[175,128,255],.55*pu]);const n=8,rr=o.r*1.02*(1-.2*(o.c||0));for(let i=0;i<n;i++){const an=Math.PI*(.08+.84*i/(n-1)),q=(t*1.8-i*.6)%(Math.PI*2);EM.push([o.x-Math.cos(an)*rr,o.y-o.r*.15+Math.sin(an)*rr*.32,1.3,i%2?[120,200,255]:[200,140,255],.35+.45*Math.max(0,Math.sin(q)),0])}}
  const c=state.chest;if(c)ENV.push([c.x*W,FLOOR-8,110,[255,205,120],.55]);for(const q of coinsLoose)ENV.push([q.x,q.y,26,[255,210,90],.4]);
@@ -954,7 +1001,7 @@ function drawDeepLight(t){const dt=lastLT?Math.min(.05,Math.max(.001,t-lastLT)):
   const b=blB.getContext("2d");b.globalCompositeOperation="copy";b.globalAlpha=1;b.drawImage(blA,0,0,blB.width,blB.height);const cc=blC.getContext("2d");cc.globalCompositeOperation="copy";cc.drawImage(blB,0,0,blC.width,blC.height);b.globalCompositeOperation="lighter";b.drawImage(blC,0,0,blB.width,blB.height);bloom=blB}
  // 2) karanlık örtü: ışıkların çevresi açılır, parlama da aynı katmana işlenir; ekrana tek seferde çizilir
  darkC=cv2(darkC,sw,sh);const x=darkC.getContext("2d");x.setTransform(1,0,0,1,0,0);x.globalCompositeOperation="source-over";x.globalAlpha=1;x.clearRect(0,0,sw,sh);const g=x.createLinearGradient(0,0,0,sh);g.addColorStop(0,"rgba(0,4,16,"+(DEEP_DARK-.1)+")");g.addColorStop(1,"rgba(0,2,10,"+(DEEP_DARK+.06)+")");x.fillStyle=g;x.fillRect(0,0,sw,sh);
- x.globalCompositeOperation="destination-out";const HS=holeSpr();for(const l of ENV){const r=l[2]/4;x.globalAlpha=Math.min(1,l[4]*1.6);x.drawImage(HS,l[0]/4-r,l[1]/4-r,r*2,r*2)}
+ x.globalCompositeOperation="destination-out";const HS=holeSpr();for(const l of ENV){const r=l[2]/4;x.globalAlpha=Math.min(1,l[4]*1.95);x.drawImage(HS,l[0]/4-r,l[1]/4-r,r*2,r*2)}
  if(bloom){x.globalCompositeOperation="source-over";x.globalAlpha=.85;x.drawImage(bloom,0,0,sw,sh)}
  x.globalAlpha=1;x.globalCompositeOperation="source-over";ctx.drawImage(darkC,0,0,W,H);
  ctx.save();ctx.globalCompositeOperation="lighter";
@@ -962,15 +1009,15 @@ function drawDeepLight(t){const dt=lastLT?Math.min(.05,Math.max(.001,t-lastLT)):
  if(!lo)drawSnow(t,dt);
  // 5) ışık organlarının kendisi: küçük bir renkli hale + beyaza yakın sıcak çekirdek
  for(const e of EM){if(e[4]<.02)continue;const r=e[2],R=r*(e[5]?5.5:3.6)+2;ctx.globalAlpha=Math.min(1,e[4]*.6);ctx.drawImage(glowSpr(e[3]),e[0]-R,e[1]-R,R*2,R*2);const rc=r*(e[5]?1.5:1.35);ctx.globalAlpha=Math.min(1,e[4]);ctx.drawImage(coreSpr(e[3]),e[0]-rc,e[1]-rc,rc*2,rc*2);if(e[5]&&!lo){const R2=r*14;ctx.globalAlpha=e[4]*.1;ctx.drawImage(glowSpr(e[3]),e[0]-R2,e[1]-R2,R2*2,R2*2)}}
- for(const p of SPK){const f=sparkA(p);ctx.globalAlpha=f;ctx.drawImage(coreSpr([110,215,255]),p.x-1.4,p.y-1.4,2.8,2.8)}
+ drawEmbers();for(const p of SPK){const f=sparkA(p);ctx.globalAlpha=f;ctx.drawImage(coreSpr([110,215,255]),p.x-1.4,p.y-1.4,2.8,2.8)}
  for(const E of EMI)emiDraw(ctx,E,1);
- ctx.restore();EM=[];ENV=[];EMI=[];LURE_LAST=LUREW;LUREW=[]}
+ ctx.restore();EM=[];ENV=[];EMI=[];EMPI=0;LURE_LAST=LUREW;LUREW=[]}
 function sparkA(p){const u=1-p.life/p.l0;return u<.12?u/.12:Math.pow(1-(u-.12)/.88,1.6)}
 function eyeLit(x,y){let L=0;for(const l of ENV){const dx=x-l[0],dy=y-l[1],r=l[2]*1.6,q=1-(dx*dx+dy*dy)/(r*r);if(q>0)L+=q*l[4]}return L}
 function drawSnow(t,dt){if(!SNOW){SNOW=[];for(let i=0;i<85;i++)SNOW.push({x:rand(0,W),y:rand(H*.06,FLOOR+20),z:rand(.35,1),ph:rand(0,6.3)})}
- for(const s of SNOW){s.y+=(2.5+6*s.z)*dt;s.x+=Math.sin(t*.35+s.ph)*3.5*s.z*dt;if(s.y>FLOOR+24){s.y=H*.04;s.x=rand(0,W)}let L=.03,cr=200,cg=225,cb=255,cw=1;
+ for(const s of SNOW){s.y+=(2.5+6*s.z)*dt;s.x+=Math.sin(t*.35+s.ph)*3.5*s.z*dt;if(s.y>FLOOR+24){s.y=H*.04;s.x=rand(0,W)}let L=.065,cr=200,cg=225,cb=255,cw=1;
   for(const l of ENV){const dx=s.x-l[0],dy=s.y-l[1],r=l[2]*1.25,q=1-(dx*dx+dy*dy)/(r*r);if(q>0){const v=q*q*l[4];L+=v;cr+=l[3][0]*v*3;cg+=l[3][1]*v*3;cb+=l[3][2]*v*3;cw+=v*3}}
-  const a=Math.min(.85,L*1.7*s.z);if(a<.02)continue;ctx.globalAlpha=a;ctx.fillStyle="rgb("+(cr/cw|0)+","+(cg/cw|0)+","+(cb/cw|0)+")";const z=.5+.9*s.z;ctx.beginPath();ctx.arc(s.x,s.y,z,0,7);ctx.fill()}}
+  const a=Math.min(.85,L*1.7*s.z);if(a<.02)continue;ctx.globalAlpha=a;ctx.fillStyle="rgb("+(cr/cw|0)+","+(cg/cw|0)+","+(cb/cw|0)+")";const z=(.5+.9*s.z)*2.2;ctx.drawImage(dotSpr(),s.x-z,s.y-z,z*2,z*2)}}
 // ===== Mutasyon malzeme katmanı: her mutasyonun yüzeyi ışığı kendine göre yansıtır.
 // Altın: gövdede gezen sıcak metal parlaması · Transparan: camda kayan soğuk yansıma · Melanistik: yağ gibi yanardöner renk dalgası · Albino: inci parıltısı.
 // Parlama bandı balığın kendi şekline maskelenir ve balıkla birlikte kıvrılır.
@@ -997,8 +1044,13 @@ function emisMap(im,m,sp){let c=EMC.get(im);if(c!==undefined)return c;c=null;try
   const gt=m==="albino"?cl((r-g-.12)/.15)*cl((mn-.75)/.15):m==="gold"?cl((r-b-.3)/.2)*cl((mn-.5)/.25):cl((sS-.4)/.2);
   e*=gt;if(e<.02)continue;o[i*4]=d[i*4];o[i*4+1]=d[i*4+1];o[i*4+2]=d[i*4+2];o[i*4+3]=Math.min(255,e*255)}
  x.clearRect(0,0,W,H);x.putImageData(out,0,0);c=cv}catch(e){c=null}EMC.set(im,c);return c}
-function emiDraw(cx,E,s){const m=E.m,img=E.img,iw=img.width,ih=img.height,N=E.N,w=E.w,h=E.h,dx=w/N,sw=iw/N;cx.save();cx.setTransform(m[0]*s,m[1]*s,m[2]*s,m[3]*s,m[4]*s,m[5]*s);
- for(let i=0;i<N;i++){const a=E.al[i];if(a<.02)continue;const y0=E.Ys[i],y1=E.Ys[i+1];cx.globalAlpha=Math.min(1,a);cx.save();cx.transform(1,(y1-y0)/dx,0,1,-w/2+i*dx,y0);cx.drawImage(img,i*sw,0,Math.min(sw+1,iw-i*sw),ih,0,-h/2,dx+.6,h);cx.restore()}cx.restore()}
+// ışık haritası da balık gibi tek parça kıvrılır (şerit sınırlarında parlak çizgi kalmaz); her karede bir kez hazırlanıp iki yere çizilir
+const EMP=[];let EMPI=0;
+function emiBake(E){if(E.cv)return E.cv;const img=E.img,iw=img.width,ih=img.height,N=E.N,sy=ih/E.h;let mx=0;for(const y of E.Ys)mx=Math.max(mx,Math.abs(y));const pad=Math.ceil(mx*sy)+2;
+ const c=EMP[EMPI]||(EMP[EMPI]=document.createElement("canvas"));EMPI++;if(c.width!==iw||c.height!==ih+2*pad){c.width=iw;c.height=ih+2*pad}const x=c.getContext("2d");x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.clearRect(0,0,c.width,c.height);
+ let x0=0;for(let i=0;i<N;i++){const x1=i===N-1?iw:Math.round((i+1)*iw/N),cw=x1-x0,a=E.al[i];if(cw>0&&a>=.02){const y0=E.Ys[i]*sy,y1=E.Ys[i+1]*sy;x.globalAlpha=Math.min(1,a);x.setTransform(1,(y1-y0)/cw,0,1,x0,pad+y0);x.drawImage(img,x0,0,cw,ih,0,0,cw,ih)}x0=x1}
+ E.cv=c;E.pad=pad/sy;return c}
+function emiDraw(cx,E,s){const m=E.m,c=emiBake(E);cx.save();cx.setTransform(m[0]*s,m[1]*s,m[2]*s,m[3]*s,m[4]*s,m[5]*s);cx.globalAlpha=1;cx.drawImage(c,-E.w/2,-E.h/2-E.pad,E.w,E.h+2*E.pad);cx.restore()}
 // ===== Gerçekçi beslenme: emme ile yeme
 // Gerçek balıkların çoğu yemi ısırmaz, ağzını hızla açıp suyla birlikte içine çeker. Burada: balık yeme yaklaşınca yavaşlar ve
 // hizalanır, sonra çenesi açılır (alt çene menteşesinden döner), yem ve etrafındaki su zerreleri ağza doğru çekilir, çene kapanır,
@@ -1127,7 +1179,7 @@ if(now-lastAdv>1000&&!VISIT){lastAdv=now;if(state.daily&&state.daily.date!==dayK
 musicTick();musUpdate();if(AU&&!state.muted&&!(ambience&&ambience.file)&&Math.random()<dt*.3)sfx("amb");
 const P0=performance.now();acc+=dt*ADM.speed;let ns=0;const NSM=Math.max(4,Math.ceil(4*ADM.speed));while(acc>=STEP&&ns<NSM){physics(STEP);acc-=STEP;ns++}if(ns>=NSM)acc=0;admTick(now);const P1=performance.now();
 bubbles.forEach(b=>{b.y-=b.speed*dt;b.x+=Math.sin(t+b.phase)*b.drift*dt;if(b.y<-10){b.y=H+10;b.x=rand(0,W)}});
-const OFF=state.admOff||{};ctx.setTransform(K,0,0,K,0,0);drawBackground(t);drawFloor(t);try{critDraw(dt)}catch(e){reportErr(e,"omurgasız")}const P2=performance.now();if(!OFF.fish)for(const f of state.fish){try{drawFish(f,t)}catch(e){try{ctx.restore()}catch(_){}reportErr(e,"balık "+f.type)}}const P3=performance.now();if(!OFF.plants)drawPlants2(t,1);if(curWater()==="deep")try{drawDeepLight(t)}catch(e){reportErr(e,"ışık")}const P4=performance.now();drawCoins(t);drawStatus(t);const fo=feedModeOn()&&!VISIT;if(fo!==feedOnC){feedOnC=fo;$("feed").classList.toggle("on",fo)}drawParticles(dt);drawTapInfo();if(ADM.on)try{admDebug(t)}catch(e){}drawDN();
+BNDB=state.lowGfx?5:9;const OFF=state.admOff||{};ctx.setTransform(K,0,0,K,0,0);drawBackground(t);drawFloor(t);try{critDraw(dt)}catch(e){reportErr(e,"omurgasız")}const P2=performance.now();if(curWater()==="deep")try{drawDeepBack(t,dt)}catch(e){reportErr(e,"derin")}if(!OFF.fish)for(const f of state.fish){try{drawFish(f,t)}catch(e){try{ctx.restore()}catch(_){}reportErr(e,"balık "+f.type)}}const P3=performance.now();if(!OFF.plants)drawPlants2(t,1);if(curWater()==="deep")try{drawDeepLight(t)}catch(e){reportErr(e,"ışık")}else try{drawAtmo(t,dt)}catch(e){reportErr(e,"atmosfer")}const P4=performance.now();drawCoins(t);drawStatus(t);const fo=feedModeOn()&&!VISIT;if(fo!==feedOnC){feedOnC=fo;$("feed").classList.toggle("on",fo)}drawParticles(dt);drawTapInfo();if(ADM.on)try{admDebug(t)}catch(e){}drawDN();
 const P5=performance.now();if(admFps){PRF.n++;PRF.ph+=P1-P0;PRF.fl+=P2-P1;PRF.fi+=P3-P2;PRF.pl+=P4-P3;PRF.ot+=P5-P4;PRF.all+=P5-P0+(P0-now>0?0:0);PRF.ns+=ns}
 requestAnimationFrame(frame)}
 canvas.addEventListener("pointerdown",e=>{audio();startAmbience();const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;if(EDIT){editDown(e,x,y);return}if(!VISIT){let cc=null,cd=1e9;for(const c of coinsLoose){const d=Math.hypot(x-c.x,y-c.y);if(d<34&&d<cd){cc=c;cd=d}}if(cc){pickCoin(cc);return}}
@@ -1271,7 +1323,35 @@ const FLOOR_AVG={fresh:[[150,160,110],[30,52,70]],salt:[[110,150,170],[24,44,90]
 function gpuCopy(c){try{const n=document.createElement("canvas");n.width=c.width;n.height=c.height;n.getContext("2d").drawImage(c,0,0);n.lw=c.lw;return n}catch(e){return c}}
 function grade(cv,o){try{const c=cv.getContext("2d"),W2=cv.width,H2=cv.height,d=c.getImageData(0,0,W2,H2),p=d.data,m=o.mix,bg=o.bg,ds=o.desat,ct=o.contrast;for(let y=0;y<H2;y++){const fy=y/H2,lt=1+o.top*(1-fy)*(1-fy)-o.ao*fy*fy*fy;for(let x=0;x<W2;x++){const i=(y*W2+x)*4;if(p[i+3]===0)continue;let r=p[i],g=p[i+1],b=p[i+2];const l=r*.3+g*.59+b*.11;r=l+(r-l)*ds;g=l+(g-l)*ds;b=l+(b-l)*ds;r=128+(r-128)*ct;g=128+(g-128)*ct;b=128+(b-128)*ct;r=(r+(bg[0]-r)*m)*lt;g=(g+(bg[1]-g)*m)*lt;b=(b+(bg[2]-b)*m)*lt;p[i]=r;p[i+1]=g;p[i+2]=b}}c.putImageData(d,0,0)}catch(e){}}
 let causT=null;
-const causImg=Object.assign(new Image(),{src:"a/6e0aafd85a82db00.png"});function causticTex(){if(causT!==null)return causT;if(causImg.complete&&causImg.naturalWidth){causT=causImg;return causT}return null}
+const causImg=Object.assign(new Image(),{src:"a/6e0aafd85a82db00.png"});
+// ===== Gerçekçi su atmosferi (sürüm 114)
+// Hepsi bir kez hazırlanan küçük dokulardan çizilir; her kare sadece birkaç ucuz çizim ekler.
+// Işık hüzmeleri yüzeyden süzülüp yavaşça salınır · yüzeyin alt yüzü parıldar · suda asılı tanecikler derinlik verir (yakındakiler büyük ve bulanık)
+// · balıklar kuma gerçek gölge düşürür (kuma yaklaştıkça koyu ve net) · kabarcıklar ışığı kırar.
+let RAYT=null,SURT=null,MOTES=null,DOTS=null,SHDS=null,BUBS=null;
+function sprC(w,h,fn){const c=document.createElement("canvas");c.width=w;c.height=h;fn(c.getContext("2d"),w,h);return c}
+function bubSpr(){return BUBS||(BUBS=sprC(48,48,(x,w)=>{const g=x.createRadialGradient(24,24,14,24,24,23);g.addColorStop(0,"rgba(200,240,255,0)");g.addColorStop(.7,"rgba(200,240,255,.18)");g.addColorStop(.92,"rgba(235,252,255,.85)");g.addColorStop(1,"rgba(235,252,255,0)");x.fillStyle=g;x.beginPath();x.arc(24,24,23,0,7);x.fill();
+ const h=x.createRadialGradient(16,15,0,16,15,7);h.addColorStop(0,"rgba(255,255,255,.95)");h.addColorStop(1,"rgba(255,255,255,0)");x.fillStyle=h;x.beginPath();x.arc(16,15,7,0,7);x.fill();x.fillStyle="rgba(255,255,255,.35)";x.beginPath();x.ellipse(31,33,4,2,-.7,0,7);x.fill()}))}
+function dotSpr(){return DOTS||(DOTS=sprC(32,32,(x)=>{const g=x.createRadialGradient(16,16,0,16,16,16);g.addColorStop(0,"rgba(255,252,240,1)");g.addColorStop(.35,"rgba(240,250,255,.55)");g.addColorStop(1,"rgba(230,248,255,0)");x.fillStyle=g;x.fillRect(0,0,32,32)}))}
+function shdSpr(){return SHDS||(SHDS=sprC(128,40,(x)=>{x.translate(64,20);x.scale(1,.3125);const g=x.createRadialGradient(0,0,0,0,0,64);g.addColorStop(0,"rgba(0,14,22,.9)");g.addColorStop(.45,"rgba(0,14,22,.5)");g.addColorStop(1,"rgba(0,14,22,0)");x.fillStyle=g;x.beginPath();x.arc(0,0,64,0,7);x.fill()}))}
+function rayTex(){if(RAYT&&RAYT.W===W)return RAYT.c;const w=Math.ceil(W/2),h=Math.ceil(H*.92/2),c=sprC(w,h,(x)=>{let sd=7;const R=()=>{sd=(sd*16807)%2147483647;return sd/2147483647};
+ for(let i=0;i<8;i++){const cx=w*(.04+.92*(i+R()*.6)/8),top=w*(.012+R()*.03),bot=top*(2.6+R()*2.6),sk=(R()-.3)*w*.22,a=.22+R()*.4;const g=x.createLinearGradient(0,0,0,h);g.addColorStop(0,"rgba(255,253,236,"+a+")");g.addColorStop(.4,"rgba(215,245,255,"+a*.42+")");g.addColorStop(1,"rgba(200,240,255,0)");x.fillStyle=g;
+  for(let k=0;k<5;k++){const f=1-k*.19;x.globalAlpha=.24;x.beginPath();x.moveTo(cx-top*f,0);x.lineTo(cx+top*f,0);x.lineTo(cx+sk+bot*f,h);x.lineTo(cx+sk-bot*f,h);x.closePath();x.fill()}}});RAYT={c,W};return c}
+function surTex(){if(SURT&&SURT.W===W)return SURT.c;const w=Math.ceil(W/2),h=60,c=sprC(w,h,(x)=>{let sd=11;const R=()=>{sd=(sd*16807)%2147483647;return sd/2147483647};x.lineCap="round";
+ for(let i=0;i<70;i++){const y0=R()*h*.85,x0=R()*w,L=8+R()*28,a=.18+R()*.5*(1-y0/h);x.strokeStyle="rgba(240,255,255,"+a+")";x.lineWidth=.6+R()*1.4;x.beginPath();x.moveTo(x0,y0);x.quadraticCurveTo(x0+L*.5,y0+(R()-.5)*7,x0+L,y0+(R()-.5)*4);x.stroke()}
+ x.globalCompositeOperation="destination-in";const g=x.createLinearGradient(0,0,0,h);g.addColorStop(0,"rgba(0,0,0,1)");g.addColorStop(1,"rgba(0,0,0,0)");x.fillStyle=g;x.fillRect(0,0,w,h)});SURT={c,W};return c}
+function drawShadows(){if(state.lowGfx)return;const S=shdSpr(),nf=nightAmt(),top=60;for(const f of state.fish){if(f.dead)continue;const fy=f.y*H,hg=Math.max(0,Math.min(1,(FLOOR-fy)/(FLOOR-top))),w=fishW(f),sw=w*(.5+.55*hg),sh=sw*.24,a=(.3*(1-hg)*(1-hg)+.07)*(1-nf*.45);ctx.globalAlpha=a;ctx.drawImage(S,f.x*W+(FLOOR-fy)*.06-sw/2,FLOOR+26-sh/2,sw,sh)}ctx.globalAlpha=1}
+function drawAtmo(t,dt){if(state.lowGfx||(state.admOff||{}).atmo)return;const nf=nightAmt(),day=1-nf;ctx.save();
+ // ışık hüzmeleri: iki katman farklı hızda salınır, parlaklığı yüzeydeki dalgalara göre nefes alır
+ const R=rayTex(),a=.62*day+.1*nf;if(a>.02){ctx.globalCompositeOperation="screen";ctx.globalAlpha=a*(.62+.22*Math.sin(t*.37)+.1*Math.sin(t*1.13));ctx.drawImage(R,Math.sin(t*.05)*W*.04,0,W,H*.92);ctx.globalAlpha=a*(.42+.22*Math.sin(t*.53+2));ctx.drawImage(R,W*1.04+Math.sin(t*.071+1)*W*.06,0,-W*1.08,H*.92)}
+ // yüzeyin alt yüzü: iki ters yönde kayan parıltı
+ const Sf=surTex(),o1=(t*9)%W,o2=(t*-6%W+W)%W;ctx.globalCompositeOperation="lighter";ctx.globalAlpha=.32*day+.08;ctx.drawImage(Sf,o1-W,0,W,120);ctx.drawImage(Sf,o1,0,W,120);ctx.globalAlpha=.22*day+.05;ctx.drawImage(Sf,o2,8,-W,110);ctx.drawImage(Sf,o2+W,8,-W,110);
+ // asılı tanecikler
+ if(!MOTES){MOTES=[];for(let i=0;i<46;i++)MOTES.push({x:rand(0,W),y:rand(0,H),z:Math.pow(Math.random(),1.6),ph:rand(0,6.3),vx:rand(-2,2)})}
+ const D=dotSpr();ctx.globalCompositeOperation="source-over";for(const m of MOTES){m.y+=(1.5+3*m.z)*dt;m.x+=(m.vx+Math.sin(t*.3+m.ph)*4*m.z)*dt;if(m.y>H+8){m.y=-8;m.x=rand(0,W)}if(m.x<-8)m.x=W+8;else if(m.x>W+8)m.x=-8;
+  const near=m.z>.86,r=near?3.5+m.z*5:.7+m.z*2.2,al=(near?.13:.2+.4*m.z)*(.75+.25*Math.sin(t*1.7+m.ph))*(.45+.55*day);ctx.globalAlpha=al;ctx.drawImage(D,m.x-r,m.y-r,r*2,r*2)}
+ ctx.restore()}
+function causticTex(){if(causT!==null)return causT;if(causImg.complete&&causImg.naturalWidth){causT=causImg;return causT}return null}
 let causP=null;function drawCaustics(t){if(state.lowGfx||curWater()==="deep")return;const c=causticTex();if(!c)return;if(!causP){try{causP=ctx.createPattern(c,"repeat")}catch(e){causP=false}}if(!causP)return;const nf=nightAmt(),al=.22*(1-nf*.75);if(al<.02)return;const y0=FLOOR-110,sc=600/320;ctx.save();ctx.globalCompositeOperation="lighter";ctx.fillStyle=causP;for(let L=0;L<1;L++){const ox=t*(L?-7:9),oy=t*(L?5:-4);ctx.setTransform(K*sc,0,0,K*sc,K*ox,K*oy);for(let band=0;band<3;band++){const by=y0+band*40,bh=band<2?40:H-by;ctx.globalAlpha=al*(L?.6:1)*(band===0?.35:band===1?.7:1);ctx.fillRect((0-ox)/sc,(by-oy)/sc,W/sc,bh/sc)}}ctx.restore()}
 // ===== yem fiziği ve tür karakterleri
 const SURF=H*.155,FOOD_ROT=25;let feedX=W/2;
