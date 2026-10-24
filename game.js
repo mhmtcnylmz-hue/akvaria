@@ -761,7 +761,17 @@ drawCoinSprite(c.x+(48-c.x)*e,c.y+(40-c.y)*e-Math.sin(Math.min(1,p)*Math.PI)*60,
 function collect(){let amount=Math.floor(state.pending||0);const lo=coinsLoose.reduce((s,c)=>s+c.v,0);if(amount+lo<1){notify("Henüz biriken ödül yok");return}state.pending-=amount;coinsLoose.forEach((c,i)=>coinsFly.push({x:c.x,y:c.y,v:c.v,t:-i*.06}));coinsLoose.length=0;amount+=lo;state.coins+=amount;Q("collect",amount);Q("earn",amount);addXP(Math.min(15,Math.floor(amount/15)));sfx("coins");notify("Olgun balıklardan "+amount+" 🪙 topladın!");renderUI();save(true)}
 // ---------- ses motoru: tüm sesler anlık sentezlenir (dosya yok)
 let audioCtx=null,ambience=null,AU=null;
-function audio(){if(!audioCtx){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;try{audioCtx=new AC()}catch(e){return null}}if(audioCtx.state==="suspended")audioCtx.resume().catch(()=>{});if(!AU)initAU();musInit();return audioCtx}
+function audio(){if(!audioCtx){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;try{audioCtx=new AC()}catch(e){return null}}if(document.hidden)return audioCtx;if(audioCtx.state!=="running"&&audioCtx.state!=="closed")audioCtx.resume().catch(()=>{});if(!AU)initAU();musInit();audOwn();return audioCtx}
+// sürüm 122: oyun aynı anda iki yerde açıksa (uygulama + Safari, iki sekme, yenilenen sayfanın eski hali) ikisi birden
+// müzik çalıyor ve gece parçası iki farklı yerinden üst üste binip "notalar karışmış" gibi duyuluyordu.
+// Artık sadece en son dokunulan/öne gelen oyun ses çalar, diğerleri susar; arka plana alınan veya kapanan sayfa sesini durdurur.
+const AUD_ID=Math.random().toString(36).slice(2);let audBC=null,audOwnT=0;
+function audHush(){try{if(audioCtx&&audioCtx.state==="running")audioCtx.suspend().catch(()=>{})}catch(e){}}
+function audOwn(){const n=Date.now();if(n-audOwnT<1500)return;audOwnT=n;try{audBC&&audBC.postMessage(AUD_ID)}catch(e){}try{localStorage.setItem("akvAudOwn",AUD_ID+"|"+n)}catch(e){}}
+try{if(window.BroadcastChannel){audBC=new BroadcastChannel("akv-audio");audBC.onmessage=e=>{if(e.data!==AUD_ID)audHush()}}}catch(e){}
+addEventListener("storage",e=>{if(e.key==="akvAudOwn"&&e.newValue&&e.newValue.split("|")[0]!==AUD_ID)audHush()});
+document.addEventListener("visibilitychange",()=>{if(document.hidden)audHush();else if(audioCtx){audOwnT=0;audio()}});
+addEventListener("pagehide",()=>{audHush();try{if(musCur){musCur.s.stop();musCur=null;musKey=""}}catch(e){}});addEventListener("pageshow",e=>{if(e.persisted&&audioCtx&&!document.hidden){audOwnT=0;audio()}});
 function initAU(){const a=audioCtx,m=a.createGain(),comp=a.createDynamicsCompressor();m.gain.value=.9;comp.threshold.value=-16;comp.ratio.value=4;m.connect(comp);comp.connect(a.destination);
 const sfx=a.createGain(),amb=a.createGain(),mus=a.createGain(),mf=a.createBiquadFilter();mf.type="lowpass";mf.frequency.value=5000;mus.connect(mf);mf.connect(m);sfx.connect(m);amb.connect(m);
 const len=a.sampleRate*2,nb=a.createBuffer(1,len,a.sampleRate),nd=nb.getChannelData(0);for(let i=0;i<len;i++)nd[i]=Math.random()*2-1;
