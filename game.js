@@ -819,7 +819,11 @@ function tone(freq,dur,wave="sine",vol=.025,delay=0){if(!AU||state.muted)return;
 
 // Akvaria'ya özel üretilmiş müzik ve efektler (snd/ klasörü). Yüklenemezse sentez sesler çalışır.
 const MUS={day:"snd/day.mp3",night:"snd/night.mp3",event:"snd/event.mp3",amb:"snd/amb.mp3",sfx:"snd/sfx.mp3",crash:"a/81fe4c1a53b8fd09.mp3"},MB={},SIDX={"feed":[0.0,0.7],"sell":[0.82,0.9],"coins":[1.84,1.2],"buy":[3.16,1.0],"click":[4.28,0.18],"error":[4.58,0.6],"clean":[5.3,1.4],"bubble":[6.82,0.35],"boop":[7.2899,0.6],"chest":[8.0099,2.0],"level":[10.1299,2.0],"ach":[12.2499,2.0],"rare":[14.3699,1.8],"legend":[16.2899,3.2],"hatch":[19.6099,1.0],"whoosh":[20.7299,0.8],"unlock":[21.6499,1.6],"cure":[23.3699,1.0],"breed":[24.4899,0.9],"gene":[25.5099,1.0],"place":[26.6299,0.7],"help":[27.4499,1.3],"sick":[28.8699,0.9],"death":[29.8899,2.0],"dusk":[32.0099,2.0],"dawn":[34.1299,2.0]},SVAR={feed:.08,sell:.04,coins:.03,click:.05,bubble:.12,boop:.06,place:.05,breed:.03,hatch:.04};let musLoad=0,musCur=null,musKey="",musChk=0;
-function musInit(){if(musLoad||!audioCtx||typeof fetch!=="function")return;musLoad=1;Object.keys(MUS).forEach(k=>{fetch(MUS[k]).then(r=>{if(!r.ok)throw new Error("yok");return r.arrayBuffer()}).then(b=>new Promise((res,rej)=>{try{const p=audioCtx.decodeAudioData(b,res,rej);if(p&&p.then)p.then(res,rej)}catch(e){rej(e)}})).then(buf=>{MB[k]=buf;if(k==="amb"&&ambience&&!ambience.file)ambFile()}).catch(()=>{})})}
+// sürüm 119: bir ses dosyası yüklenemezse 3 kez daha denenir; yedek sentez müzik sadece dosya hiç yüklenemezse çalar
+// (eskiden gece parçası bir kez yüklenemeyince bütün gece yedek melodi çalıyordu)
+const MFAIL={};
+function musLoadK(k,n){fetch(MUS[k],n?{cache:"reload"}:undefined).then(r=>{if(!r.ok)throw new Error("yok");return r.arrayBuffer()}).then(b=>new Promise((res,rej)=>{try{const p=audioCtx.decodeAudioData(b,res,rej);if(p&&p.then)p.then(res,rej)}catch(e){rej(e)}})).then(buf=>{MB[k]=buf;if(k==="amb"&&ambience&&!ambience.file)ambFile()}).catch(()=>{if(n<3)setTimeout(()=>musLoadK(k,n+1),2000*(n+1));else MFAIL[k]=1})}
+function musInit(){if(musLoad||!audioCtx||typeof fetch!=="function")return;musLoad=1;Object.keys(MUS).forEach(k=>musLoadK(k,0))}
 function loopTrim(s,buf){try{const d=buf.getChannelData(0);let a=0,b=d.length-1;while(a<d.length-1&&Math.abs(d[a])<1e-4)a++;while(b>a&&Math.abs(d[b])<1e-4)b--;s.loopStart=a/buf.sampleRate;s.loopEnd=(b+1)/buf.sampleRate}catch(e){}}
 function playSeg(buf,off,dur,vol,rate){try{const s=audioCtx.createBufferSource(),g=audioCtx.createGain();s.buffer=buf;s.playbackRate.value=rate||1;g.gain.value=vol;s.connect(g);g.connect(AU.sfx);s.start(audioCtx.currentTime+.005,off,dur+.02)}catch(e){}}
 function playBuf(buf,vol,rate){try{const s=audioCtx.createBufferSource(),g=audioCtx.createGain();s.buffer=buf;if(rate)s.playbackRate.value=rate;g.gain.value=vol;s.connect(g);g.connect(AU.sfx);s.start()}catch(e){}}
@@ -830,7 +834,7 @@ function startAmbience(){if(!AU||ambience)return;if(MB.amb){ambFile();return}con
 function stopAmbience(){}
 // müzik: I–vi–IV–V üzerinde yumuşak pad, bas ve pentatonik marimba
 const PROG=[[60,64,67],[57,60,64],[53,57,60],[55,59,62]],PENTA=[72,74,76,79,81,84,86,88];
-function musicTick(){if(!AU||state.music===false||audioCtx.state!=="running"||musCur)return;const a=audioCtx,now=a.currentTime,E=60/74/2;if(AU.next<now)AU.next=now+.1;
+function musicTick(){if(!AU||state.music===false||audioCtx.state!=="running"||musCur)return;{const k=musWant();if(k&&MUS[k]&&!MFAIL[k]&&typeof fetch==="function")return}const a=audioCtx,now=a.currentTime,E=60/74/2;if(AU.next<now)AU.next=now+.1;
 AU.mf.frequency.setTargetAtTime(NIGHT()?1300:5000,now,.5);
 while(AU.next<now+.35){const t=AU.next,st=AU.step%8,ch=PROG[AU.bar%4];
 if(st===0){ch.forEach(n=>osc("sine",NT(n),t,E*8,.016,{at:.9,bus:AU.mus}));osc("triangle",NT(ch[0]-12),t,E*3,.045,{bus:AU.mus,lp:600})}
