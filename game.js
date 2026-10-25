@@ -1164,6 +1164,11 @@ let WHALE=null,WHN=0,WAVE=null,WVN=0,EMB=[];
 function ventPos(){return[W*.5,FLOOR+46]}
 function smoothPath(x,P){const n=P.length,M=i=>[(P[i][0]+P[(i+1)%n][0])/2,(P[i][1]+P[(i+1)%n][1])/2];let m=M(n-1);x.moveTo(m[0],m[1]);for(let i=0;i<n;i++){m=M(i);x.quadraticCurveTo(P[i][0],P[i][1],m[0],m[1])}x.closePath()}
 // balina köpekbalığı yandan: yassı baş, iki sırt yüzgeci, göğüs yüzgeci, dikey kuyruk
+// balina köpekbalığı görseli: uzakta kaldığı için koyulaştırılıp soldurulur, gövde dilimlere bölünüp kuyruğa doğru artan dalgayla kıvrılır
+const WHSRC="a/75b2b51005a459d6.webp",WHSP=[[.492,.633],[.604,.618],[.43,.618],[.533,.637],[.639,.592],[.671,.56],[.7,.517],[.558,.455],[.481,.489],[.375,.603],[.444,.498],[.115,.41],[.614,.416],[.099,.34],[.836,.573],[.344,.594],[.75,.475],[.619,.488],[.13,.469],[.653,.388],[.57,.631],[.087,.275],[.731,.499],[.113,.553],[.29,.57],[.316,.582],[.661,.743]];let WHI=null,WHC=null;
+function whaleImg(){if(WHC)return WHC;if(!WHI){WHI=new Image();WHI.src=WHSRC;return null}if(!WHI.complete||!WHI.naturalWidth)return null;try{const c=document.createElement("canvas");c.width=WHI.naturalWidth;c.height=WHI.naturalHeight;const x=c.getContext("2d");x.filter="saturate(.6) brightness(.62)";x.drawImage(WHI,0,0);x.filter="none";x.globalCompositeOperation="source-atop";x.fillStyle="rgba(8,22,44,.42)";x.fillRect(0,0,c.width,c.height);WHC=c}catch(e){WHC=WHI}return WHC}
+function whaleBend(u,t,ph){const q=Math.max(0,.62-u)/.62;return q*q*.06*Math.sin(t*1.25+ph-u*4)}
+function whaleDraw(I,t,ph){const N=18,iw=I.width,ih=I.height,w=1.065/N,sw=iw/N;ctx.globalAlpha=.78;for(let i=0;i<N;i++){const u=(i+.5)/N;ctx.drawImage(I,i*sw,0,sw+1,ih,-.565+i*w,-.2+whaleBend(u,t,ph),w*1.06,.388)}ctx.globalAlpha=1}
 function whalePath(x,fl){x.beginPath();smoothPath(x,[[.5,-.005],[.47,-.06],[.36,-.095],[.2,-.115],[.04,-.122],[-.14,-.1],[-.3,-.058],[-.4,-.032],[-.47,-.1+fl*.6],[-.565,-.215+fl],[-.52,-.085+fl*.5],[-.49,-.008],[-.535,.09+fl*.6],[-.455,.035],[-.4,.024],[-.24,.05],[-.04,.085],[.2,.088],[.4,.06],[.49,.03]]);
  x.moveTo(.03,-.118);x.quadraticCurveTo(-.05,-.17,-.1,-.205);x.quadraticCurveTo(-.11,-.14,-.13,-.098);x.closePath();
  x.moveTo(-.27,-.064);x.quadraticCurveTo(-.31,-.09,-.335,-.105);x.lineTo(-.33,-.05);x.closePath();
@@ -1171,11 +1176,13 @@ function whalePath(x,fl){x.beginPath();smoothPath(x,[[.5,-.005],[.47,-.06],[.36,
  // dev balina (balıkların arkasında)
  if(!WHN)WHN=t+rand(14,26);if(!WHALE&&t>WHN){const L=W*rand(.82,1.02),d=Math.random()<.5?1:-1;WHALE={L,d,x:d>0?-L*.6:W+L*.6,y:rand(H*.3,H*.5),sp:(W+L*1.2)/rand(36,46),ph:rand(0,6)}}
  if(WHALE){const B=WHALE;B.x+=B.d*B.sp*dt;if((B.d>0&&B.x>W+B.L*.65)||(B.d<0&&B.x<-B.L*.65)){WHALE=null;WHN=t+rand(45,90)}else{const fl=Math.sin(t*1.25+B.ph)*.05;ctx.save();ctx.translate(B.x,B.y+Math.sin(t*.4+B.ph)*8);ctx.scale(B.L*B.d,B.L);ctx.rotate(Math.sin(t*.3+B.ph)*.02);
+  const WI=whaleImg();if(WI){whaleDraw(WI,t,B.ph);const m=ctx.getTransform(),k=1/K;WHSP.forEach(([u,v],i)=>{const lx=-.565+u*1.065,ly=-.2+v*.388+whaleBend(u,t,B.ph),a=.18+.34*Math.max(0,Math.sin(t*1.6-u*7+B.ph+i*.4));EM.push([(m.a*lx+m.c*ly+m.e)*k,(m.b*lx+m.d*ly+m.f)*k,1+(i<8?.5:0),[150,215,255],a,0])})}else{
   ctx.globalAlpha=.72;const g=ctx.createLinearGradient(0,-.2,0,.12);g.addColorStop(0,"rgba(92,132,178,.75)");g.addColorStop(.3,"rgba(30,48,74,.92)");g.addColorStop(1,"rgba(5,9,18,.96)");ctx.fillStyle=g;whalePath(ctx,fl);ctx.fill();
   ctx.save();whalePath(ctx,fl);ctx.clip();ctx.fillStyle="rgba(215,235,255,.16)";for(let i=0;i<70;i++){const u=.44-((i*.61803)%1)*.82,v=-.1+((i*.38197*7)%1)*.17,r=.0045+(i%3)*.0015;if(u<-.36)continue;ctx.beginPath();ctx.arc(u,v,r,0,7);ctx.fill()}
   ctx.strokeStyle="rgba(150,190,230,.18)";ctx.lineWidth=.004;for(let i=0;i<4;i++){ctx.beginPath();ctx.arc(.33-i*.022,.005,.07,-.9,.9);ctx.stroke()}ctx.restore();ctx.globalAlpha=1;
-  const m=ctx.getTransform(),k=1/K;for(let i=0;i<16;i++){const u=.4-i*.052,yy=.015+Math.sin(u*3)*.01,px=(m.a*u+m.c*yy+m.e)*k,py=(m.b*u+m.d*yy+m.f)*k,a=.22+.4*Math.max(0,Math.sin(t*2.2-i*.55+B.ph));EM.push([px,py,1.1,[120,205,255],a,0])}
-  ENV.push([(m.a*.1+m.e)*k,(m.b*.1+m.f)*k,B.L*.45,[90,150,230],.1]);ctx.restore()}}
+  {const m=ctx.getTransform(),k=1/K;for(let i=0;i<16;i++){const u=.4-i*.052,yy=.015+Math.sin(u*3)*.01,px=(m.a*u+m.c*yy+m.e)*k,py=(m.b*u+m.d*yy+m.f)*k,a=.22+.4*Math.max(0,Math.sin(t*2.2-i*.55+B.ph));EM.push([px,py,1.1,[120,205,255],a,0])}}
+  }
+  const m=ctx.getTransform(),k=1/K;ENV.push([(m.a*.1+m.e)*k,(m.b*.1+m.f)*k,B.L*.45,[90,150,230],.1]);ctx.restore()}}
  // sıcak su kaynağı: kumun içinden yükselen titrek ışık sütunu
  const fk=.82+.1*Math.sin(t*7.3)+.08*Math.sin(t*13.1),G=glowSpr([255,120,50]);ctx.save();ctx.globalCompositeOperation="lighter";
  for(let i=0;i<5;i++){const yy=vy-18-i*34,sw=34+i*12+Math.sin(t*2.1+i*1.7)*6,xx=vx+Math.sin(t*1.3+i*.9)*(4+i*3);ctx.globalAlpha=(.16-i*.025)*fk;ctx.drawImage(G,xx-sw/2,yy-30,sw,60)}
