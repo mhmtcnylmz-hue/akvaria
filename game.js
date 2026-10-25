@@ -486,9 +486,9 @@ function mkJel(d){const r=rand(26,34),x=rand(BX0+r,BX1-r),y=rand(H*.3,H*.55),j={
  const len=r*rand(1.6,2.3);for(let i=0;i<9;i++){const pts=[];for(let k=0;k<10;k++)pts.push({x,y:y+k*len/10,px:x,py:y+k*len/10});j.tent.push({pts,sl:len/10*rand(.85,1.15)})}
  for(let i=0;i<3;i++)j.arms.push({o:rand(0,6),len:r*rand(1.5,2.1),fl:i%2});return j}
 function mkShr(d){return{d,x:rand(BX0+40,BX1-40),y:FLOOR-10,dir:Math.random()<.5?1:-1,vx:0,vy:0,len:rand(52,62),mode:"walk",t:Math.random()*9,curl:0,flip:0,leg:0,swim:0,next:rand(2,5),pause:0,tilt:0}}
-function stepJel(j,dt){const u=CU;j.t+=dt;const p0=j.ph;j.ph+=dt/j.period*(j.fl>0?1.9:1);if(Math.floor(j.ph)!==Math.floor(p0))j.tx=Math.max(BX0+j.r,Math.min(BX1-j.r,j.x+rand(-W*.25,W*.25)));
+function stepJel(j,dt){const u=CU;j.t+=dt;const p0=j.ph;j.ph+=dt/j.period*(j.fl>0?1.9:1);if(Math.floor(j.ph)!==Math.floor(p0))j.tx=bestSpot(j,3,()=>[Math.max(BX0+j.r,Math.min(BX1-j.r,j.x+rand(-W*.25,W*.25))),j.ty||j.y])[0];
  // sürüm 127: hedef derinlik — hedefin altındayken güçlü atar, üstündeyken atışı zayıflar ve batar (eskiden hep en üste çıkıp kalıyordu)
- if(!(j.nty>j.t)){j.nty=j.t+rand(8,16);j.ty=rand(H*.24,FLOOR-j.r*3.2)}const kd=j.fl>0?1:Math.max(0,Math.min(1.5,.35+(j.y-j.ty)/70));
+ if(!(j.nty>j.t)){j.nty=j.t+rand(8,16);j.ty=bestSpot(j,3,()=>[j.tx||j.x,rand(H*.24,FLOOR-j.r*3.2)])[1]}const kd=j.fl>0?1:Math.max(0,Math.min(1.5,.35+(j.y-j.ty)/70));
  const p=j.ph%1;j.c=p<.28?Math.sin(p/.28*Math.PI):0;const th=j.c*(j.fl>0?260:130*kd)*u;j.vy+=(-th+22*u)*dt;j.vx+=((j.tx-j.x)*.25-j.vx)*dt*.8;j.vx*=Math.exp(-dt*.6);j.vy*=Math.exp(-dt*1.6);j.fl=Math.max(0,j.fl-dt);
  j.x+=j.vx*dt;j.y+=j.vy*dt;const top=H*.16+j.r,bot=FLOOR-j.r*2.6;if(j.y<top){j.y=top;j.vy=Math.abs(j.vy)*.3}if(j.y>bot){j.y=bot;j.vy=-Math.abs(j.vy)*.2-10}j.x=Math.max(j.r,Math.min(W-j.r,j.x));
  const w=j.r*(1-.22*j.c),n=j.tent.length;j.tent.forEach((T,i)=>{const a=(i/(n-1)-.5)*1.7,ax=j.x+Math.sin(a)*w*.92,ay=j.y+j.r*.1;const P=T.pts;
@@ -507,7 +507,7 @@ function drawJel(j){const d=j.d,bi=cImg(d.img),ai=cImg(d.arm),col=d.c,glow=night
 let CPOST=[];const INK=[];
 // --- Taraklı denizanası: atmaz, kirpikleriyle hep aynı hızda süzülür; tarak sıralarında renk dalgaları yukarıdan aşağı akar
 function mkCt(d){const r=rand(20,26),im=cImg(d.img);return{d,r,ar:im?im.naturalHeight/im.naturalWidth:1.6,x:rand(BX0+60,BX1-60),y:rand(H*.25,H*.6),vx:0,vy:0,tx:0,ty:0,t:rand(0,9),nt:0,rot:0,fl:0}}
-function stepCt(o,dt){o.t+=dt;o.nt-=dt;if(o.nt<=0){o.nt=rand(5,10);o.tx=rand(BX0+o.r*2,BX1-o.r*2);o.ty=rand(H*.18,FLOOR-o.r*o.ar*1.4)}
+function stepCt(o,dt){o.t+=dt;o.nt-=dt;if(o.nt<=0){o.nt=rand(5,10);[o.tx,o.ty]=bestSpot(o,3,()=>[rand(BX0+o.r*2,BX1-o.r*2),rand(H*.18,FLOOR-o.r*o.ar*1.4)])}
  const dx=o.tx-o.x,dy=o.ty-o.y,d=Math.hypot(dx,dy)||1,sp=Math.min(9,d*.2)*(o.fl>0?2.2:1);o.vx+=(dx/d*sp-o.vx)*Math.min(1,dt*.7);o.vy+=(dy/d*sp-o.vy)*Math.min(1,dt*.7);o.x+=o.vx*dt;o.y+=o.vy*dt;
  o.rot+=((Math.sin(o.t*.31)*.18+o.vx*.012)-o.rot)*Math.min(1,dt*.8);o.fl=Math.max(0,o.fl-dt)}
 function drawCt(o){const bi=cImg(o.d.img),ri=cImg(o.d.rows);if(!bi)return;const w=o.r*2*(1-.06*Math.min(1,o.fl)),h=w*o.ar;ctx.save();ctx.translate(o.x,o.y);ctx.rotate(o.rot);ctx.globalAlpha=.9;ctx.drawImage(bi,-w/2,-h/2,w,h);ctx.restore();
@@ -630,7 +630,10 @@ function drawShr(s){const L=s.len,im0=cImg(s.d.img);if(!im0)return;const im=nigh
  ctx.strokeStyle=SS.ant;ctx.lineWidth=Math.max(.8,L*.011);for(const k of [0,1]){const ph=s.t*(s.pause>0?5:2)+k*2;ctx.beginPath();ctx.moveTo(0,DH*.12);ctx.quadraticCurveTo(L*.1,DH*.3+Math.sin(ph)*L*.03,L*.2,DH*.05+Math.sin(ph*1.3)*L*.05);ctx.stroke()}
  for(const k of [0,1]){ctx.beginPath();let ax=L*.05,ay=-DH*(.05+k*.1);ctx.moveTo(ax,ay);let an=-.3-k*.25;const n=16,sl=L*(k?1.45:1.2)/n;for(let i=0;i<n;i++){an+=.03+Math.sin(s.t*(1.7+k*.4)-i*.35)*.035;ax+=Math.cos(an)*sl;ay+=Math.sin(an)*sl;ctx.lineTo(ax,ay)}ctx.lineWidth=Math.max(.6,L*.008);ctx.stroke()}
  ctx.restore()}
-function critDraw(dt){CPOST.length=0;const L=critRT();if(!L.length)return;for(const o of L){const T=o.d.t;if(T==="sh")stepShr(o,dt);else if(T==="iso")stepIso(o,dt);else if(T==="ct")stepCt(o,dt);else if(T==="sq")stepSq(o,dt);else stepJel(o,dt);if(T==="at")o.al=Math.max(0,(o.al||0)-dt)}
+// sürüm 130: yeni hedef seçerken birkaç aday arasından diğer canlılara en uzak olanı al (hepsi ortada üst üste birikmesin)
+let CRL=[];function spaceScore(x,y,self){let m=1e9;for(const f of state.fish){if(f===self)continue;const d=Math.hypot(f.x*W-x,(f.y*H-y)*1.4);if(d<m)m=d}for(const o of CRL){if(o===self||o.d.t==="sh"||o.d.t==="iso")continue;const d=Math.hypot(o.x-x,(o.y-y)*1.4);if(d<m)m=d}return m}
+function bestSpot(self,n,gen){let b=gen(),bs=spaceScore(b[0],b[1],self);for(let i=1;i<n;i++){const c=gen(),cs=spaceScore(c[0],c[1],self);if(cs>bs){b=c;bs=cs}}return b}
+function critDraw(dt){CPOST.length=0;const L=critRT();CRL=L;if(!L.length)return;for(const o of L){const T=o.d.t;if(T==="sh")stepShr(o,dt);else if(T==="iso")stepIso(o,dt);else if(T==="ct")stepCt(o,dt);else if(T==="sq")stepSq(o,dt);else stepJel(o,dt);if(T==="at")o.al=Math.max(0,(o.al||0)-dt)}
  L.filter(o=>o.d.t==="iso").forEach(drawIso);L.filter(o=>o.d.t==="sh").sort((a,b)=>a.y-b.y).forEach(drawShr);L.filter(o=>o.d.t==="je").forEach(drawJel);L.filter(o=>o.d.t==="at").forEach(drawAt);L.filter(o=>o.d.t==="ct").forEach(drawCt);L.filter(o=>o.d.t==="sq").forEach(drawSq);inkDraw(dt)}
 function critTap(x,y){if(VISIT)return false;let hit=false;for(const o of CRT.values()){const T=o.d.t;
  if(T==="ct"){if(Math.abs(x-o.x)<o.r*1.3&&Math.abs(y-o.y)<o.r*o.ar*1.2){o.fl=1.6;o.vx+=(o.x-x)*1.5;o.vy+=(o.y-y)*1.5;hit=true}continue}
@@ -1320,9 +1323,9 @@ const PH={koi:[45,70,.15,.8,0,.8],arowana:[60,100,.2,.8,0,1],boxfish:[32,55,.25,
 let acc=0,simT=0;
 function phys(f,s){if(f.vx!==undefined&&isFinite(f.vx+f.vy+f.x+f.y))return;const p=PH[s.id]||PH.clown;f.x=Math.min(BX1/W,Math.max(BX0/W,f.x||.5));f.y=Math.min(BY1/H,Math.max(BY0/H,f.y||.4));f.dir=f.dir||1;f.vx=f.dir*p[0]*.3;f.vy=0;f.tt=0;f.tx=f.x*W;f.ty=f.y*H;f.ang=0;f.fs=f.dir;f.tp=rand(0,6);f.sn=0}
 function isSleepy(f){return NIGHT()&&!NOCT.includes(f.type)&&!(f.wake>simT)}
-function pick(f,p){const TR=TRAIT[f.type]||TR0,sl=isSleepy(f),fw=fishW(f),fh=fishH(f),mx=Math.max(0,fw/2-50),my=Math.max(0,fh/2-48)*.8,bx0=BX0+mx,bx1=BX1-mx,by0=BY0+my,by1=BY1-my;f.act="";const rest=sl||Math.random()<(NOCT.includes(f.type)&&!NIGHT()?.45:(TR.rest!=null?TR.rest:.22)),x=f.x*W,y=f.y*H;f.rest=rest;f.tt=sl?rand(5,10):rest?rand(1.5,4):rand(3,9);
+function pick(f,p){const TR=TRAIT[f.type]||TR0,sl=isSleepy(f),fw=fishW(f),fh=fishH(f),mx=PORT?Math.max(0,fw/2-80)*.6:Math.max(0,fw/2-50),my=Math.max(0,fh/2-48)*.8,bx0=BX0+mx,bx1=BX1-mx,by0=BY0+my,by1=BY1-my;f.act="";const rest=sl||Math.random()<(NOCT.includes(f.type)&&!NIGHT()?.45:(TR.rest!=null?TR.rest:.22)),x=f.x*W,y=f.y*H;f.rest=rest;f.tt=sl?rand(5,10):rest?rand(1.5,4):rand(3,9);
 if(sl){f.tx=W*(.1+.8*((f.id*.7548776)%1))+rand(-20,20);f.ty=by0+(by1-by0)*(.32+.64*((f.id*.6180339)%1))}else if(rest){f.tx=x+rand(-25,25);f.ty=y+rand(-15,15)}else{let d=(Math.random()<.7)===(f.vx>=0)?1:-1;if(x<bx0+120)d=1;else if(x>bx1-120)d=-1;f.tx=x+d*rand(90,300)*(TR.patrol?1.8:1);const z=TR.z||[p[2],p[3]];f.ty=Math.random()<.3?y+rand(-50,50):by0+(by1-by0)*rand(z[0],z[1]);if(TR.patrol){f.tx=x<W/2?bx1-rand(0,30):bx0+rand(0,30);f.tt=rand(6,11)}if(TR.home){if(f.home==null)f.home=homeSpot(f);f.tx=f.home+rand(-75,75)}}
-f.tx=Math.min(bx1,Math.max(bx0,f.tx));f.ty=Math.min(by1,Math.max(by0,f.ty));if(!sl&&!rest)traitPick(f,TR,fw,fh,bx0,bx1)}
+f.tx=Math.min(bx1,Math.max(bx0,f.tx));f.ty=Math.min(by1,Math.max(by0,f.ty));if(!sl&&!rest&&!TR.patrol&&!TR.home){const d=f.tx>=x?1:-1,z=TR.z||[p[2],p[3]],c0=[f.tx,f.ty];[f.tx,f.ty]=bestSpot(f,3,()=>c0.used?[Math.min(bx1,Math.max(bx0,x+d*rand(90,300))),Math.min(by1,Math.max(by0,by0+(by1-by0)*rand(z[0],z[1])))]:(c0.used=1,c0))}if(!sl&&!rest)traitPick(f,TR,fw,fh,bx0,bx1)}
 let gridG=null,gridArr=null,gridN=0,gridT=0,obsKey="",obsC=null;
 function physics(h){
 const fs=state.fish,n=fs.length,coll=isColl(state.tank);simT+=h;let G=null;coinStep(h);
@@ -1333,7 +1336,7 @@ for(const f of fs){
 const s=getSpecies(f.type),p=PH[s.id]||PH.clown,ps=f.personality==="Hareketli"?1.3:f.personality==="Utangaç"?.8:f.personality==="Uysal"?.9:1,yg=Math.min(1,f.age),
 sz=fsz(f),sl=isSleepy(f),nm=NOCT.includes(f.type)?(NIGHT()?1.2:.8):1,vmax=p[0]*ps*nm*(sl?.3:1)*(f.sick?.55:1)*(f.hunger<15?.8:1)*(1.15-.25*yg),A=p[1]*p[5]*(sl?.4:1)*(1.2-.3*yg);
 if(sl!==!!f.slp){f.slp=sl;f.tt=0}
-let x=f.x*W,y=f.y*H,ax=0,ay=0,cruise=vmax*.8,food=null;const fw=fishW(f),fh=fishH(f),mx=Math.max(0,fw/2-50),my=Math.max(0,fh/2-48)*.8,bx0=BX0+mx,bx1=BX1-mx,by0=BY0+my,by1=BY1-my;
+let x=f.x*W,y=f.y*H,ax=0,ay=0,cruise=vmax*.8,food=null;const fw=fishW(f),fh=fishH(f),mx=PORT?Math.max(0,fw/2-80)*.6:Math.max(0,fw/2-50),my=Math.max(0,fh/2-48)*.8,bx0=BX0+mx,bx1=BX1-mx,by0=BY0+my,by1=BY1-my;
 if(!isFinite(x+y+f.vx+f.vy)){f.x=.5;f.y=.4;f.vx=f.vy=0;continue}
 // yem algısı: ağız noktası, türe göre beslenme bölgesi, büyük balığın önceliği
 const TR=TRAIT[f.type]||TR0,mo=f.dir||1,MOq=mouthOf(f),mx0=f._mx!=null&&Math.abs(f._mx-x)<fw?f._mx:x+mo*fw*(MOq[0]-.5),my0=f._my!=null&&Math.abs(f._my-y)<fh?f._my:y+fh*(MOq[1]-.5);gillStep(f);let bm=1;if(f.burst>0){f.burst-=h;bm=1.75}if(f.gulp>0)f.gulp-=h;
