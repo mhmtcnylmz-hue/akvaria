@@ -32,7 +32,7 @@ const SORUN = [], BILGI = [];
     s.fish = ["koi", "neon", "guppy", "betta", "gold", "cichlid", "discus", "arowana"].map(t => mk(t)).concat([mk("neon", "gold"), mk("guppy", "glitch"), mk("koi", "albino")]);
     s.stash = { salt: { fish: ["clown", "napo", "ytang", "btang", "angel", "lion", "trigger", "mandarin"].map(t => mk(t)).concat([mk("clown", "melanistic")]), dirt: 30 },
       deep: { fish: ["oar", "angler", "hatchet", "viper", "dragon", "lantern", "tripod", "lancet"].map(t => mk(t)).concat([mk("angler", "melanistic"), mk("viper", "transparent"), mk("dragon", "gold"), mk("tripod", "albino"), mk("lancet", "melanistic")]), dirt: 30 },
-      river: { fish: ["piranha", "piranha", "peacock", "bichir", "motoro", "eel", "mahseer", "gar", "goliath", "mekong", "sturgeon", "arapaima"].map(t => mk(t)).concat([mk("eel", "glitch"), mk("arapaima", "gold")]), dirt: 30 },
+      river: { fish: ["piranha", "piranha", "peacock", "bichir", "eel", "mahseer", "gar", "goliath", "mekong", "sturgeon", "arapaima"].map(t => mk(t)).concat([mk("eel", "glitch"), mk("arapaima", "gold")]), dirt: 30 },
       cfresh: { fish: [mk("koi"), mk("clown")], dirt: 0 } };
     s.crit = { deep: [{ id: 900, k: "jdeep" }, { id: 901, k: "iso" }, { id: 907, k: "comb" }, { id: 908, k: "atolla" }, { id: 909, k: "gsquid" }], salt: [{ id: 902, k: "jpink" }, { id: 904, k: "cleaner" }], fresh: [{ id: 906, k: "blue" }] };
     s.decor = [{ k: "🦀", x: .25 }, { k: "sf", x: .4 }, { k: "🐚", x: .7 }]; s.snails = 2; s.props = ["moai", "table"]; s.dirt = 40;
