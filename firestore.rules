@@ -1,14 +1,14 @@
 rules_version = '2';
-// Akvaria bulut kuralları (sürüm 115).
+// Akvaria bulut kuralları (sürüm 140).
 // Firebase konsolu > Firestore Database > Kurallar sekmesine yapıştırılıp "Yayınla"ya basılır.
-// Oyunun kullandığı her alan burada: kayıt, tank, profil, yardım, sohbet, hediye.
+// Oyunun kullandığı her alan burada: kayıt, tank, profil, yardım, sohbet, sohbet yasağı, özel mesaj, hediye, takas, yönetici hediyesi.
 service cloud.firestore {
   match /databases/{database}/documents {
     function signed() { return request.auth != null; }
     function me(uid) { return signed() && request.auth.uid == uid; }
     function admin() {
-      return signed() && request.auth.token.email == "mhmtcnylmz@gmail.com"
-        && request.auth.token.email_verified == true;
+      return signed() && request.auth.token.get('email', '') == "mhmtcnylmz@gmail.com"
+        && request.auth.token.get('email_verified', false) == true;
     }
 
     // Kişisel kayıt: sadece sahibi okur ve yazar
@@ -19,11 +19,36 @@ service cloud.firestore {
     match /profiles/{uid} { allow read: if signed(); allow write: if me(uid); }
     match /helps/{uid}    { allow read: if signed(); allow write: if me(uid); }
 
-    // Genel sohbet: herkes okur, herkes kendi adına kısa mesaj yazar,
+    // Sohbet yasağı: 1. uyarı 1 saat, 2. 1 gün, 3. 1 hafta, 4. ve 5. birer ay, 6. kalıcı.
+    // Oyuncu kendi kaydını sadece bir artırabilir (kendini cezalandırır), azaltamaz ve silemez; yönetici her şeyi yapar.
+    function banH(s) { return s <= 1 ? 1 : (s == 2 ? 24 : (s == 3 ? 168 : 720)); }
+    function notBanned() {
+      let p = /databases/$(database)/documents/bans/$(request.auth.uid);
+      return !exists(p) || (get(p).data.perm != true
+        && get(p).data.at + duration.value(banH(get(p).data.s), 'h') < request.time);
+    }
+    function clean(m) {
+      return !m.lower().matches('.*(^|[^a-z0-9çğıöşü])(amk|aq|orospu|piç|pic|siktir|sikerim|yarrak|göt|gavat|pezevenk|ibne|kahpe|fuck|shit|bitch)([^a-z0-9çğıöşü]|$).*');
+    }
+    match /bans/{uid} {
+      allow read: if me(uid) || admin();
+      allow write: if admin();
+      allow create: if me(uid)
+        && request.resource.data.keys().hasOnly(['s', 'at', 'perm'])
+        && request.resource.data.s == 1 && request.resource.data.perm == false
+        && request.resource.data.at == request.time;
+      allow update: if me(uid)
+        && request.resource.data.keys().hasOnly(['s', 'at', 'perm'])
+        && request.resource.data.s == resource.data.s + 1
+        && request.resource.data.perm == (request.resource.data.s >= 6)
+        && request.resource.data.at == request.time;
+    }
+
+    // Genel sohbet: herkes okur, yasaklı olmayan herkes kendi adına kısa ve temiz mesaj yazar,
     // mesajı sadece yazan kişi ya da yönetici siler, kimse değiştiremez
     match /chat/{id} {
       allow read: if signed();
-      allow create: if signed()
+      allow create: if signed() && notBanned() && clean(request.resource.data.m)
         && request.resource.data.keys().hasOnly(['u', 'n', 'av', 'lv', 'm', 'at'])
         && request.resource.data.u == request.auth.uid
         && request.resource.data.m is string
@@ -44,6 +69,50 @@ service cloud.firestore {
         && request.resource.data.at == request.time;
       allow read, delete: if signed()
         && (resource.data.to == request.auth.uid || resource.data.from == request.auth.uid);
+      allow update: if false;
+    }
+
+    // Özel mesaj: sadece gönderen ve alıcı okur (yönetici de denetim için okur)
+    match /dms/{id} {
+      allow create: if signed()
+        && request.resource.data.keys().hasOnly(['from', 'to', 'fn', 'tn', 'm', 'at'])
+        && request.resource.data.from == request.auth.uid
+        && request.resource.data.to is string && request.resource.data.to != request.auth.uid
+        && request.resource.data.m is string
+        && request.resource.data.m.size() > 0 && request.resource.data.m.size() <= 300
+        && request.resource.data.at == request.time;
+      allow read: if admin() || (signed()
+        && (resource.data.to == request.auth.uid || resource.data.from == request.auth.uid));
+      allow delete: if admin() || (signed()
+        && (resource.data.to == request.auth.uid || resource.data.from == request.auth.uid));
+      allow update: if false;
+    }
+
+    // Takas: teklif eden açar; alıcı sadece kabul eder ya da reddeder, teklif eden sadece iptal eder (yalnızca açıkken)
+    match /trades/{id} {
+      allow create: if signed()
+        && request.resource.data.keys().hasOnly(['from', 'to', 'fn', 'tn', 'give', 'want', 'gf', 'gt', 'st', 'at'])
+        && request.resource.data.from == request.auth.uid
+        && request.resource.data.to is string && request.resource.data.to != request.auth.uid
+        && request.resource.data.st == 'open'
+        && request.resource.data.at == request.time;
+      allow read: if admin() || (signed()
+        && (resource.data.to == request.auth.uid || resource.data.from == request.auth.uid));
+      allow update: if signed() && resource.data.st == 'open' && (
+        (resource.data.to == request.auth.uid
+          && request.resource.data.st in ['accepted', 'declined']
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['st', 'back', 'bn']))
+        || (resource.data.from == request.auth.uid
+          && request.resource.data.st == 'cancel'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['st'])));
+      allow delete: if admin() || (signed() && resource.data.st != 'open'
+        && (resource.data.from == request.auth.uid || resource.data.to == request.auth.uid));
+    }
+
+    // Yönetici hediyesi (altın/zümrüt): sadece yönetici gönderir, alıcı okuyup siler
+    match /grants/{id} {
+      allow create: if admin();
+      allow read, delete: if admin() || (signed() && resource.data.to == request.auth.uid);
       allow update: if false;
     }
   }
