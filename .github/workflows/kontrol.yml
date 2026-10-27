@@ -1,0 +1,20 @@
+# Oyunun otomatik kontrolü: her sabah (08:00 İstanbul civarı), main'e her yüklemede ve elle.
+# tools/gunluk_kontrol.js sorun bulursa iş başarısız olur ve GitHub e-posta gönderir.
+name: Akvaria kontrol
+on:
+  schedule:
+    - cron: "41 4 * * *"
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  kontrol:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-save playwright@1.49.1 && npx playwright install --with-deps chromium
+      - run: node tools/gunluk_kontrol.js
