@@ -1459,8 +1459,8 @@ function suckStep(d,h){const f=d.sk;if(!f||!state.fish.includes(f)){d.sk=null;re
  if(dist<2.5||d.skT>.3)suckEnd(f,d,tx,ty)}
 function suckEnd(f,d,tx,ty){const fw=fishW(f),mo=(f.fs||f.dir||1)>=0?1:-1;d.sk=null;f.jawH=Math.max(.06,simT-f.jawT);
  // tadıp geri tükürme (küçük balıklar, ara sıra)
- if(fw<85&&!d.spat&&d.tp!=="k"&&Math.random()<.1){d.spat=1;d.x=tx+mo*4;d.y=ty;d.vx=mo*rand(45,70);d.vy=rand(-12,4);if(d.ph!=="sink"){d.ph="sink";d.vy=8}f.spitT=simT+.6;f.jawT=simT;f.jawA=.45;f.jawH=.08;crumbs(tx,ty,1,d.col);return}
- const bite=Math.max(.5,Math.min(2,fw/75)),e=Math.min(bite,d.hp);d.hp-=e;f.hunger=Math.min(100,f.hunger+12*e);
+ if(fw<85&&!d.spat&&d.tp!=="k"&&f.hunger>60&&Math.random()<.08){d.spat=1;d.x=tx+mo*4;d.y=ty;d.vx=mo*rand(45,70);d.vy=rand(-12,4);if(d.ph!=="sink"){d.ph="sink";d.vy=8}f.spitT=simT+.6;f.jawT=simT;f.jawA=.45;f.jawH=.08;crumbs(tx,ty,1,d.col);return}
+ const bite=Math.max(.5,Math.min(2,fw/75)),e=Math.min(bite,d.hp);d.hp-=e;f.hunger=Math.min(100,f.hunger+18*e);
  if(d.hp<=.01)d.eaten=true;else{d.x=tx+mo*3;d.vx=mo*rand(8,20);d.vy=rand(-6,6)}
  f.gulp=.24;f.chew=simT+.08;f.gill=simT+.22;f.gillC=d.ph==="floor"?"#cdbb92":d.col||"#d6c7a0";if(d.ph==="floor")sandPuff(d.x,d.y,3);crumbs(tx,ty,1,d.col);if(simT-eatAt>.3){eatAt=simT;sfx("bubble")}}
 // yutkunduktan sonra solungaçlardan küçük parçalar çıkar
@@ -1519,12 +1519,12 @@ let x=f.x*W,y=f.y*H,ax=0,ay=0,cruise=vmax*.8,food=null;const fw=fishW(f),fh=fish
 if(!isFinite(x+y+f.vx+f.vy)){f.x=.5;f.y=.4;f.vx=f.vy=0;continue}
 // yem algısı: ağız noktası, türe göre beslenme bölgesi, büyük balığın önceliği
 const TR=TRAIT[f.type]||TR0,mo=f.dir||1,MOq=mouthOf(f),mx0=f._mx!=null&&Math.abs(f._mx-x)<fw?f._mx:x+mo*fw*(MOq[0]-.5),my0=f._my!=null&&Math.abs(f._my-y)<fh?f._my:y+fh*(MOq[1]-.5);gillStep(f);let bm=1;if(f.burst>0){f.burst-=h;bm=1.75}if(f.gulp>0)f.gulp-=h;
-if(drops.length&&f.hunger<95&&(!sl||f.hunger<35)&&!(f.spitT>simT)){let best=1e9;const R=(130+(100-f.hunger)*2.6)*(TR.sense||1);for(const d of drops){if(d.eaten||d.ph==="fall"||(d.sk&&d.sk!==f))continue;const wz=zoneW(TR.feed,d);if(wz<=0||(f.hunger>55&&wz<.45))continue;if(d.by&&d.by!==f.id&&simT-d.ct<.35&&f.hunger>35&&d.bsz>fw*1.1)continue;const q=Math.hypot(d.x-mx0,d.y-my0)/wz;if(q<R&&q<best){best=q;food=d}}}
+if(drops.length&&f.hunger<90&&(!sl||f.hunger<35)&&!(f.spitT>simT)){let best=1e9;const R=(130+(100-f.hunger)*2.6)*(TR.sense||1)*(f.hunger<50?1.6:1);for(const d of drops){if(d.eaten||d.ph==="fall"||(d.sk&&d.sk!==f))continue;const wz=zoneW(TR.feed,d);if(wz<=0||(f.hunger>55&&wz<.45))continue;if(d.by&&d.by!==f.id&&simT-d.ct<.35&&f.hunger>35&&d.bsz>fw*1.1)continue;const dd=Math.hypot(d.x-mx0,d.y-my0),q=dd/wz;if(dd<R&&q<best){best=q;food=d}}}
 if(food){if(!food.by||food.by===f.id||simT-food.ct>.35||fw>food.bsz*1.1){food.by=f.id;food.bsz=fw}if(food.by===f.id)food.ct=simT;const fd=food.x>=x?1:-1;
 f.tx=food.x-fd*fw*.42;f.ty=(food.ph==="surf"?Math.max(food.y+fh*.12,SURF+6):food.y+(food.ph==="sink"?food.vy*.35:0))-fh*.06;f.rest=false;f.tt=1;f.act="";cruise=vmax*(.65+.45*(1-f.hunger/100))*(TR.lunge&&simT-f.lt>2?1.3:1);
 if(Math.abs(food.x-x)<95&&mo!==fd&&Math.abs(food.y-y)<90)f.dir=fd;const dm=Math.hypot(food.x-mx0,food.y-my0);if(dm<(TR.lunge?110:65)&&mo===fd){if(!(f.burst>0)&&simT-(f.lt||0)>.6){f.burst=TR.lunge?.32:.2;f.lt=simT}}
 // emme: ağız yeme yeterince yakın ve hizalıysa çene açılır, yem suyla birlikte içeri çekilir
-{const SR=Math.max(16,fw*.2)*(TR.lunge?1.25:1)*(f.type==="angler"?1.9:1)+food.r0;if(!food.sk&&dm<SR&&mo===fd&&simT>(f.biteT||0)){f.biteT=simT+(fw<70?.42:.3)+(f.type==="angler"?.5:0);if(f.type!=="angler"&&Math.random()<.08&&food.ph!=="floor"){food.vx+=mo*rand(25,45);food.vy+=rand(-15,15);f.jawT=simT;f.jawA=.5;f.jawH=.06}else{suckStart(f,food);if(f.type==="angler")f.burst=.15}}}}
+{const SR=Math.max(20,fw*.26)*(TR.lunge?1.25:1)*(f.type==="angler"?1.9:1)+food.r0;if(!food.sk&&dm<SR&&mo===fd&&simT>(f.biteT||0)){f.biteT=simT+(fw<70?.42:.3)+(f.type==="angler"?.5:0);if(f.type!=="angler"&&f.hunger>60&&Math.random()<.05&&food.ph!=="floor"){food.vx+=mo*rand(25,45);food.vy+=rand(-15,15);f.jawT=simT;f.jawA=.5;f.jawH=.06}else{suckStart(f,food);if(f.type==="angler")f.burst=.15}}}}
 else{if(behave(f,TR,x,y,fw,fh,mx0,my0,h,p,bx0,bx1,by0,by1))cruise=vmax*.9;f.tt-=h;if(f.tt<=0||(!f.rest&&f.act!=="graze"&&f.act!=="forage"&&Math.hypot(f.tx-x,f.ty-y)<18))pick(f,p)}
 // varışa yavaşlayarak yönelme (dikey ivme daha düşük)
 const deep=(food&&food.ph==="floor")||f.act==="forage",by1e=deep?Math.max(by1,FLOOR+6-fh*.22):by1,by0e=(food&&food.ph==="surf")||f.act==="beg"||f.act==="air"?Math.min(by0,SURF+fh*.12):by0;const dx=f.tx-x,dy=f.ty-y,dist=Math.hypot(dx,dy)||1,want=food?bm*cruise*Math.max(.35,Math.min(1,dist/35)):bm*f.rest&&!sl?Math.min(cruise*.25,dist*.8):cruise*Math.min(1,dist/90);
