@@ -527,11 +527,13 @@ $("tankList").innerHTML=TKEYS.map(t).join("")}
 
 const SPM=new Map();function getSpecies(id){let s=SPM.get(id);if(!s){s=species.find(x=>x.id===id);if(!s)return species[0];SPM.set(id,s)}return s}
 function notify(text){$("message").textContent=text;$("message").classList.add("show");clearTimeout(messageTimer);messageTimer=setTimeout(()=>$("message").classList.remove("show"),2200)}
-const TRANSIENT=new Set(["_w","_wa","_wg","_wm","_wz","_wt","chase","flee","chT","fleeT","wake","slp","vx","vy","tx","ty","tt","rest","ang","fs","tp","sn","st"]);
+// sürüm 143: simT'ye göre tutulan balık zamanlayıcıları; simT her açılışta 0'dan başladığı için kayıtta kalırsa balıklar saatlerce yem yiyemiyordu
+const SIMT_KEYS=["airT","biteT","chCd","chew","gill","jawT","lookT","lt","pk","spitT","zapT"];
+const TRANSIENT=new Set(["_w","_wa","_wg","_wm","_wz","_wt","chase","flee","chT","fleeT","wake","slp","vx","vy","tx","ty","tt","rest","ang","fs","tp","sn","st",...SIMT_KEYS]);
 function serial(){const ls=coinsLoose.reduce((a,c)=>a+c.v,0);return JSON.stringify(state,function(k,v){if(TRANSIENT.has(k))return undefined;return k==="pending"&&this===state?(v||0)+ls:v})}
 function save(silent=false){if(VISIT||window.__nosave)return;state.savedAt=Date.now();cloudSave();try{localStorage.setItem("fishvilleClassicSave3",serial());$("lastSaved").textContent="Kaydedildi · "+new Date().toLocaleTimeString(LOC,{hour:"2-digit",minute:"2-digit"});if(!silent)notify("Akvaryumun kaydedildi! 💾")}catch(e){$("lastSaved").textContent="Kayıt kullanılamıyor"}}
 function validSave(p){return p&&typeof p==="object"&&Array.isArray(p.fish)&&Array.isArray(p.discovered)}
-function fromSave(p){const s={...initState(),...p};if(!("tank" in p))s.tank=null;return s}
+function fromSave(p){const s={...initState(),...p};if(!("tank" in p))s.tank=null;const clr=a=>{if(Array.isArray(a))a.forEach(f=>{if(f&&typeof f==="object")SIMT_KEYS.forEach(k=>delete f[k])})};clr(s.fish);if(s.stash&&typeof s.stash==="object")for(const k in s.stash)clr(s.stash[k]&&s.stash[k].fish);return s}
 let LOAD_SAVED=0;
 function load(){try{const raw=localStorage.getItem("fishvilleClassicSave3");if(raw){const parsed=JSON.parse(raw);if(validSave(parsed))state=fromSave(parsed);}}catch(e){}LOAD_SAVED=+state.savedAt||0}
 // seviye eğrisi: ilk seviyeler aynı, ileri seviyeler daha zor (Sv10 +%5, Sv35 +%61)
