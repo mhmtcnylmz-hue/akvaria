@@ -530,7 +530,7 @@ const SPM=new Map();function getSpecies(id){let s=SPM.get(id);if(!s){s=species.f
 function notify(text){$("message").textContent=text;$("message").classList.add("show");clearTimeout(messageTimer);messageTimer=setTimeout(()=>$("message").classList.remove("show"),2200)}
 // sürüm 143: simT'ye göre tutulan balık zamanlayıcıları; simT her açılışta 0'dan başladığı için kayıtta kalırsa balıklar saatlerce yem yiyemiyordu
 const SIMT_KEYS=["airT","biteT","chCd","chew","gill","jawT","lookT","lt","pk","spitT","zapT"];
-const TRANSIENT=new Set(["zd","zt","zT","_w","_wa","_wg","_wm","_wz","_wt","chase","flee","chT","fleeT","wake","slp","vx","vy","tx","ty","tt","rest","ang","fs","tp","sn","st",...SIMT_KEYS]);
+const TRANSIENT=new Set(["zd","zt","zT","bgT","bgP","_w","_wa","_wg","_wm","_wz","_wt","chase","flee","chT","fleeT","wake","slp","vx","vy","tx","ty","tt","rest","ang","fs","tp","sn","st",...SIMT_KEYS]);
 function serial(){const ls=coinsLoose.reduce((a,c)=>a+c.v,0);return JSON.stringify(state,function(k,v){if(TRANSIENT.has(k))return undefined;return k==="pending"&&this===state?(v||0)+ls:v})}
 function save(silent=false){if(VISIT||window.__nosave)return;state.savedAt=Date.now();cloudSave();try{localStorage.setItem("fishvilleClassicSave3",serial());$("lastSaved").textContent="Kaydedildi · "+new Date().toLocaleTimeString(LOC,{hour:"2-digit",minute:"2-digit"});if(!silent)notify("Akvaryumun kaydedildi! 💾")}catch(e){$("lastSaved").textContent="Kayıt kullanılamıyor"}}
 function validSave(p){return p&&typeof p==="object"&&Array.isArray(p.fish)&&Array.isArray(p.discovered)}
@@ -1399,7 +1399,7 @@ const BND=new WeakMap();let BNDN=0,BNDB=9;
 let BNDT=30;
 function bendRec(f,img){let m=BND.get(f);if(!m){m=new Map();BND.set(f,m)}let r=m.get(img);if(!r){if(m.size>=(f.type==="lancet"?8:4)){for(const v of m.values())v.cv.width=v.cv.height=0;m.clear()}r={cv:document.createElement("canvas"),k:""};m.set(img,r)}return r}
 function bendDraw(f,img,ox,oy,ww,h,N,tp,amp,P,live){const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height;if(!iw||!ih)return;if((state.admOff||{}).bend){ctx.drawImage(img,-ww/2+ox,-h/2+oy,ww,h);return}
- const TAU=6.283185307179586,qp=Math.round(((tp%TAU)+TAU)%TAU/TAU*64)%64,tq=qp/64*TAU,qa=Math.round(amp/ww*512),aq=qa/512*ww,sy=ih/h,pad=Math.ceil(Math.abs(aq)*sy)+2,r=bendRec(f,img),key=live?"":N+"|"+qp+"|"+qa+"|"+iw+"|"+ih;
+ const TAU=6.283185307179586,qp=Math.round(((tp%TAU)+TAU)%TAU/TAU*64)%64,tq=qp/64*TAU,qa=Math.round(amp/ww*512),aq=qa/512*ww,sy=ih/h,pad=Math.ceil(Math.abs(aq)*sy)+2,r=bendRec(f,img),CQ=fishCaus()&&!f._noC?Math.floor(performance.now()/220):0,key=live?"":N+"|"+qp+"|"+qa+"|"+iw+"|"+ih+"|"+CQ;
  const now=performance.now(),age=now-(r.t||0);let go=live?age>33:r.k!==key;if(go&&r.k){if(age<BNDT)go=false;else if(age<110){if(BNDB>0)BNDB--;else go=false}}
  if(go){r.t=now;const c=r.cv;if(c.width!==iw||c.height!==ih+2*pad){c.width=iw;c.height=ih+2*pad}const x=c.getContext("2d");x.setTransform(1,0,0,1,0,0);x.globalCompositeOperation="source-over";x.globalAlpha=1;x.clearRect(0,0,c.width,c.height);try{x.imageSmoothingQuality="high"}catch(e){}
   const Y=b=>{const u=1-b/N;return Math.sin(tq-u*SWIM.wave*P[4])*aq*Math.pow(u,P[2])*sy};
@@ -1408,6 +1408,8 @@ function bendDraw(f,img,ox,oy,ww,h,N,tp,amp,P,live){const iw=img.naturalWidth||i
   {let xd=iw;for(let i=N-1;i>=0;i--){const xa=Math.round(i*iw/N),xb=i===N-1?iw:Math.round((i+1)*iw/N);xd-=(xb-xa)*SX[i];XB[i]=xd}}
   let x0=0,y0=Y(0);
   for(let i=0;i<N;i++){const x1=i===N-1?iw:Math.round((i+1)*iw/N),y1=Y(i+1),cw=x1-x0;if(cw>0){x.setTransform(SX[i],(y1-y0)/cw,0,1,XB[i],pad+y0);x.drawImage(img,x0,0,cw+(i<N-1?1:0),ih,0,0,cw+(i<N-1?1:0),ih)}x0=x1;y0=y1}
+  if(CQ){const ct=causticTex();if(ct)try{const cw0=ct.naturalWidth||ct.width,ch0=ct.naturalHeight||ct.height,s=iw/ww*600/320,TW=cw0*s,TH=ch0*s,tt=performance.now()/1000,wx=(f.x*W-ww/2+tt*9)*iw/ww,wy=(f.y*H-h/2-tt*4)*iw/ww;if(!FCV)FCV=document.createElement("canvas");if(FCV.width!==c.width||FCV.height!==c.height){FCV.width=c.width;FCV.height=c.height}const q=FCV.getContext("2d");q.setTransform(1,0,0,1,0,0);q.globalCompositeOperation="source-over";q.globalAlpha=1;q.clearRect(0,0,c.width,c.height);const ox=-(((wx%TW)+TW)%TW),oy=-(((wy%TH)+TH)%TH);for(let yy=oy;yy<c.height;yy+=TH)for(let xx=ox;xx<iw;xx+=TW)q.drawImage(ct,xx,yy,TW,TH);
+   q.globalCompositeOperation="destination-in";const gr=q.createLinearGradient(0,0,0,c.height);gr.addColorStop(0,"rgba(0,0,0,1)");gr.addColorStop(.55,"rgba(0,0,0,.55)");gr.addColorStop(1,"rgba(0,0,0,.12)");q.fillStyle=gr;q.fillRect(0,0,c.width,c.height);q.drawImage(c,0,0);x.setTransform(1,0,0,1,0,0);x.globalCompositeOperation="lighter";x.globalAlpha=.55*(1-nightAmt()*.85);x.drawImage(FCV,0,0);x.globalAlpha=1;x.globalCompositeOperation="source-over"}catch(e){}}
   r.k=key;r.fk="";BNDN++}
  if(!live)f._bk=r.k+"|"+(r.t||0);
  const ps=pad/sy,dz=f.zd||0;if(dz<.04){ctx.drawImage(r.cv,-ww/2+ox,-h/2+oy-ps,ww,h+2*ps);return}
@@ -1418,6 +1420,18 @@ function fogCol(){const w=curWater(),n=nightAmt()>.5;return w==="deep"?"#071640"
 // derinlik: her balık ara sıra öne ya da arkaya süzülür; dokunulan balık öne gelir
 function depthStep(f,t){if(state.lowGfx||(state.admOff||{}).depth){f.zd=0;return}if(f.zd==null){f.zd=((f.id||0)*.6180339887%1)*.75;f.zt=f.zd;f.zT=t+rand(6,25)}
  if(t>(f.zT||0)){f.zT=t+rand(14,38);f.zt=Math.random()<.4?rand(0,.18):rand(.2,.95)}const tg=f.type==="tripod"||selectedFish===f||f.chase||(f.jawT&&simT-f.jawT<2)?0:f.zt;f.zd+=(tg-f.zd)*Math.min(1,(lastDT||.016)*(tg<f.zd&&selectedFish===f?2.5:.18))}
+
+// ===== sürüm 152: daha canlı davranış
+// hızlanma-süzülme: birkaç güçlü kuyruk vuruşu, sonra süzülerek yavaşlama (yılan gibi yüzenler sürekli yüzer)
+const NOGLIDE={oar:1,eel:1,dragon:1,lancet:1,bichir:1,gar:1};
+function bgK(f,h){if(NOGLIDE[f.type])return 1;f.bgT=(f.bgT||0)-h;if(f.bgT<=0){f.bgP=!f.bgP;f.bgT=f.bgP?rand(.45,1.1):rand(.8,2.1)}return f.bgP?1.28:.74}
+// sürü: aynı türden sürü balıkları bir lideri izler; lider yön değiştirince diğerleri kısa gecikmelerle (dalga gibi) onu takip eder
+function schoolLead(f){let L=null;for(const o of state.fish)if(o.type===f.type&&!isSleepy(o)&&(!L||o.id<L.id))L=o;return L}
+function schoolPick(f,bx0,bx1,by0,by1){const p=PH[f.type];if(!p||!p[4])return;const L=schoolLead(f);if(!L)return;
+ if(L===f){for(const o of state.fish)if(o!==f&&o.type===f.type&&!o.rest&&!isSleepy(o))o.tt=Math.min(o.tt||9,rand(.08,.6));return}
+ if(L.rest)return;const a=(f.id*.6180339887)%1,b=(f.id*.7548776662)%1,sp=Math.sqrt(fishW(f))*7;f.tx=Math.min(bx1,Math.max(bx0,L.tx-(L.tx>=L.x*W?1:-1)*(20+a*sp*2)));f.ty=Math.min(by1,Math.max(by0,L.ty+(b-.5)*sp*2.2));f.tt=Math.max(.6,(L.tt||2)+rand(-.3,.3))}
+// ışık: yüzeyden gelen dalgalı ışık deseni balığın gövdesinde de gezer (üst taraf daha çok ışık alır)
+let FCV=null;function fishCaus(){return !state.lowGfx&&LQ<1&&!VISIT&&curWater()!=="deep"&&!(state.admOff||{}).fcaus&&nightAmt()<.85}
 function depthSort(a){if(state.lowGfx)return a;return a.slice().sort((p,q)=>(q.zd||0)-(p.zd||0))}
 let selectedFish=null;
 // ===== Derin okyanus ışık sistemi v2
@@ -1637,7 +1651,7 @@ function phys(f,s){if(f.vx!==undefined&&isFinite(f.vx+f.vy+f.x+f.y))return;const
 function isSleepy(f){return NIGHT()&&!NOCT.includes(f.type)&&!(f.wake>simT)}
 function pick(f,p){const TR=TRAIT[f.type]||TR0,sl=isSleepy(f),fw=fishW(f),fh=fishH(f),mx=PORT?Math.max(0,fw/2-80)*.6:Math.max(0,fw/2-50),my=Math.max(0,fh/2-48)*.8,bx0=BX0+mx,bx1=BX1-mx,by0=BY0+my,by1=BY1-my;f.act="";const rest=sl||Math.random()<(NOCT.includes(f.type)&&!NIGHT()?.45:(TR.rest!=null?TR.rest:.22)),x=f.x*W,y=f.y*H;f.rest=rest;f.tt=sl?rand(5,10):rest?rand(1.5,4):rand(3,9);
 if(sl){f.tx=W*(.1+.8*((f.id*.7548776)%1))+rand(-20,20);f.ty=by0+(by1-by0)*(.32+.64*((f.id*.6180339)%1))}else if(rest){f.tx=x+rand(-25,25);f.ty=y+rand(-15,15)}else{let d=(Math.random()<.7)===(f.vx>=0)?1:-1;if(x<bx0+120)d=1;else if(x>bx1-120)d=-1;f.tx=x+d*rand(90,300)*(TR.patrol?1.8:1);const z=TR.z||[p[2],p[3]];f.ty=Math.random()<.3?y+rand(-50,50):by0+(by1-by0)*rand(z[0],z[1]);if(TR.patrol){f.tx=x<W/2?bx1-rand(0,30):bx0+rand(0,30);f.tt=rand(6,11)}if(TR.home){if(f.home==null)f.home=homeSpot(f);f.tx=f.home+rand(-75,75)}}
-f.tx=Math.min(bx1,Math.max(bx0,f.tx));f.ty=Math.min(by1,Math.max(by0,f.ty));if(!sl&&!rest&&!TR.patrol&&!TR.home){const d=f.tx>=x?1:-1,z=TR.z||[p[2],p[3]],c0=[f.tx,f.ty];[f.tx,f.ty]=bestSpot(f,3,()=>c0.used?[Math.min(bx1,Math.max(bx0,x+d*rand(90,300))),Math.min(by1,Math.max(by0,by0+(by1-by0)*rand(z[0],z[1])))]:(c0.used=1,c0))}if(!sl&&!rest)traitPick(f,TR,fw,fh,bx0,bx1)}
+f.tx=Math.min(bx1,Math.max(bx0,f.tx));f.ty=Math.min(by1,Math.max(by0,f.ty));if(!sl&&!rest&&!TR.patrol&&!TR.home){const d=f.tx>=x?1:-1,z=TR.z||[p[2],p[3]],c0=[f.tx,f.ty];[f.tx,f.ty]=bestSpot(f,3,()=>c0.used?[Math.min(bx1,Math.max(bx0,x+d*rand(90,300))),Math.min(by1,Math.max(by0,by0+(by1-by0)*rand(z[0],z[1])))]:(c0.used=1,c0))}if(!sl&&!rest)traitPick(f,TR,fw,fh,bx0,bx1);if(!sl&&!rest)schoolPick(f,bx0,bx1,by0,by1)}
 let gridG=null,gridArr=null,gridN=0,gridT=0,obsKey="",obsC=null;
 function physics(h){
 const fs=state.fish,n=fs.length,coll=isColl(state.tank);simT+=h;let G=null;coinStep(h);
@@ -1660,7 +1674,7 @@ if(Math.abs(food.x-x)<95&&mo!==fd&&Math.abs(food.y-y)<90)f.dir=fd;const dm=Math.
 {const SR=Math.max(20,fw*.26)*(TR.lunge?1.25:1)*(f.type==="angler"?1.9:1)+food.r0;if(!food.sk&&dm<SR&&mo===fd&&simT>(f.biteT||0)){f.biteT=simT+(fw<70?.42:.3)+(f.type==="angler"?.5:0);if(f.type!=="angler"&&f.hunger>60&&Math.random()<.05&&food.ph!=="floor"){food.vx+=mo*rand(25,45);food.vy+=rand(-15,15);f.jawT=simT;f.jawA=.5;f.jawH=.06}else{suckStart(f,food);if(f.type==="angler")f.burst=.15}}}}
 else{if(behave(f,TR,x,y,fw,fh,mx0,my0,h,p,bx0,bx1,by0,by1))cruise=vmax*.9;f.tt-=h;if(f.tt<=0||(!f.rest&&f.act!=="graze"&&f.act!=="forage"&&Math.hypot(f.tx-x,f.ty-y)<18))pick(f,p)}
 // varışa yavaşlayarak yönelme (dikey ivme daha düşük)
-const deep=(food&&food.ph==="floor")||f.act==="forage",by1e=deep?Math.max(by1,FLOOR+6-fh*.22):by1,by0e=(food&&food.ph==="surf")||f.act==="beg"||f.act==="air"?Math.min(by0,SURF+fh*.12):by0;const dx=f.tx-x,dy=f.ty-y,dist=Math.hypot(dx,dy)||1,want=food?bm*cruise*Math.max(.35,Math.min(1,dist/35)):bm*f.rest&&!sl?Math.min(cruise*.25,dist*.8):cruise*Math.min(1,dist/90);
+const deep=(food&&food.ph==="floor")||f.act==="forage",by1e=deep?Math.max(by1,FLOOR+6-fh*.22):by1,by0e=(food&&food.ph==="surf")||f.act==="beg"||f.act==="air"?Math.min(by0,SURF+fh*.12):by0;const dx=f.tx-x,dy=f.ty-y,dist=Math.hypot(dx,dy)||1,want=food?bm*cruise*Math.max(.35,Math.min(1,dist/35)):bm*f.rest&&!sl?Math.min(cruise*.25,dist*.8):cruise*Math.min(1,dist/90)*bgK(f,h)*(.55+.45*Math.min(1,Math.abs(f.fs||1)));
 // komşular: ayrılma + (uygun türlerde) sürü uyumu/merkezleme
 let cand=fs;if(G){cand=[];const cx=(x/170)|0,cy=(y/170)|0;for(let i=-1;i<2;i++)for(let j=-1;j<2;j++){const a=G.get(cx+i+(cy+j)*10);if(a)for(const o of a)cand.push(o)}}
 let sx=0,sy=0,cx2=0,cy2=0,mvx=0,mvy=0,c=0;
@@ -1673,7 +1687,7 @@ else if(f.type==="gold"&&SMALL.includes(o.type)&&d<220&&d<bd){bd=d;bx=ox/d;by=oy
 if(bd<1e9&&!food){ax+=bx*A*.35;ay+=by*A*.25}}
 let dvx=dx/dist*want-f.vx,dvy=dy/dist*want*(food||deep||f.act==="air"?1:.6)+(food&&food.ph==="sink"?food.vy:0)-f.vy;const dl=Math.hypot(dvx,dvy)||1,m=Math.min(dl*3,A*bm*(bm>1?1.4:1))*(c&&!food?.6:1);ax+=dvx/dl*m;ay+=dvy/dl*m;
 const sk=f.act==="air"?.3:1;ax+=sx*A*(sl?3.4:1.6)*sk;ay+=sy*A*(sl?3.4:1.6)*sk;
-if(c){ax+=cx2/c/170*A*.5+(mvx/c-f.vx)*.8;ay+=cy2/c/170*A*.4+(mvy/c-f.vy)*.8}
+if(c){ax+=cx2/c/170*A*.95+(mvx/c-f.vx)*1.15;ay+=cy2/c/170*A*.75+(mvy/c-f.vy)*1.1}
 // duvarlar ve dekorlar
 const M=60;if(x<bx0+M)ax+=(bx0+M-x)/M*A*1.2;else if(x>bx1-M)ax-=(x-bx1+M)/M*A*1.2;if(y<by0e+M)ay+=(by0e+M-y)/M*A*1.2*(by0e<by0?.3:1);else if(y>by1e-M)ay-=(y-by1e+M)/M*A*1.2;
 for(const o of obs){const ox=x-o[0],oy=y-o[1],d=Math.hypot(ox,oy)||1,R=o[2]+sz*.9;if(d<R){const k=1-d/R;ax+=ox/d*k*A*2.2;ay+=oy/d*k*A*2.2-k*A*.5}}
@@ -1689,7 +1703,7 @@ if(!VISIT&&!coll&&f.age>=MATURE&&!f.sick&&f.id!==undefined){let cd=cdMap.get(f.i
 // yön (histerezisli) ve görsel durum: gövde eğimi, yumuşak çevirme, kuyruk fazı
 if(Math.abs(f.vx)>9&&Math.sign(f.vx)!==f.dir)f.dir=Math.sign(f.vx);
 const sn=Math.min(1,Math.hypot(f.vx,f.vy)/vmax);
-const tilt=(f.type==="dragon"&&f.rest&&!food?-.3:0)+(f.act==="forage"&&Math.hypot(f.tx-x,f.ty-y)<40?.42:0)+(food&&food.ph==="surf"&&Math.hypot(food.x-x,food.y-y)<70?-.3:0);f.ang+=(Math.max(-.6,Math.min(.6,Math.atan2(f.vy,Math.abs(f.vx)+25)+tilt))-f.ang)*Math.min(1,6*h);f.fs+=(f.dir-f.fs)*Math.min(1,9*h);f.tp+=h*(2+sn*11)*swimFq(f)*(sl?.4:1);f.sn=sl?sn*.45:sn}
+const tilt=(f.type==="dragon"&&f.rest&&!food?-.3:0)+(f.act==="forage"&&Math.hypot(f.tx-x,f.ty-y)<40?.42:0)+(food&&food.ph==="surf"&&Math.hypot(food.x-x,food.y-y)<70?-.3:0);f.ang+=(Math.max(-.6,Math.min(.6,Math.atan2(f.vy,Math.abs(f.vx)+25)+tilt))-f.ang)*Math.min(1,6*h);f.fs+=(f.dir-f.fs)*Math.min(1,4.2*h);f.tp+=h*(2+sn*11+(1-Math.min(1,Math.abs(f.fs)))*7)*swimFq(f)*(sl?.4:1);f.sn=sl?sn*.45:sn}
 foodStep(h)}
 let lastDraw=0,ftN=0,ftS=0,ftT=0,feedOnC=null;const PRF={n:0,ph:0,fl:0,fi:0,pl:0,ot:0,all:0,ns:0,iv:0,mx:0};let adaptHold=0,kUser=0;try{kUser=+localStorage.getItem("fvK3")||0}catch(e){}function setK(v){K=v;canvas.width=Math.round(W*K);canvas.height=Math.round(H*K);try{ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high"}catch(e){}}
 function adaptK(now,d){if(d>1000||document.hidden||globalThis.__noAdapt||PT||now<adaptHold||document.querySelector("#game.glx")){ftN=0;ftS=0;return}if(!ftT)ftT=now;ftN++;ftS+=Math.min(d,100);if(ftN>=90){const avg=ftS/ftN;ftN=0;ftS=0;if(now-ftT<4000)return;const top=Math.min(kCap,kUser>=1?Math.min(KMAX,kUser):KMAX);if(avg>26&&K>1){kCap=Math.max(1,K-.25);setK(avg>60?1:kCap);adaptHold=now+1500}else if(avg>30&&K<=1&&LQ<2){LQ++;lqGood=0;adaptHold=now+3000}else if(avg<19&&LQ>0){if(++lqGood>=4){LQ--;lqGood=0;adaptHold=now+3000}}else if(avg<18.5&&K<top&&!state.lowGfx){setK(Math.min(top,K+.25));adaptHold=now+2000}else lqGood=0}}
@@ -1904,9 +1918,9 @@ function drawAtmo(t,dt){if(state.lowGfx||(state.admOff||{}).atmo)return;const nf
  // yüzeyin alt yüzü: iki ters yönde kayan parıltı
  const Sf=surTex(),o1=(t*9)%W,o2=(t*-6%W+W)%W;ctx.globalCompositeOperation="lighter";ctx.globalAlpha=.32*day+.08;ctx.drawImage(Sf,o1-W,0,W,120);ctx.drawImage(Sf,o1,0,W,120);ctx.globalAlpha=.22*day+.05;ctx.drawImage(Sf,o2,8,-W,110);ctx.drawImage(Sf,o2+W,8,-W,110);
  // asılı tanecikler
- if(!MOTES){MOTES=[];for(let i=0;i<46;i++)MOTES.push({x:rand(0,W),y:rand(0,H),z:Math.pow(Math.random(),1.6),ph:rand(0,6.3),vx:rand(-2,2)})}
- const D=dotSpr();ctx.globalCompositeOperation="source-over";for(const m of MOTES){m.y+=(1.5+3*m.z)*dt;m.x+=(m.vx+Math.sin(t*.3+m.ph)*4*m.z)*dt;if(m.y>H+8){m.y=-8;m.x=rand(0,W)}if(m.x<-8)m.x=W+8;else if(m.x>W+8)m.x=-8;
-  const near=m.z>.86,r=near?3.5+m.z*5:.7+m.z*2.2,al=(near?.13:.2+.4*m.z)*(.75+.25*Math.sin(t*1.7+m.ph))*(.45+.55*day);ctx.globalAlpha=al;ctx.drawImage(D,m.x-r,m.y-r,r*2,r*2)}
+ if(!MOTES){MOTES=[];for(let i=0;i<72;i++)MOTES.push({x:rand(0,W),y:rand(0,H),z:Math.pow(Math.random(),1.6),ph:rand(0,6.3),vx:rand(-2,2)})}
+ const D=dotSpr();ctx.globalCompositeOperation="source-over";for(const m of MOTES){m.y+=(1.2+6*m.z*m.z)*dt;m.x+=(m.vx*(.5+m.z)+Math.sin(t*.3+m.ph)*(3+7*m.z)*m.z)*dt;if(m.y>H+8){m.y=-8;m.x=rand(0,W)}if(m.x<-8)m.x=W+8;else if(m.x>W+8)m.x=-8;
+  const near=m.z>.82,r=near?4+m.z*7:.6+m.z*2.4,al=(near?.13:.2+.4*m.z)*(.75+.25*Math.sin(t*1.7+m.ph))*(.45+.55*day);ctx.globalAlpha=al;ctx.drawImage(D,m.x-r,m.y-r,r*2,r*2)}
  ctx.restore()}
 function causticTex(){if(causT!==null)return causT;if(causImg.complete&&causImg.naturalWidth){causT=causImg;return causT}return null}
 // sürüm 149: desenli fillRect (createPattern) Intel/ANGLE kartlarda kareyi 300+ ms sürdürüyordu; aynı görüntü drawImage döşemeleriyle çiziliyor
