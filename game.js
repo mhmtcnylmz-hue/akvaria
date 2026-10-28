@@ -530,7 +530,7 @@ const SPM=new Map();function getSpecies(id){let s=SPM.get(id);if(!s){s=species.f
 function notify(text){$("message").textContent=text;$("message").classList.add("show");clearTimeout(messageTimer);messageTimer=setTimeout(()=>$("message").classList.remove("show"),2200)}
 // sürüm 143: simT'ye göre tutulan balık zamanlayıcıları; simT her açılışta 0'dan başladığı için kayıtta kalırsa balıklar saatlerce yem yiyemiyordu
 const SIMT_KEYS=["airT","biteT","chCd","chew","gill","jawT","lookT","lt","pk","spitT","zapT"];
-const TRANSIENT=new Set(["_w","_wa","_wg","_wm","_wz","_wt","chase","flee","chT","fleeT","wake","slp","vx","vy","tx","ty","tt","rest","ang","fs","tp","sn","st",...SIMT_KEYS]);
+const TRANSIENT=new Set(["zd","zt","zT","_w","_wa","_wg","_wm","_wz","_wt","chase","flee","chT","fleeT","wake","slp","vx","vy","tx","ty","tt","rest","ang","fs","tp","sn","st",...SIMT_KEYS]);
 function serial(){const ls=coinsLoose.reduce((a,c)=>a+c.v,0);return JSON.stringify(state,function(k,v){if(TRANSIENT.has(k))return undefined;return k==="pending"&&this===state?(v||0)+ls:v})}
 function save(silent=false){if(VISIT||window.__nosave)return;state.savedAt=Date.now();cloudSave();try{localStorage.setItem("fishvilleClassicSave3",serial());$("lastSaved").textContent="Kaydedildi · "+new Date().toLocaleTimeString(LOC,{hour:"2-digit",minute:"2-digit"});if(!silent)notify("Akvaryumun kaydedildi! 💾")}catch(e){$("lastSaved").textContent="Kayıt kullanılamıyor"}}
 function validSave(p){return p&&typeof p==="object"&&Array.isArray(p.fish)&&Array.isArray(p.discovered)}
@@ -1284,7 +1284,7 @@ const BS=bubSpr();bubbles.forEach(b=>{const r=b.r*1.15,wb=1+.06*Math.sin(b.y*.08
 }
 // yüzme animasyonu ayarları (tek yerden): n=dilim, amp=kuyruk genliği, wave=gövdedeki dalga boyu (rad), rest=dururken genlik, roll=gövde sallanması
 // sürüm 126: kıvrılma genliği gövde kalınlığıyla sınırlı (uzun ince balıklar ip gibi kıvrılmasın), yüzerken gövde basıklaşmaz
-const SWIM={amp:.06,rest:.016,wave:3.2,roll:.03,turn:.07,stretch:.035};
+const SWIM={amp:.075,rest:.024,wave:3.2,roll:.03,turn:.07,stretch:.035};
 // tür profili: [genlik, vuruş hızı, kuyruğa yığılma, gövde sallanması, dalga boyu]
 const SWP={koi:[.6,.6,1.8,.6,1.1],arowana:[.7,.8,1.8,.7,1.1],boxfish:[.55,1,2,.6,1.1],napo:[.5,.65,2,.5,1.2],neon:[1,1.5,1.6,1,1],guppy:[1,1.35,1.6,1,1],clown:[1.05,1.2,1.7,1,1],ytang:[.85,1,1.8,.8,1.1],btang:[.85,1,1.8,.8,1.1],gold:[.95,.7,1.4,.9,.9],betta:[1.15,.6,1.2,1,.8],angel:[.45,.6,2,.5,1.2],emp:[.45,.6,2,.5,1.2],idol:[.45,.65,2,.5,1.2],discus:[.4,.55,2,.4,1.2],copper:[.5,.7,2,.5,1.2],lion:[.55,.5,1.8,.5,1.1],trigger:[.55,1,2,.6,1.1],mandarin:[.75,1.4,1.7,.9,1],cichlid:[.9,1,1.7,.9,1],lantern:[1,1.5,1.6,1,1],hatchet:[.7,1.2,1.8,.7,1],angler:[.55,.55,1.9,.5,1.1],viper:[.85,.9,1.4,.6,1.3],oar:[1.1,.55,.55,.25,2.2],dragon:[1.05,.55,.7,.3,2.1],tripod:[.55,.8,1.8,.4,1.1],lancet:[.5,1.05,1.9,.3,1.25],piranha:[1,1.2,1.7,1,1],peacock:[.9,1,1.7,.9,1],bichir:[.9,.9,1.4,.6,1.3],eel:[1.1,.55,.6,.25,2.2],mahseer:[.7,.8,1.8,.7,1.1],gar:[.5,.6,1.9,.35,1.25],goliath:[.7,.8,1.8,.7,1.1],mekong:[.5,.65,2,.5,1.2],sturgeon:[.6,.6,1.8,.5,1.15],arapaima:[.6,.6,1.9,.5,1.15]};
 // büyük balık yavaş ve geniş, küçük balık hızlı ve sık vurur; her balığa küçük bireysel fark
@@ -1310,13 +1310,13 @@ function drawFish(f,t){
 const s=getSpecies(f.type),mu=MUTS[f.mutation]&&f.mutation!=="normal"?f.mutation:null,mi=mu&&(mutImgs[mu+"_"+s.id]||(mu==="glitch"&&MUT_IMG.glitch[s.id]?(mutImgs[mu+"_"+s.id]=Object.assign(new Image(),{src:""+B64(MUT_IMG.glitch[s.id])})):null)),im0=mi&&mi.complete&&mi.naturalWidth?mi:fishImgs[s.id],hi=im0===mi&&hybOf(f)?hybImg(f,s.id):null,im1=hi||im0,mim=!!mi&&(im1===mi||im1===hi),vk=mim?mu:"normal",im=f.type==="lancet"?lancetIm(f,im1,vk):im1,tpk=f.type==="tripod"?(f.pk||0):0;if(!im.complete||!im.naturalWidth)return;
 const size=fsz(f),vf=mim&&im===im1?(MUTW[mu+"_"+s.id]||1):1,w=fishW(f),h=w*im.naturalHeight/im.naturalWidth,sn=f.sn||0,tp=f.tp||0,fs=f.fs||f.dir||1,turn=1-Math.min(1,Math.abs(fs));
 const GX=mu==='glitch'?glitchSt(f,t,w):null;if(GX)glPx(f,t);if(GX&&GX.hide)return;
-ctx.save();ctx.translate(f.x*W,f.y*H+Math.sin(t*1.4+f.phase)*(2+3*(1-sn))*(1-tpk));if(GX&&GX.tel)ctx.translate(GX.tel[0],GX.tel[1]);
+depthStep(f,t);ctx.save();ctx.translate(f.x*W,f.y*H+Math.sin(t*1.4+f.phase)*(2+3*(1-sn))*(1-tpk));if(GX&&GX.tel)ctx.translate(GX.tel[0],GX.tel[1]);if(f.zd>.01){const ds=1-.3*f.zd;ctx.scale(ds,ds)}
 const gk=f.gulp>0?Math.sin(Math.PI*(1-f.gulp/.24)):0;ctx.scale((fs>=0?Math.max(.4,fs):Math.min(-.4,fs))*(1+SWIM.stretch*.4*sn)*(1-.07*gk),(1+SWIM.turn*turn)*(1+.06*gk));
 ctx.rotate((f.ang||0)+Math.sin(tp+1.9)*(SWIM.roll*.35+SWIM.roll*sn)*(SWP[f.type]||SWP.clown)[3]);
 // sürüm 124: derin okyanus balıklarına eklenen mavi hale kaldırıldı; parlak (Nadir) balıklar her tankta eskisi gibi altın haleyle görünür
 const M=mu?MUTS[mu]:null,hc=state.lowGfx||mu==="glitch"?null:M?(hybOf(f)?{c:MUTS[f.hyb].glow,b:M.blur,k:"h"+mu+f.hyb}:{c:M.glow,b:M.blur,k:mu}):(f.rarity==="Nadir"?{c:"#ffe46b",b:14,k:"rare"}:null);
 if(hc&&tpk<.5&&LQ<2){const hs=lodImg(im,w*K*.6),hw=hs.naturalWidth||hs.width,H0=halo(hs,hc.k+"_"+s.id+"_"+hw,hc.c,hc.b*1.6*hw/190);if(H0){const k=w/hw,pu=(.75+.25*Math.sin(t*2+f.phase))*(mu==="transparent"?.45:1);ctx.globalAlpha=pu;ctx.drawImage(H0.cv,-w/2-H0.pad*k,-h/2-H0.pad*k,H0.cv.width*k,H0.cv.height*k);ctx.globalAlpha=1}}
-const GL=mu==="glitch",src0=lodImg(im,w*K),LT=litOn(),src=GL?src0:curWater()==="deep"?deepTex(src0):LT?litTex(src0):src0,N=s.sl?(state.lowGfx?10:s.sl):state.lowGfx?(w<90?4:5):(w<70?6:w<110?8:10),iw=src.naturalWidth||src.width,ih=src.naturalHeight||src.height,sw=iw/N,dw=w/N,P=SWP[f.type]||SWP.clown,amp=Math.min(w*(SWIM.rest+SWIM.amp*sn)*P[0]*Math.pow(90/w,.15),h*(.2+.06*sn)),ov=1.2;
+const GL=mu==="glitch",src0=lodImg(im,w*K*(1-.5*(f.zd||0))),LT=litOn(),src=GL?src0:curWater()==="deep"?deepTex(src0):LT?litTex(src0):src0,N=s.sl?(state.lowGfx?10:s.sl):state.lowGfx?(w<90?4:5):(w<70?6:w<110?8:10),iw=src.naturalWidth||src.width,ih=src.naturalHeight||src.height,sw=iw/N,dw=w/N,P=SWP[f.type]||SWP.clown,amp=Math.min(w*(SWIM.rest+SWIM.amp*sn)*P[0]*Math.pow(90/w,.15),h*(.34+.1*sn)),ov=1.2;
 const Ycf=fx=>{const u=1-fx;return Math.sin(tp-u*SWIM.wave*P[4])*amp*Math.pow(u,P[2])};
 const drawS=(img,ox,oy,ww,live)=>bendDraw(f,img,ox,oy,ww||w,h,N,tp,amp,P,live);
 if(GX){const T2=state.lowGfx?null:glTint(src),R=T2&&!GX.b?glRest(T2,src):null;if(T2&&GX.b){ctx.globalAlpha=.95;ctx.drawImage(T2.c,-w/2-GX.sp,-h/2+rand(-2,2),w,h);ctx.drawImage(T2.m,-w/2+GX.sp,-h/2+rand(-2,2),w,h);ctx.globalAlpha=1}
@@ -1402,11 +1402,23 @@ function bendDraw(f,img,ox,oy,ww,h,N,tp,amp,P,live){const iw=img.naturalWidth||i
  const TAU=6.283185307179586,qp=Math.round(((tp%TAU)+TAU)%TAU/TAU*64)%64,tq=qp/64*TAU,qa=Math.round(amp/ww*512),aq=qa/512*ww,sy=ih/h,pad=Math.ceil(Math.abs(aq)*sy)+2,r=bendRec(f,img),key=live?"":N+"|"+qp+"|"+qa+"|"+iw+"|"+ih;
  const now=performance.now(),age=now-(r.t||0);let go=live?age>33:r.k!==key;if(go&&r.k){if(age<BNDT)go=false;else if(age<110){if(BNDB>0)BNDB--;else go=false}}
  if(go){r.t=now;const c=r.cv;if(c.width!==iw||c.height!==ih+2*pad){c.width=iw;c.height=ih+2*pad}const x=c.getContext("2d");x.setTransform(1,0,0,1,0,0);x.globalCompositeOperation="source-over";x.globalAlpha=1;x.clearRect(0,0,c.width,c.height);try{x.imageSmoothingQuality="high"}catch(e){}
-  const Y=b=>{const u=1-b/N;return Math.sin(tq-u*SWIM.wave*P[4])*aq*Math.pow(u,P[2])*sy};let x0=0,y0=Y(0);
-  for(let i=0;i<N;i++){const x1=i===N-1?iw:Math.round((i+1)*iw/N),y1=Y(i+1),cw=x1-x0;if(cw>0){x.setTransform(1,(y1-y0)/cw,0,1,x0,pad+y0);x.drawImage(img,x0,0,cw,ih,0,0,cw,ih)}x0=x1;y0=y1}
-  r.k=key;BNDN++}
+  const Y=b=>{const u=1-b/N;return Math.sin(tq-u*SWIM.wave*P[4])*aq*Math.pow(u,P[2])*sy};
+  // sürüm 149: kuyruk vuruşu — kuyruk yana savruldukça yandan bakınca kısalıp uzar (baştan kuyruğa doğru yerleştirilir, baş sabit kalır)
+  const TF=Math.min(.24,Math.abs(aq)/ww*3.2),SX=[],XB=[];for(let i=0;i<N;i++){const u=1-(i+.5)/N;SX[i]=1-TF*u*u*Math.abs(Math.sin(tq-u*SWIM.wave*P[4]))}
+  {let xd=iw;for(let i=N-1;i>=0;i--){const xa=Math.round(i*iw/N),xb=i===N-1?iw:Math.round((i+1)*iw/N);xd-=(xb-xa)*SX[i];XB[i]=xd}}
+  let x0=0,y0=Y(0);
+  for(let i=0;i<N;i++){const x1=i===N-1?iw:Math.round((i+1)*iw/N),y1=Y(i+1),cw=x1-x0;if(cw>0){x.setTransform(SX[i],(y1-y0)/cw,0,1,XB[i],pad+y0);x.drawImage(img,x0,0,cw+(i<N-1?1:0),ih,0,0,cw+(i<N-1?1:0),ih)}x0=x1;y0=y1}
+  r.k=key;r.fk="";BNDN++}
  if(!live)f._bk=r.k+"|"+(r.t||0);
- const ps=pad/sy;ctx.drawImage(r.cv,-ww/2+ox,-h/2+oy-ps,ww,h+2*ps)}
+ const ps=pad/sy,dz=f.zd||0;if(dz<.04){ctx.drawImage(r.cv,-ww/2+ox,-h/2+oy-ps,ww,h+2*ps);return}
+ // sürüm 149: derinlik — uzaktaki balık suyun rengine karışır
+ const fc=fogCol();if(r.fk!==r.k+fc||!r.fg){if(!r.fg)r.fg=document.createElement("canvas");const c2=r.fg;if(c2.width!==r.cv.width||c2.height!==r.cv.height){c2.width=r.cv.width;c2.height=r.cv.height}const y=c2.getContext("2d");y.globalCompositeOperation="source-over";y.clearRect(0,0,c2.width,c2.height);y.drawImage(r.cv,0,0);y.globalCompositeOperation="source-atop";y.fillStyle=fc;y.fillRect(0,0,c2.width,c2.height);r.fk=r.k+fc}
+ const a0=ctx.globalAlpha;ctx.drawImage(r.cv,-ww/2+ox,-h/2+oy-ps,ww,h+2*ps);ctx.globalAlpha=a0*Math.min(.5,.55*dz);ctx.drawImage(r.fg,-ww/2+ox,-h/2+oy-ps,ww,h+2*ps);ctx.globalAlpha=a0}
+function fogCol(){const w=curWater(),n=nightAmt()>.5;return w==="deep"?"#071640":w==="river"?(n?"#0b2c36":"#2e6b4a"):w==="fresh"?(n?"#0a3040":"#138a8e"):(n?"#0c2456":"#127fae")}
+// derinlik: her balık ara sıra öne ya da arkaya süzülür; dokunulan balık öne gelir
+function depthStep(f,t){if(state.lowGfx||(state.admOff||{}).depth){f.zd=0;return}if(f.zd==null){f.zd=((f.id||0)*.6180339887%1)*.75;f.zt=f.zd;f.zT=t+rand(6,25)}
+ if(t>(f.zT||0)){f.zT=t+rand(14,38);f.zt=Math.random()<.4?rand(0,.18):rand(.2,.95)}const tg=f.type==="tripod"||selectedFish===f||f.chase||(f.jawT&&simT-f.jawT<2)?0:f.zt;f.zd+=(tg-f.zd)*Math.min(1,(lastDT||.016)*(tg<f.zd&&selectedFish===f?2.5:.18))}
+function depthSort(a){if(state.lowGfx)return a;return a.slice().sort((p,q)=>(q.zd||0)-(p.zd||0))}
 let selectedFish=null;
 // ===== Derin okyanus ışık sistemi v2
 // Biyolüminesans gerçek ışık organlarından (fotofor) gelir: noktalar balığın kendi resmindeki yerlerinden yanar ve balık kıvrıldıkça
@@ -1696,7 +1708,7 @@ if(now-lastAdv>1000&&!VISIT){lastAdv=now;if(state.daily&&state.daily.date!==dayK
 musicTick();musUpdate();if(AU&&!state.muted&&!(ambience&&ambience.file)&&Math.random()<dt*.3)sfx("amb");
 const P0=performance.now();acc+=dt*ADM.speed;let ns=0;const NSM=Math.max(4,Math.ceil(4*ADM.speed));while(acc>=STEP&&ns<NSM){physics(STEP);acc-=STEP;ns++}if(ns>=NSM)acc=0;admTick(now);const P1=performance.now();
 bubbles.forEach(b=>{b.y-=b.speed*dt;b.x+=Math.sin(t+b.phase)*b.drift*dt;if(b.y<-10){b.y=H+10;b.x=rand(0,W)}});
-BNDB=state.lowGfx?3:(state.fish.length>12?5:8);BNDT=LQ?60:state.fish.length>12?45:30;const OFF=state.admOff||{};ctx.setTransform(K,0,0,K,0,0);drawBackground(t);drawFloor(t);if(!OFF.crit)try{critDraw(dt)}catch(e){reportErr(e,"omurgasız")}else CPOST.length=0;const P2=performance.now();if(curWater()==="river")try{drawRiverBack(t,dt)}catch(e){reportErr(e,"nehir")}if(curWater()==="deep"&&!OFF.dark)try{drawDeepBack(t,dt);drawDeepPre(t,dt)}catch(e){reportErr(e,"derin")}if(!OFF.fish)for(const f of state.fish){try{drawFish(f,t)}catch(e){try{ctx.restore()}catch(_){}reportErr(e,"balık "+f.type)}}const P3=performance.now();if(!OFF.plants)drawPlants2(t,1);if(curWater()==="river")try{riverFx(t,dt)}catch(e){reportErr(e,"nehir")}if(curWater()==="deep")try{if(OFF.lights){EM=[];ENV=[];EMI=[];EMPI=0;LUREW=[];ISO_EYES=[]}else drawDeepLight(t)}catch(e){reportErr(e,"ışık")}else try{drawAtmo(t,dt)}catch(e){reportErr(e,"atmosfer")}const P4=performance.now();drawCoins(t);drawStatus(t);const fo=feedModeOn()&&!VISIT;if(fo!==feedOnC){feedOnC=fo;$("feed").classList.toggle("on",fo)}if(SELLM)try{drawSellTags()}catch(e){}drawParticles(dt);drawTapInfo();if(ADM.on)try{admDebug(t)}catch(e){}drawDN();
+BNDB=state.lowGfx?3:(state.fish.length>12?5:8);BNDT=LQ?60:state.fish.length>12?45:30;const OFF=state.admOff||{};ctx.setTransform(K,0,0,K,0,0);drawBackground(t);drawFloor(t);if(!OFF.crit)try{critDraw(dt)}catch(e){reportErr(e,"omurgasız")}else CPOST.length=0;const P2=performance.now();if(curWater()==="river")try{drawRiverBack(t,dt)}catch(e){reportErr(e,"nehir")}if(curWater()==="deep"&&!OFF.dark)try{drawDeepBack(t,dt);drawDeepPre(t,dt)}catch(e){reportErr(e,"derin")}if(!OFF.fish)for(const f of depthSort(state.fish)){try{drawFish(f,t)}catch(e){try{ctx.restore()}catch(_){}reportErr(e,"balık "+f.type)}}const P3=performance.now();if(!OFF.plants)drawPlants2(t,1);if(curWater()==="river")try{riverFx(t,dt)}catch(e){reportErr(e,"nehir")}if(curWater()==="deep")try{if(OFF.lights){EM=[];ENV=[];EMI=[];EMPI=0;LUREW=[];ISO_EYES=[]}else drawDeepLight(t)}catch(e){reportErr(e,"ışık")}else try{drawAtmo(t,dt)}catch(e){reportErr(e,"atmosfer")}const P4=performance.now();drawCoins(t);drawStatus(t);const fo=feedModeOn()&&!VISIT;if(fo!==feedOnC){feedOnC=fo;$("feed").classList.toggle("on",fo)}if(SELLM)try{drawSellTags()}catch(e){}drawParticles(dt);drawTapInfo();if(ADM.on)try{admDebug(t)}catch(e){}drawDN();
 const P5=performance.now();if(admFps){PRF.n++;PRF.ph+=P1-P0;PRF.fl+=P2-P1;PRF.fi+=P3-P2;PRF.pl+=P4-P3;PRF.ot+=P5-P4;PRF.all+=P5-P0+(P0-now>0?0:0);PRF.ns+=ns}
 requestAnimationFrame(frame)}
 canvas.addEventListener("pointerdown",e=>{audio();startAmbience();const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;if(EDIT){editDown(e,x,y);return}if(SELLM){sellTap(x,y);return}if(TIBTN&&tapInfo&&tapInfo.id===TIBTN.id&&x>=TIBTN.x&&x<=TIBTN.x+TIBTN.w&&y>=TIBTN.y&&y<=TIBTN.y+TIBTN.h){renOpen(TIBTN.id);return}if(!VISIT){let cc=null,cd=1e9;for(const c of coinsLoose){const d=Math.hypot(x-c.x,y-c.y);if(d<34&&d<cd){cc=c;cd=d}}if(cc){pickCoin(cc);return}}
