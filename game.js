@@ -1370,7 +1370,7 @@ const DOLSRC="a/c2f25889edb8575b.webp";let DOL=null,DOLN=0,DOLI=null,DOLB=null;c
 function dolImg(n){const k=n?"n":"d";if(DOLC[k])return DOLC[k];if(!DOLI){DOLI=new Image();DOLI.src=DOLSRC;return null}if(!DOLI.complete||!DOLI.naturalWidth)return null;
  try{const c=document.createElement("canvas");c.width=DOLI.naturalWidth;c.height=DOLI.naturalHeight;const x=c.getContext("2d");x.filter=n?"saturate(.6) brightness(.55)":"saturate(.95) brightness(.97)";x.drawImage(DOLI,0,0);x.filter="none";x.globalCompositeOperation="source-atop";x.fillStyle=n?"rgba(8,30,48,.45)":"rgba(40,110,80,.16)";x.fillRect(0,0,c.width,c.height);DOLC[k]=c}catch(e){DOLC[k]=DOLI}return DOLC[k]}
 function drawRiverBack(t,dt){if(state.lowGfx||VISIT)return;if(!DOLN)DOLN=t+rand(18,30);
- if(!DOL&&t>DOLN){const L=W*rand(.5,.62)*(PORT?1.2:1),d=Math.random()<.5?1:-1;DOL={L,d,x:d>0?-L*.6:W+L*.6,y:rand(H*.24,H*.46),sp:(W+L*1.2)/rand(24,32),ph:rand(0,6)}}
+ if(!DOL&&t>DOLN){const L=W*(PORT?rand(.42,.5):rand(.24,.3)),d=Math.random()<.5?1:-1;DOL={L,d,x:d>0?-L*.6:W+L*.6,y:rand(H*.24,H*.46),sp:(W+L*1.2)/rand(24,32),ph:rand(0,6)}}
  if(!DOL)return;const B=DOL;B.x+=B.d*B.sp*dt;if((B.d>0&&B.x>W+B.L*.65)||(B.d<0&&B.x<-B.L*.65)){DOL=null;DOLN=t+rand(50,100);return}
  const I=dolImg(nightAmt()>.5);if(!I)return;const iw=I.width,ih=I.height,N=16,sw=iw/N,pad=Math.round(ih*.12),ah=ih+pad*2;
  // dilimler önce ayrı tuvalde tam opak birleşir (yarı saydam üst üste binme çizgi bırakmasın), sonra tek seferde soluk çizilir
