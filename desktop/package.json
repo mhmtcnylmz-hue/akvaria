@@ -1,0 +1,27 @@
+{
+  "name": "akvaria",
+  "productName": "Akvaria",
+  "version": "1.149.0",
+  "description": "Akvaria - akvaryum oyunu",
+  "author": "Akvaria",
+  "main": "main.js",
+  "scripts": {
+    "sync": "node sync.js",
+    "start": "npm run sync && electron .",
+    "dist:win": "npm run sync && electron-builder --win nsis portable --x64 --publish never"
+  },
+  "build": {
+    "appId": "com.akvariagame.akvaria",
+    "productName": "Akvaria",
+    "files": ["main.js", "game/**/*"],
+    "icon": "build/icon.png",
+    "win": { "target": ["nsis", "portable"], "signAndEditExecutable": false },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true, "createDesktopShortcut": true, "shortcutName": "Akvaria", "artifactName": "Akvaria-Kurulum-${version}.${ext}" },
+    "portable": { "artifactName": "Akvaria-${version}-portable.exe" },
+    "compression": "normal"
+  },
+  "devDependencies": {
+    "electron": "33.2.1",
+    "electron-builder": "25.1.8"
+  }
+}
