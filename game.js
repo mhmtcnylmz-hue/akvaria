@@ -1599,11 +1599,12 @@ function hswMesh(f,P,R){const b=hswB(f);if(b.mt===simT&&b.mk===P&&b.R===R&&b.V)r
  const ps=-.12*ab*Math.sin(ph)*(P.e?.4:1),pc=Math.cos(ps),pn=Math.sin(ps),cy0=.5*R;
  const Q=b.Q,qa=!!P.pc,qb=!!P.pv;if(qa)hswPiv(S,col,NX,P.pc,R,Q,0);if(qb)hswPiv(S,col,NX,P.pv,R,Q,2);const ap=b.pa*.38*Math.sin(b.pp)+(1-b.pa)*.2,av=b.pa*.16*Math.sin(b.pp-1.2)+(1-b.pa)*.12,ra=.004+.035*Math.min(.5,ab);
  for(let i=0;i<=NX;i++){const o=i*3,X=i/NX,Xb=col[i*5+4],yb=col[i*5+3]*R,sx=S[o],sy=S[o+1],t=S[o+2],cs=Math.cos(t),sn=Math.sin(t),c=Math.max(.16,Math.min(1,fa+hf*lead*(2*Xb-1))),r1=ra*Math.sin(ph*.9-9*X+1),r2=ra*Math.sin(ph*.9-9*X+2.2);
-  for(let j=0;j<=NY;j++){const k=i*(NY+1)+j,d=j/NY*R-yb;let x=sx-d*sn,y=sy+d*cs;
+  // sürüm 165: kesitler döndürülmez, dikey kalır — komşu dilimlerin kenarları birebir çakışır (yüzgeç uçlarında kırık oluşmaz)
+  for(let j=0;j<=NY;j++){const k=i*(NY+1)+j,d=j/NY*R-yb;let x=sx,y=sy+d;
    let w=P.wp[k];if(w>0&&qa){const a=ap*w,dx=x-Q[0],dy=y-Q[1],ca=Math.cos(a),sa=Math.sin(a);x=Q[0]+dx*ca-dy*sa;y=Q[1]+dx*sa+dy*ca}
    w=P.wv[k];if(w>0&&qb){const a=av*w,dx=x-Q[2],dy=y-Q[3],ca=Math.cos(a),sa=Math.sin(a);x=Q[2]+dx*ca-dy*sa;y=Q[3]+dx*sa+dy*ca}
    w=P.wr[k];if(w!==0){const m=w>0?w*r1:w*r2;x-=m*sn;y+=m*cs}
-   const rx=x-.5,ry=y-cy0;x=.5+(rx*pc-ry*pn)*c;y=cy0+rx*pn+ry*pc;V[k*2]=x;V[k*2+1]=y}}
+   const rx=(x-.5)*c,ry=y-cy0;x=.5+rx*pc-ry*pn;y=cy0+rx*pn+ry*pc;V[k*2]=x;V[k*2+1]=y}}
  return V}
 // ızgaradan yerel koordinat (çizim merkezine göre): ağız, ışık organları ve yem ışığı gövdeyle birlikte hareket etsin
 function hswLocal(f,fx,fy,w,h){const b=HSWF.get(f);if(!b||!b.V||!b.NX)return[-w/2+fx*w,-h/2+fy*h];const NX=b.NX,NY=b.NY,V=b.V,qx=Math.max(0,Math.min(NX-1e-4,fx*NX)),qy=Math.max(0,Math.min(NY-1e-4,fy*NY)),i=Math.floor(qx),j=Math.floor(qy),u=qx-i,v=qy-j,
@@ -1614,7 +1615,7 @@ function hswLocal(f,fx,fy,w,h){const b=HSWF.get(f);if(!b||!b.V||!b.NX)return[-w/
 // Hız koruması: kare süresi uzarsa önce bükme sıklığı azalır (her kare → en seyrek 50 ms), yetmezse fazla balıklar eski animasyonla çizilir;
 // hız düzelince sırayla geri açılır.
 function hswQuad(x,img,iw,ih,sx,sy,sw,sh,X0,Y0,X1,Y1,X2,Y2,X3,Y3){const ax=(X1-X0+X3-X2)/2,ay=(Y1-Y0+Y3-Y2)/2,bx=(X2-X0+X3-X1)/2,by=(Y2-Y0+Y3-Y1)/2,ox=(X0+X1+X2+X3)/4-(ax+bx)/2,oy=(Y0+Y1+Y2+Y3)/4-(ay+by)/2,a=ax/sw,b=ay/sw,c=bx/sh,d=by/sh;
- x.setTransform(a,b,c,d,ox-a*sx-c*sy,oy-b*sx-d*sy);const s0=Math.max(0,sx-2.5),t0=Math.max(0,sy-1),s1=Math.min(iw,sx+sw+2.5),t1=Math.min(ih,sy+sh+1);x.drawImage(img,s0,t0,s1-s0,t1-t0,s0,t0,s1-s0,t1-t0)}
+ x.setTransform(a,b,c,d,ox-a*sx-c*sy,oy-b*sx-d*sy);const s0=Math.max(0,sx-.5),t0=Math.max(0,sy-.5),s1=Math.min(iw,sx+sw+.5),t1=Math.min(ih,sy+sh+.5);x.drawImage(img,s0,t0,s1-s0,t1-t0,s0,t0,s1-s0,t1-t0)}
 const HSWA={iv:0,cap:999,ema:16.7,lt:0,fr:-1,cnt:0,seen:0,tAdj:0,fn:0};
 function hswFrame(){const A=HSWA,now=performance.now();if(A.lt){const dt=Math.min(100,now-A.lt);A.ema+=(dt-A.ema)*.1}A.lt=now;A.fr=simT;A.fn++;A.seen=A.cnt;A.cnt=0;
  if(now-A.tAdj>400){A.tAdj=now;if(A.ema>19.5){if(A.iv<50)A.iv=Math.min(50,A.iv+10);else A.cap=Math.max(4,Math.min(A.cap,A.seen)-3)}else if(A.ema<17.6){if(A.cap<999)A.cap=A.cap+2>A.seen?999:A.cap+2;else if(A.iv>0)A.iv=Math.max(0,A.iv-10)}}}
