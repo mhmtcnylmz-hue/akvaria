@@ -695,7 +695,7 @@ const CU=.5;
 function mkJel(d){const r=rand(26,34),x=rand(BX0+r,BX1-r),y=rand(H*.3,H*.55),j={d,x,y,r,ph:Math.random(),period:rand(2.1,2.9),vx:0,vy:0,tx:x,c:0,fl:0,tent:[],arms:[],t:Math.random()*10};
  const len=r*rand(1.6,2.3);for(let i=0;i<9;i++){const pts=[];for(let k=0;k<10;k++)pts.push({x,y:y+k*len/10,px:x,py:y+k*len/10});j.tent.push({pts,sl:len/10*rand(.85,1.15)})}
  for(let i=0;i<3;i++)j.arms.push({o:rand(0,6),len:r*rand(1.5,2.1),fl:i%2});return j}
-function mkShr(d){return{d,x:rand(BX0+40,BX1-40),y:FLOOR-10,dir:Math.random()<.5?1:-1,vx:0,vy:0,len:rand(52,62),mode:"walk",t:Math.random()*9,curl:0,flip:0,leg:0,swim:0,next:rand(2,5),pause:0,tilt:0}}
+function mkShr(d){const gy=FLOOR+rand(10,48);return{d,gy,x:rand(BX0+40,BX1-40),y:gy,dir:Math.random()<.5?1:-1,vx:0,vy:0,len:rand(52,62),mode:"walk",t:Math.random()*9,curl:0,flip:0,leg:0,swim:0,next:rand(2,5),pause:0,tilt:0}}
 function stepJel(j,dt){const u=CU;j.t+=dt;const p0=j.ph;j.ph+=dt/j.period*(j.fl>0?1.9:1);if(Math.floor(j.ph)!==Math.floor(p0))j.tx=bestSpot(j,3,()=>[Math.max(BX0+j.r,Math.min(BX1-j.r,j.x+rand(-W*.25,W*.25))),j.ty||j.y])[0];
  // sürüm 127: hedef derinlik — hedefin altındayken güçlü atar, üstündeyken atışı zayıflar ve batar (eskiden hep en üste çıkıp kalıyordu)
  if(!(j.nty>j.t)){j.nty=j.t+rand(8,16);j.ty=bestSpot(j,3,()=>[j.tx||j.x,rand(H*.24,FLOOR-j.r*3.2)])[1]}const kd=j.fl>0?1:Math.max(0,Math.min(1.5,.35+(j.y-j.ty)/70));
@@ -823,15 +823,15 @@ function isoAnt(o,base,S,far,legA,dip,e){const t=o.t,vis=Math.max(0,1-e/.45);if(
  ctx.lineCap="round";const pts=[[x,y]];for(let i=0;i<n;i++){const u=i/n;a+=(.085+.05*Math.sin(t*1.7+o.ant*2+u*3+(far?2:0))+tap*.07*u)*(1-.3*u);x+=Math.cos(a)*seg;y+=Math.sin(a)*seg;pts.push([x,y])}
  for(let i=0;i<n;i++){const w=(3.3-2.6*i/n)*S*1.4*(far?.85:1),p=pts[i],q=pts[i+1];ctx.strokeStyle=far?"rgba(20,8,20,.85)":"rgba(48,18,36,.9)";ctx.lineWidth=w+1.2*S*2;ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(q[0],q[1]);ctx.stroke();ctx.strokeStyle=far?"#6c5266":(i%2?"#c6929f":"#d5a6b3");ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(q[0],q[1]);ctx.stroke()}
  if(!far){for(let j=0;j<2;j++){let aa=-.15+j*.35+Math.sin(t*9+j*2.3+o.ant)*.25,xx=base[0]+2*S,yy=base[1]-3*S;ctx.strokeStyle=j?"#b98896":"#d8acb8";ctx.lineWidth=1.6*S*1.4;ctx.beginPath();ctx.moveTo(xx,yy);for(let i=0;i<4;i++){aa+=.12;xx+=Math.cos(aa)*4.2*S*vis;yy+=Math.sin(aa)*4.2*S*vis;ctx.lineTo(xx,yy)}ctx.stroke()}}}
-function stepShr(s,dt){const u=CU;s.t+=dt;const fy=FLOOR-10;s.next-=dt;
+function stepShr(s,dt){const u=CU;s.t+=dt;const fy=s.gy||FLOOR+30;s.next-=dt;
  if(s.flip>0){s.flip-=dt;const f=1-s.flip/.32;s.curl=f<.35?f/.35:Math.max(0,1-(f-.35)/.65);if(s.flip<=0){s.mode="swim";s.swim=rand(1,2)}}else s.curl+=(0-s.curl)*Math.min(1,dt*8);
- if(s.mode==="walk"){if(s.pause>0){s.pause-=dt;s.vx*=Math.exp(-dt*6)}else{s.vx+=(s.dir*26*u-s.vx)*Math.min(1,dt*3);s.leg+=dt*9}if(s.next<0){s.next=rand(2.5,6);const r=Math.random();if(r<.35)s.pause=rand(1,2.5);else if(r<.55)s.dir*=-1;else if(r<.7){s.mode="swim";s.swim=rand(1.5,3);s.vy=-40*u}}s.vy+=(fy-s.y)*dt*6;s.vy*=Math.exp(-dt*5)}
- else if(s.mode==="swim"){s.swim-=dt;s.leg+=dt*3;s.vx+=(s.dir*42*u-s.vx)*Math.min(1,dt*2);s.vy+=(Math.sin(s.t*1.4)*12*u+6*u)*dt;s.vy*=Math.exp(-dt*1.5);if(s.swim<=0&&s.flip<=0)s.mode="walk"}else{s.vx*=Math.exp(-dt*3);s.vy+=50*u*dt}
- s.x+=s.vx*dt;s.y+=s.vy*dt;if(s.y>fy){s.y=fy;s.vy=Math.min(0,s.vy)}if(s.y<H*.3){s.y=H*.3;s.vy=Math.abs(s.vy)}const m=s.len;if(s.x<BX0+m*.3){s.x=BX0+m*.3;if(s.flip<=0)s.dir=1}if(s.x>BX1-m*.3){s.x=BX1-m*.3;if(s.flip<=0)s.dir=-1}
+ if(s.mode==="walk"){if(s.pause>0){s.pause-=dt;s.vx*=Math.exp(-dt*6)}else{s.vx+=(s.dir*26*u-s.vx)*Math.min(1,dt*3);s.leg+=dt*9}if(s.next<0){s.next=rand(2.5,6);const r=Math.random();if(r<.35)s.pause=rand(1,2.5);else if(r<.55)s.dir*=-1;else if(r<.6){s.mode="swim";s.swim=rand(.7,1.2);s.vy=-24*u}}s.vy+=(fy-s.y)*dt*6;s.vy*=Math.exp(-dt*5)}
+ else if(s.mode==="swim"){s.swim-=dt;s.leg+=dt*3;s.vx+=(s.dir*36*u-s.vx)*Math.min(1,dt*2);s.vy+=(26*u+(s.y<fy-40?40*u:0))*dt;s.vy*=Math.exp(-dt*1.5);if(s.swim<=0&&s.flip<=0)s.mode="walk"}else{s.vx*=Math.exp(-dt*3);s.vy+=50*u*dt}
+ s.x+=s.vx*dt;s.y+=s.vy*dt;if(s.y>fy){s.y=fy;s.vy=Math.min(0,s.vy)}if(s.y<fy-55){s.y=fy-55;s.vy=Math.abs(s.vy)}const m=s.len;if(s.x<BX0+m*.3){s.x=BX0+m*.3;if(s.flip<=0)s.dir=1}if(s.x>BX1-m*.3){s.x=BX1-m*.3;if(s.flip<=0)s.dir=-1}
  s.tilt+=((s.mode==="swim"?-.12:0)+(s.vy/(200*u))*.4-s.tilt)*Math.min(1,dt*4)}
 function drawShr(s){const L=s.len,im0=cImg(s.d.img);if(!im0)return;const im=nightAmt()>.5&&tinted(im0,"cr"+s.d.id,0,true,1)||im0;const SS=s.d;ctx.save();ctx.translate(s.x,s.y);ctx.scale(s.dir,1);ctx.rotate(s.tilt);
  const iw=im.naturalWidth||im.width,ih=im.naturalHeight||im.height,DW=L*1.25,DH=DW*ih/iw,X0=-L,sx=DW/iw,sw=s.mode==="swim"||s.flip>0;
- ctx.save();ctx.scale(1,.25);ctx.beginPath();ctx.ellipse(-L*.3,(FLOOR-4-s.y)*4+L*.1,L*.55,L*.22,0,0,7);ctx.fillStyle="rgba(0,20,30,"+(s.mode==="walk"?.22:.1)+")";ctx.fill();ctx.restore();
+ ctx.save();ctx.scale(1,.25);ctx.beginPath();ctx.ellipse(-L*.3,((s.gy||FLOOR+30)+6-s.y)*4+L*.1,L*.55,L*.22,0,0,7);ctx.fillStyle="rgba(0,20,30,"+(s.mode==="walk"?.22:.1)+")";ctx.fill();ctx.restore();
  const P0=.5,N=10,pivot=X0+P0*DW,chain=[];let px=pivot,py=0,th=0;const stripW=P0*iw/N;for(let i=0;i<N;i++){th+=s.curl*1.5/N+Math.sin(s.t*2+i*.5)*.004;chain.push([px,py,th]);const dd=stripW*sx;px-=Math.cos(th)*dd;py+=Math.sin(th)*dd}
  ctx.lineCap="round";for(let i=0;i<5;i++){const bx=-L*(.02+i*.09),by=DH*.18,ph=s.leg+i*1.3,lift=Math.max(0,Math.sin(ph))*L*.03,sw2=Math.cos(ph)*L*.05;ctx.strokeStyle=i%2?SS.leg2:SS.leg;ctx.lineWidth=Math.max(.8,L*.012);ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx+sw2*.4,by+L*.07);ctx.lineTo(bx+sw2-L*.03,by+L*.14-lift);ctx.stroke()}
  ctx.strokeStyle=SS.leg2;ctx.lineWidth=Math.max(.8,L*.011);for(let i=1;i<8;i+=2){const c=chain[i],a=Math.sin(s.t*(sw?26:6)-i*.6)*(sw?.7:.15);ctx.beginPath();ctx.moveTo(c[0],c[1]+DH*.14);ctx.lineTo(c[0]+Math.sin(a)*L*.05,c[1]+DH*.14+Math.cos(a)*L*.07);ctx.stroke()}
@@ -1104,11 +1104,15 @@ const FLI=[];
 function flSh(cx,base,w,nf){const r=w*.5;if(r<2)return;ctx.save();ctx.translate(cx,base-2);ctx.scale(1,.2);const g=ctx.createRadialGradient(0,0,0,0,0,r);g.addColorStop(0,"rgba(0,16,26,"+(.42+.16*nf)+")");g.addColorStop(.6,"rgba(0,16,26,"+(.16+.06*nf)+")");g.addColorStop(1,"rgba(0,16,26,0)");ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,r,0,7);ctx.fill();ctx.restore()}
 function floorItems(t){FLI.length=0;const nf=nightAmt(),dp=curWater()==="deep",K2=dkHere();
  for(let i=0;i<K2.length;i++)FLI.push([dkY(K2[i]),0,K2[i],i]);const D=state.decor||[];for(let i=0;i<D.length;i++)FLI.push([decY(D[i])+8,1,D[i],i]);
- const si=eimg("🐌");if(si)for(let i=0;i<state.snails;i++)FLI.push([FLOOR+40,2,si,i]);
- FLI.sort((a,b)=>a[0]-b[0]);for(const e of FLI){if(e[1]===0)dkOne(e[2],e[3],t,nf,dp);else if(e[1]===1)decOne(e[2],e[3],t,nf,dp);else{const i=e[3],sx=((t*6+i*300)%(W+60))-30,sw=40,sh=sw*si.naturalHeight/si.naturalWidth,bob=Math.sin(t*1.7+i)*.6;flSh(sx,FLOOR+40,sw*.8,nf);drawTinted(si,"snail",sx-sw/2,FLOOR+40-sh+bob,sw,sh,.06,nf)}}}
+ const si=eimg("🐌");if(si){snStep(t);for(let i=0;i<state.snails;i++)FLI.push([SNL[i].y,2,si,i])}
+ FLI.sort((a,b)=>a[0]-b[0]);for(const e of FLI){if(e[1]===0)dkOne(e[2],e[3],t,nf,dp);else if(e[1]===1)decOne(e[2],e[3],t,nf,dp);else{const S=SNL[e[3]],sw=40,sh=sw*si.naturalHeight/si.naturalWidth,st=1+.05*S.mv*Math.sin(S.ph);flSh(S.x,S.y,sw*.8,nf);ctx.save();ctx.translate(S.x,S.y);ctx.scale(S.dir*st,1/Math.sqrt(st));drawTinted(si,"snail",-sw/2,-sh,sw,sh,.06,nf);ctx.restore()}}}
+// salyangozlar: yavaş sürünür (gövde hafifçe uzayıp kısalır), ara sıra uzun durur ya da geri döner; yalnızca zeminde yatay ilerler
+const SNL=[];let snT=-1;function snStep(t){const dt=snT<0?0:Math.min(.1,Math.max(0,t-snT));snT=t;while(SNL.length<state.snails){const i=SNL.length;SNL.push({x:BX0+(BX1-BX0)*((i*.618+.2)%1),y:FLOOR+34+(i%3)*9,dir:i%2?-1:1,mv:0,p:rand(1,6),ph:0})}
+ for(let i=0;i<state.snails;i++){const S=SNL[i];S.p-=dt;if(S.p<=0){const r=Math.random();if(S.mv>.5&&r<.35){S.go=0;S.p=rand(3,9)}else{if(r<.25)S.dir*=-1;S.go=1;S.p=rand(6,14)}}S.mv+=((S.go?1:0)-S.mv)*Math.min(1,dt*1.5);
+  S.ph+=dt*2.2*S.mv;const v=S.mv*(2.6+1.4*Math.max(0,Math.sin(S.ph)));S.x+=S.dir*v*dt;if(S.x<BX0+30){S.x=BX0+30;S.dir=1}if(S.x>BX1-30){S.x=BX1-30;S.dir=-1}}}
 function decOne(d,i,t,nf,dp){const im=decImg(d.k);if(!im)return;const b=decBox(d),v=decV(d.k),cx=d.x*W,base=b.y+b.h;flSh(cx,base,b.w*.95,nf);
  if(v==="🦀"&&!state.lowGfx){// yengeç: yerinde hafifçe kıpırdar, arada bir yana birkaç adım atıp geri döner
-  const ph=i*1.93+d.x*7,sc=Math.max(0,Math.sin(t*.35+ph))**12,dx=Math.sin(t*1.1+ph)*1.2+Math.sin(t*9+ph)*sc*2.2,bob=Math.abs(Math.sin(t*9+ph))*sc*1.2;ctx.save();ctx.translate(cx+dx,base);ctx.rotate(Math.sin(t*1.3+ph)*.025);drawTinted(im,"dec"+v,-b.w/2,-b.h-bob,b.w,b.h,.1,nf);ctx.restore()}
+  const ph=i*1.93+d.x*7,sc=Math.max(0,Math.sin(t*.35+ph))**12,dx=Math.sin(t*.9+ph)*1.2+Math.sin(t*.35+ph)*sc*4;ctx.save();ctx.translate(cx+dx,base);drawTinted(im,"dec"+v,-b.w/2,-b.h,b.w,b.h,.1,nf);ctx.restore()}
  else drawTinted(im,"dec"+v,b.x,b.y,b.w,b.h,dp?.05:.1,nf);
  const gc=DGLOW[d.k];if(gc&&dp&&!state.lowGfx){const fk=.85+.15*Math.sin(t*1.7+d.x*20),cy=b.y+b.h*.5;ENV.push([cx,cy,b.w*1.4,gc,.42*fk]);EM.push([cx,b.y+b.h*.4,2.4,gc,.55*fk,0])}}
 function drawFloor(t){
