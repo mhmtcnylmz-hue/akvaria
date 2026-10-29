@@ -1,5 +1,5 @@
 // Akvaria çevrimdışı önbellek. Sürüm değişince eski önbellek silinir.
-const V = "akvaria-v153";
+const V = "akvaria-v154";
 // Resim ve ses dosyaları (a/ klasörü) içerik özetiyle adlandırılır, değişmez; sürümler arasında ayrı önbellekte saklanır
 const A = "akvaria-assets";
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
