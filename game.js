@@ -1577,25 +1577,30 @@ function hswLocal(f,fx,fy,w,h){const b=HSWF.get(f);if(!b||!b.V||!b.NX)return[-w/
 // hız düzelince sırayla geri açılır.
 function hswQuad(x,img,iw,ih,sx,sy,sw,sh,X0,Y0,X1,Y1,X2,Y2,X3,Y3){const ax=(X1-X0+X3-X2)/2,ay=(Y1-Y0+Y3-Y2)/2,bx=(X2-X0+X3-X1)/2,by=(Y2-Y0+Y3-Y1)/2,ox=(X0+X1+X2+X3)/4-(ax+bx)/2,oy=(Y0+Y1+Y2+Y3)/4-(ay+by)/2,a=ax/sw,b=ay/sw,c=bx/sh,d=by/sh;
  x.setTransform(a,b,c,d,ox-a*sx-c*sy,oy-b*sx-d*sy);const s0=Math.max(0,sx-2.5),t0=Math.max(0,sy-1),s1=Math.min(iw,sx+sw+2.5),t1=Math.min(ih,sy+sh+1);x.drawImage(img,s0,t0,s1-s0,t1-t0,s0,t0,s1-s0,t1-t0)}
-const HSWA={iv:0,cap:999,ema:16.7,lt:0,fr:-1,cnt:0,seen:0,tAdj:0};
-function hswFrame(){const A=HSWA,now=performance.now();if(A.lt){const dt=Math.min(100,now-A.lt);A.ema+=(dt-A.ema)*.06}A.lt=now;A.fr=simT;A.seen=A.cnt;A.cnt=0;
- if(now-A.tAdj>600){A.tAdj=now;if(A.ema>21){if(A.iv<50)A.iv=Math.min(50,A.iv+10);else A.cap=Math.max(4,Math.min(A.cap,A.seen)-3)}else if(A.ema<17.6){if(A.cap<999)A.cap=A.cap+2>A.seen?999:A.cap+2;else if(A.iv>0)A.iv=Math.max(0,A.iv-10)}}}
+const HSWA={iv:0,cap:999,ema:16.7,lt:0,fr:-1,cnt:0,seen:0,tAdj:0,fn:0};
+function hswFrame(){const A=HSWA,now=performance.now();if(A.lt){const dt=Math.min(100,now-A.lt);A.ema+=(dt-A.ema)*.1}A.lt=now;A.fr=simT;A.fn++;A.seen=A.cnt;A.cnt=0;
+ if(now-A.tAdj>400){A.tAdj=now;if(A.ema>19.5){if(A.iv<50)A.iv=Math.min(50,A.iv+10);else A.cap=Math.max(4,Math.min(A.cap,A.seen)-3)}else if(A.ema<17.6){if(A.cap<999)A.cap=A.cap+2>A.seen?999:A.cap+2;else if(A.iv>0)A.iv=Math.max(0,A.iv-10)}}}
 // bu karede bu balık hibrit mi çizilsin (karar kare boyunca sabit)
 function hswUse(f){if(!hswOn(f))return false;const b=hswB(f);if(b.uf===simT)return b.u;if(HSWA.fr!==simT)hswFrame();b.uf=simT;b.u=HSWA.cnt<HSWA.cap;HSWA.cnt++;return b.u}
+// sürüm 160: yüzeyden gelen ışık deseni her karede değil, balığın resmine ~12 kez/sn işlenir (balıklar arasında dağıtılarak); her karede yalnızca bükme kalır
+const HSWT=new WeakMap();
+function hswTex(f,img,iw,ih,ww,h){if(!fishCaus()||f._noC)return img;const ct=causticTex();if(!ct)return img;let m=HSWT.get(f);if(!m){m=new Map();HSWT.set(f,m)}let r=m.get(img);
+ if(!r){if(m.size>=3){for(const v of m.values())v.c.width=v.c.height=0;m.clear()}r={c:document.createElement("canvas"),t:-1e9};m.set(img,r)}const now=performance.now();if(r.c.width===iw&&r.c.height===ih&&now-r.t<85)return r.c;r.t=now-Math.random()*20;
+ try{const c=r.c;if(c.width!==iw||c.height!==ih){c.width=iw;c.height=ih}const x=c.getContext("2d");x.setTransform(1,0,0,1,0,0);x.globalCompositeOperation="source-over";x.globalAlpha=1;x.clearRect(0,0,iw,ih);x.drawImage(img,0,0);
+  const cw0=ct.naturalWidth||ct.width,ch0=ct.naturalHeight||ct.height,s=iw/ww*600/320,TW=cw0*s,TH=ch0*s,tt=now/1000,wx=(f.x*W-ww/2+tt*9)*iw/ww,wy=(f.y*H-h/2-tt*4)*iw/ww;if(!FCV)FCV=document.createElement("canvas");if(FCV.width!==iw||FCV.height!==ih){FCV.width=iw;FCV.height=ih}const q=FCV.getContext("2d");q.setTransform(1,0,0,1,0,0);q.globalCompositeOperation="source-over";q.globalAlpha=1;q.clearRect(0,0,iw,ih);const o1=-(((wx%TW)+TW)%TW),o2=-(((wy%TH)+TH)%TH);for(let yy=o2;yy<ih;yy+=TH)for(let xx=o1;xx<iw;xx+=TW)q.drawImage(ct,xx,yy,TW,TH);
+  q.globalCompositeOperation="destination-in";const gr=q.createLinearGradient(0,0,0,ih);gr.addColorStop(0,"rgba(0,0,0,1)");gr.addColorStop(.55,"rgba(0,0,0,.55)");gr.addColorStop(1,"rgba(0,0,0,.12)");q.fillStyle=gr;q.fillRect(0,0,iw,ih);q.drawImage(img,0,0);x.globalCompositeOperation="lighter";x.globalAlpha=.55*(1-nightAmt()*.85);x.drawImage(FCV,0,0);x.globalAlpha=1;x.globalCompositeOperation="source-over"}catch(e){return img}return r.c}
 function hswDraw(f,img,ox,oy,ww,h,ref){const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height;if(!iw||!ih)return;const t0=performance.now();
- const b=hswB(f),G=HSWG[f.type],R=ih/iw,wpx=ww*K,fin=wpx>=150&&!!(G.pc||G.pv);
- let NX=G.e?Math.max(8,Math.min(16,Math.round(wpx/18))):Math.max(6,Math.min(12,Math.round(wpx/22)));if(b.NX&&Math.abs(NX-b.NX)<2)NX=b.NX;
+ const b=hswB(f),G=HSWG[f.type],R=ih/iw,fin=ww>=170&&!!(G.pc||G.pv);
+ let NX=G.e?Math.max(8,Math.min(14,Math.round(ww/16))):Math.max(5,Math.min(10,Math.round(ww/20)));if(b.NX&&Math.abs(NX-b.NX)<2)NX=b.NX;
  const ov=ref&&ref!==img,I=ov&&(ref.naturalWidth||ref.width)===iw&&(ref.naturalHeight||ref.height)===ih?hswInfo(ref,iw,ih):hswInfo(img,iw,ih),NY=fin?Math.max(4,Math.min(10,Math.round(NX*R*(I.by1-I.by0)/Math.max(.05,I.bx1-I.bx0)*1.15))):4;
  const P=hswPlan(f,I,NX,NY,fin),px=HSW.px,py=Math.min(.6,Math.max(.3,.2/R)),CW=Math.ceil(iw*(1+2*px)),CH=Math.ceil(ih*(1+2*py));
  if(!b.cv)b.cv=new Map();let r=b.cv.get(img);if(!r){if(b.cv.size>=3){for(const v of b.cv.values())v.c.width=v.c.height=0;b.cv.clear()}r={c:document.createElement("canvas"),t:-1e9,P:null};b.cv.set(img,r)}
- const c=r.c,go=r.P!==P||c.width!==CW||c.height!==CH||t0-r.t>=HSWA.iv;
- if(go){r.t=t0;r.P=P;if(c.width!==CW||c.height!==CH){c.width=CW;c.height=CH}const V=hswMesh(f,P,R),x=c.getContext("2d"),ops=P.ops,cw=iw/NX,ch=ih/NY,ofx=px*iw,ofy=py*ih;x.setTransform(1,0,0,1,0,0);x.globalCompositeOperation="source-over";x.globalAlpha=1;x.clearRect(0,0,CW,CH);
+ if(b.sd==null)b.sd=(f.id|0)&1;const c=r.c;let go=r.P!==P||c.width!==CW||c.height!==CH;if(!go)go=HSWA.iv>0?t0-r.t>=HSWA.iv:(ww>=120||((HSWA.fn+b.sd)&1)===0);
+ if(go){r.t=t0;r.P=P;if(c.width!==CW||c.height!==CH){c.width=CW;c.height=CH}const tx=ov?img:hswTex(f,img,iw,ih,ww,h),V=hswMesh(f,P,R),x=c.getContext("2d"),ops=P.ops,cw=iw/NX,ch=ih/NY,ofx=px*iw,ofy=py*ih;x.setTransform(1,0,0,1,0,0);x.globalCompositeOperation="source-over";x.globalAlpha=1;x.clearRect(0,0,CW,CH);
   for(let q=0;q<ops.length;q+=3){const i=ops[q],j=ops[q+1],e=ops[q+2],k00=(i*(NY+1)+j)*2,k10=((i+1)*(NY+1)+j)*2,k01=(i*(NY+1)+e+1)*2,k11=((i+1)*(NY+1)+e+1)*2;
-   hswQuad(x,img,iw,ih,i*cw,j*ch,cw,ch*(e-j+1),V[k00]*iw+ofx,V[k00+1]*iw+ofy,V[k10]*iw+ofx,V[k10+1]*iw+ofy,V[k01]*iw+ofx,V[k01+1]*iw+ofy,V[k11]*iw+ofx,V[k11+1]*iw+ofy)}
+   hswQuad(x,tx,iw,ih,i*cw,j*ch,cw,ch*(e-j+1),V[k00]*iw+ofx,V[k00+1]*iw+ofy,V[k10]*iw+ofx,V[k10+1]*iw+ofy,V[k01]*iw+ofx,V[k01+1]*iw+ofy,V[k11]*iw+ofx,V[k11+1]*iw+ofy)}
   x.setTransform(1,0,0,1,0,0);
-  // yüzeyden gelen ışık deseni (yalnız gövde resminde; parlama katmanlarına değil)
-  if(!ov&&fishCaus()&&!f._noC){const ct=causticTex();if(ct)try{const cw0=ct.naturalWidth||ct.width,ch0=ct.naturalHeight||ct.height,s=iw/ww*600/320,TW=cw0*s,TH=ch0*s,tt=t0/1000,wx=(f.x*W-ww/2+tt*9)*iw/ww,wy=(f.y*H-h/2-tt*4)*iw/ww;if(!FCV)FCV=document.createElement("canvas");if(FCV.width!==CW||FCV.height!==CH){FCV.width=CW;FCV.height=CH}const q=FCV.getContext("2d");q.setTransform(1,0,0,1,0,0);q.globalCompositeOperation="source-over";q.globalAlpha=1;q.clearRect(0,0,CW,CH);const o1=-(((wx%TW)+TW)%TW),o2=-(((wy%TH)+TH)%TH);for(let yy=o2;yy<CH;yy+=TH)for(let xx=o1;xx<CW;xx+=TW)q.drawImage(ct,xx,yy,TW,TH);
-   q.globalCompositeOperation="destination-in";const gr=q.createLinearGradient(0,ofy,0,ofy+ih);gr.addColorStop(0,"rgba(0,0,0,1)");gr.addColorStop(.55,"rgba(0,0,0,.55)");gr.addColorStop(1,"rgba(0,0,0,.12)");q.fillStyle=gr;q.fillRect(0,0,CW,CH);q.drawImage(c,0,0);x.globalCompositeOperation="lighter";x.globalAlpha=.55*(1-nightAmt()*.85);x.drawImage(FCV,0,0);x.globalAlpha=1;x.globalCompositeOperation="source-over"}catch(e){}}}
+ }
  else hswMesh(f,P,R);
  ctx.drawImage(c,-ww/2+ox-px*ww,-h/2+oy-py*h,ww*(1+2*px),h*(1+2*py));HSWP.n++;HSWP.ms+=performance.now()-t0;if(go)HSWP.rn++}
 // ölçüm (test için; window.__hsw ile okunur)
