@@ -1581,8 +1581,8 @@ const HSWP={n:0,ms:0,rn:0,rms:0};try{window.__hsw=HSWP}catch(e){}
 try{const hb=$("hswBtn"),lb=()=>{hb.textContent="🐟 Hibrit yüzme: "+(HSW.on?"Açık":"Kapalı")};lb();hb.addEventListener("click",()=>{HSW.on=!HSW.on;try{localStorage.setItem("akvHyb",HSW.on?"1":"0")}catch(e){}lb();notify(HSW.on?"🐟 Hibrit yüzme açık":"Hibrit yüzme kapalı, eski animasyon")})}catch(e){}
 function fogCol(){const w=curWater(),n=nightAmt()>.5;return w==="deep"?"#071640":w==="river"?(n?"#0b2c36":"#2e6b4a"):w==="fresh"?(n?"#0a3040":"#138a8e"):(n?"#0c2456":"#127fae")}
 // derinlik: her balık ara sıra öne ya da arkaya süzülür; dokunulan balık öne gelir
-function depthStep(f,t){if(state.lowGfx||(state.admOff||{}).depth){f.zd=0;return}if(f.zd==null){f.zd=((f.id||0)*.6180339887%1)*.75;f.zt=f.zd;f.zT=t+rand(6,25)}
- if(t>(f.zT||0)){f.zT=t+rand(14,38);f.zt=Math.random()<.4?rand(0,.18):rand(.2,.95)}const tg=f.type==="tripod"||selectedFish===f||f.chase||(f.jawT&&simT-f.jawT<2)?0:f.zt;f.zd+=(tg-f.zd)*Math.min(1,(lastDT||.016)*(tg<f.zd&&selectedFish===f?2.5:.18))}
+// sürüm 156: derinlik efekti kaldırıldı — uzaktaki balığı küçültüp düşük çözünürlükle ve sisle çiziyordu, balıklar bulanık görünüyordu. Bütün balıklar net, tam boyda.
+function depthStep(f,t){f.zd=0}
 
 // ===== sürüm 152: daha canlı davranış
 // hızlanma-süzülme: birkaç güçlü kuyruk vuruşu, sonra süzülerek yavaşlama (yılan gibi yüzenler sürekli yüzer)
