@@ -1348,24 +1348,24 @@ const s=getSpecies(f.type),mu=MUTS[f.mutation]&&f.mutation!=="normal"?f.mutation
 const size=fsz(f),vf=mim&&im===im1?(MUTW[mu+"_"+s.id]||1):1,w=fishW(f),h=w*im.naturalHeight/im.naturalWidth,sn=f.sn||0,tp=f.tp||0,fs=f.fs||f.dir||1,turn=1-Math.min(1,Math.abs(fs));
 const GX=mu==='glitch'?glitchSt(f,t,w):null;if(GX)glPx(f,t);if(GX&&GX.hide)return;
 depthStep(f,t);ctx.save();ctx.translate(f.x*W,f.y*H+Math.sin(t*1.4+f.phase)*(2+3*(1-sn))*(1-tpk));if(GX&&GX.tel)ctx.translate(GX.tel[0],GX.tel[1]);if(f.zd>.01){const ds=1-.3*f.zd;ctx.scale(ds,ds)}
-const gk=f.gulp>0?Math.sin(Math.PI*(1-f.gulp/.24)):0;ctx.scale((fs>=0?Math.max(.4,fs):Math.min(-.4,fs))*(1+SWIM.stretch*.4*sn)*(1-.07*gk),(1+SWIM.turn*turn)*(1+.06*gk));
+const gk=f.gulp>0?Math.sin(Math.PI*(1-f.gulp/.24)):0;ctx.scale((hswOn(f)?(fs>=0?1:-1):fs>=0?Math.max(.4,fs):Math.min(-.4,fs))*(1+SWIM.stretch*.4*sn)*(1-.07*gk),(1+SWIM.turn*turn)*(1+.06*gk));
 ctx.rotate((f.ang||0)+Math.sin(tp+1.9)*(SWIM.roll*.35+SWIM.roll*sn)*(SWP[f.type]||SWP.clown)[3]);
 // sürüm 124: derin okyanus balıklarına eklenen mavi hale kaldırıldı; parlak (Nadir) balıklar her tankta eskisi gibi altın haleyle görünür
 const M=mu?MUTS[mu]:null,hc=state.lowGfx||mu==="glitch"?null:M?(hybOf(f)?{c:MUTS[f.hyb].glow,b:M.blur,k:"h"+mu+f.hyb}:{c:M.glow,b:M.blur,k:mu}):(f.rarity==="Nadir"?{c:"#ffe46b",b:14,k:"rare"}:null);
-if(hc&&tpk<.5&&LQ<2){const hs=lodImg(im,w*K*.6),hw=hs.naturalWidth||hs.width,H0=halo(hs,hc.k+"_"+s.id+"_"+hw,hc.c,hc.b*1.6*hw/190);if(H0){const k=w/hw,pu=(.75+.25*Math.sin(t*2+f.phase))*(mu==="transparent"?.45:1);ctx.globalAlpha=pu;ctx.drawImage(H0.cv,-w/2-H0.pad*k,-h/2-H0.pad*k,H0.cv.width*k,H0.cv.height*k);ctx.globalAlpha=1}}
+if(hc&&tpk<.5&&LQ<2){const hs=lodImg(im,w*K*.6),hw=hs.naturalWidth||hs.width,H0=halo(hs,hc.k+"_"+s.id+"_"+hw,hc.c,hc.b*1.6*hw/190);if(H0){const k=w/hw,pu=(.75+.25*Math.sin(t*2+f.phase))*(mu==="transparent"?.45:1);ctx.globalAlpha=pu;const hz=hswOn(f);if(hz){ctx.save();ctx.scale(Math.max(.4,Math.abs(fs)),1)}ctx.drawImage(H0.cv,-w/2-H0.pad*k,-h/2-H0.pad*k,H0.cv.width*k,H0.cv.height*k);if(hz)ctx.restore();ctx.globalAlpha=1}}
 const GL=mu==="glitch",src0=lodImg(im,w*K*(1-.5*(f.zd||0))),LT=litOn(),src=GL?src0:curWater()==="deep"?deepTex(src0):LT?litTex(src0):src0,N=s.sl?(state.lowGfx?10:s.sl):state.lowGfx?(w<90?4:5):(w<70?6:w<110?8:10),iw=src.naturalWidth||src.width,ih=src.naturalHeight||src.height,sw=iw/N,dw=w/N,P=SWP[f.type]||SWP.clown,amp=Math.min(w*(SWIM.rest+SWIM.amp*sn)*P[0]*Math.pow(90/w,.15),h*(.34+.1*sn)),ov=1.2;
 const Ycf=fx=>{const u=1-fx;return Math.sin(tp-u*SWIM.wave*P[4])*amp*Math.pow(u,P[2])};
-const drawS=(img,ox,oy,ww,live)=>bendDraw(f,img,ox,oy,ww||w,h,N,tp,amp,P,live);
+const HSW1=hswOn(f),drawS=(img,ox,oy,ww,live)=>HSW1?hswDraw(f,img,ox,oy,ww||w,h,src):bendDraw(f,img,ox,oy,ww||w,h,N,tp,amp,P,live),Yc2=HSW1?fx=>hswLocal(f,fx,.5,w,h)[1]:Ycf,fpt=(fx,fy)=>HSW1?hswLocal(f,fx,fy,w,h):[-w/2+fx*w,-h/2+fy*h+Ycf(fx)];
 if(GX){const T2=state.lowGfx?null:glTint(src),R=T2&&!GX.b?glRest(T2,src):null;if(T2&&GX.b){ctx.globalAlpha=.95;ctx.drawImage(T2.c,-w/2-GX.sp,-h/2+rand(-2,2),w,h);ctx.drawImage(T2.m,-w/2+GX.sp,-h/2+rand(-2,2),w,h);ctx.globalAlpha=1}
 if(GX.bands){const n=GX.bands.length,bh=h/n;for(let i=0;i<n;i++){const off=GX.bands[i];if(GX.bands.cut&&i%3===1&&off)continue;ctx.drawImage(src,0,ih*i/n,iw,ih/n,-w/2+off,-h/2+bh*i,w,bh+.6)}if(!state.lowGfx){ctx.save();ctx.globalCompositeOperation="lighter";for(let i=0;i<3;i++){ctx.globalAlpha=rand(.15,.45);ctx.fillStyle=["#00f6ff","#ff2bd6","#7dff4f"][i];ctx.fillRect(rand(-w*.6,w*.3),rand(-h*.5,h*.45),rand(w*.15,w*.6),rand(1.5,4))}ctx.restore()}}
 else if(R)drawS(R,0,0,w*R.width/iw);else drawS(src,0,0);
 if(!state.lowGfx&&Math.sin(t*9+(f.phase||0)*5)>.6){ctx.save();ctx.globalCompositeOperation="lighter";ctx.globalAlpha=.18;ctx.fillStyle="#00f6ff";const yy=((t*60+(f.phase||0)*40)%h)-h/2;ctx.fillRect(-w/2,yy,w,2);ctx.restore()}}
-else{const jo=NOJAW[f.type]?0:jawOpen(f);if(tpk>0)tripodDraw(f,src,vk,w,h,tpk,drawS);else if(jo>.02)drawJaw(f,src,w,h,Ycf,drawS,jo);else drawS(src,0,0);
+else{const jo=NOJAW[f.type]?0:jawOpen(f);if(tpk>0)tripodDraw(f,src,vk,w,h,tpk,drawS);else if(jo>.02)drawJaw(f,src,w,h,Yc2,drawS,jo);else drawS(src,0,0);
  if(!state.lowGfx&&mim&&SHEEN[mu]){ctx.save();ctx.globalCompositeOperation="lighter";ctx.globalAlpha=SHEEN[mu].a;drawS(sheenTex(src,mu,t,(f.phase||0)*1.7,f),0,0,0,1);ctx.restore()}}
 if(mu==="gold"&&!state.lowGfx&&!(mim)){const sh=(t*.45+f.phase*.13)%1.6;if(sh<1){ctx.save();ctx.globalCompositeOperation="lighter";ctx.globalAlpha=.32*Math.sin(sh*Math.PI);const gx=-w/2+w*sh,gr=ctx.createLinearGradient(gx-w*.18,0,gx+w*.18,0);gr.addColorStop(0,"rgba(255,240,170,0)");gr.addColorStop(.5,"rgba(255,248,210,1)");gr.addColorStop(1,"rgba(255,240,170,0)");ctx.fillStyle=gr;ctx.beginPath();ctx.ellipse(gx,0,w*.16,h*.36,-.5,0,7);ctx.fill();ctx.restore()}}
 if(mu&&!state.lowGfx){ctx.shadowBlur=0;const k=mu==="gold"?5:mu==="melanistic"?3:mu==="transparent"?2:1;for(let i=0;i<k;i++){const a=Math.sin(t*1.6+f.phase*3+i*2.1);if(a<.55)continue;const px=Math.sin(f.phase*7+i*4.3)*w*.32,py=Math.cos(f.phase*5+i*3.7)*h*.22,r=(a-.55)*w*.09;ctx.globalAlpha=(a-.55)*2.2;ctx.fillStyle=mu==="gold"?"#fff6c8":mu==="melanistic"?"#c9d6ff":mu==="transparent"?"#e8fbff":"#fff0f6";ctx.beginPath();ctx.moveTo(px,py-r);ctx.lineTo(px+r*.25,py);ctx.lineTo(px,py+r);ctx.lineTo(px-r*.25,py);ctx.closePath();ctx.moveTo(px-r,py);ctx.lineTo(px,py+r*.25);ctx.lineTo(px+r,py);ctx.lineTo(px,py-r*.25);ctx.fill()}ctx.globalAlpha=1}
-{const MO=mouthOf(f),mt=ctx.getTransform(),ki=1/K,lx=-w/2+MO[0]*w,ly=-h/2+MO[1]*h+Ycf(MO[0]),gx=-w/2+(MO[0]-.3)*w,gy=-h/2+MO[1]*h+Ycf(MO[0]-.3);f._mx=(mt.a*lx+mt.c*ly+mt.e)*ki;f._my=(mt.b*lx+mt.d*ly+mt.f)*ki;f._gx=(mt.a*gx+mt.c*gy+mt.e)*ki;f._gy=(mt.b*gx+mt.d*gy+mt.f)*ki}
-if(PHOT[f.type])phCollect(f,w,h,Ycf,t,im,mu,N);if(curWater()==="deep"&&state.fish.length<=8)flushFishLights();
+{const MO=mouthOf(f),mt=ctx.getTransform(),ki=1/K,LM=fpt(MO[0],MO[1]),LG=fpt(MO[0]-.3,MO[1]),lx=LM[0],ly=LM[1],gx=LG[0],gy=LG[1];f._mx=(mt.a*lx+mt.c*ly+mt.e)*ki;f._my=(mt.b*lx+mt.d*ly+mt.f)*ki;f._gx=(mt.a*gx+mt.c*gy+mt.e)*ki;f._gy=(mt.b*gx+mt.d*gy+mt.f)*ki}
+if(PHOT[f.type])phCollect(f,w,h,Yc2,t,im,mu,N,HSW1?fpt:null);if(curWater()==="deep"&&state.fish.length<=8)flushFishLights();
 ctx.restore()
 }
 // ===== sürüm 125: Mızrak Balığı yelkeni ve Üç Ayaklı Balık duruşu
@@ -1453,6 +1453,132 @@ function bendDraw(f,img,ox,oy,ww,h,N,tp,amp,P,live){const iw=img.naturalWidth||i
  // sürüm 149: derinlik — uzaktaki balık suyun rengine karışır
  const fc=fogCol();if(r.fk!==r.k+fc||!r.fg){if(!r.fg)r.fg=document.createElement("canvas");const c2=r.fg;if(c2.width!==r.cv.width||c2.height!==r.cv.height){c2.width=r.cv.width;c2.height=r.cv.height}const y=c2.getContext("2d");y.globalCompositeOperation="source-over";y.clearRect(0,0,c2.width,c2.height);y.drawImage(r.cv,0,0);y.globalCompositeOperation="source-atop";y.fillStyle=fc;y.fillRect(0,0,c2.width,c2.height);r.fk=r.k+fc}
  const a0=ctx.globalAlpha;ctx.drawImage(r.cv,-ww/2+ox,-h/2+oy-ps,ww,h+2*ps);ctx.globalAlpha=a0*Math.min(.5,.55*dz);ctx.drawImage(r.fg,-ww/2+ox,-h/2+oy-ps,ww,h+2*ps);ctx.globalAlpha=a0}
+
+// ===== sürüm 155: hibrit yüzme animasyonu (bütün balıklar)
+// Ayarlar > "🐟 Hibrit yüzme" ile ya da adres çubuğunda ?hibrit=1 / ?hibrit=0 ile açılıp kapanır (cihazda saklanır, kayda yazılmaz).
+// Kapalıyken, "Düşük grafik"te ve cihaz çok yavaşladığında (LQ 2) eski şerit eğme (bendDraw) aynen çalışır.
+// Gövde: resmin üstüne ızgara (mesh). Omurga boyunca açılar baştan kuyruğa toplanır; kesitler omurgaya dik döner, gövde uzamaz. Baş bölgesi sabit.
+// Kuyruk yüzgeci: kuyruk sapında ayrı eklem, gövde dalgasından gecikmeli. Uzun gövdeliler (yılan gibi): dalga gövde boyunca ilerler, eklem yok.
+// Göğüs ve karın yüzgeci: kendi bağlantı noktası etrafında döner. Sırt/anal/kuyruk kenarları: hafif dalgalanma.
+// Omurga çizgisi, kuyruk sapı ve gövde sınırları her resmin saydamlığından otomatik çıkarılır (mutasyonlu resimler farklı kırpılmış olsa da oturur);
+// yüzgeç yerleri aşağıdaki tabloda, balığın sınır kutusuna göre (0-1, baş sağda) verilir.
+// Davranış: seyir, hızlanma, süzülme, dönüş, dinlenme, yem kovalama — hız çarpanı, kuyruk vuruşu ve yüzgeçler yumuşak geçişlerle birlikte değişir.
+const HSW={on:true,px:.1,thr:30};
+try{const q=new URLSearchParams(location.search).get("hibrit");if(q==="1"||q==="0")localStorage.setItem("akvHyb",q);HSW.on=localStorage.getItem("akvHyb")!=="0"}catch(e){}
+// sp: elle omurga [baş-kuyruk ortası y, eğim] (otomatik bulunamayanlar) · xt: kuyruk sapı (kuyruk yüzgecinin gövdeye bağlandığı yer) · pc/pv: göğüs/karın yüzgeci [pivot x, pivot y, bölge merkezi x, y, yarıçap x, y] · e: yılan gibi yüzer · hd: sabit baş payı · bk: gövde dalgası çarpanı · fk: yüzgeç kenarı dalgası çarpanı
+const HSWG={
+neon:{xt:0.22,pv:[.47,.8,.45,.88,.06,.1]},guppy:{xt:0.43,pc:[.72,.5,.68,.62,.05,.12],pv:[.6,.62,.58,.75,.07,.15],fk:2},
+clown:{xt:0.2,pc:[.68,.5,.64,.58,.07,.1],pv:[.62,.8,.6,.9,.07,.1]},ytang:{xt:0.19,pc:[.7,.42,.665,.5,.06,.13],pv:[.64,.84,.62,.92,.06,.08]},
+gold:{xt:0.45,pc:[.62,.66,.58,.78,.07,.12],pv:[.52,.78,.5,.9,.06,.09],fk:2},betta:{sp:[.6,-.23],xt:0.4,pc:[.72,.42,.69,.5,.05,.08],pv:[.66,.5,.64,.65,.06,.14],fk:2.2},
+btang:{xt:0.22,pc:[.63,.45,.635,.58,.075,.15],pv:[.63,.86,.65,.93,.06,.07]},angel:{xt:0.17,pc:[.56,.47,.5,.58,.07,.14],pv:[.58,.86,.57,.94,.06,.07]},
+cichlid:{xt:0.15,pc:[.62,.46,.58,.56,.08,.12],pv:[.66,.74,.64,.88,.07,.13]},lion:{sp:[.5,.03],xt:0.17,pc:[.47,.58,.28,.62,.2,.25],pv:[.68,.68,.7,.82,.08,.13],fk:1.5},
+arowana:{xt:0.2,pc:[.73,.6,.7,.78,.05,.17],pv:[.55,.68,.54,.78,.04,.08]},copper:{sp:[.45,.15],xt:0.12,pc:[.5,.48,.47,.57,.05,.1],pv:[.45,.7,.44,.83,.05,.12]},
+discus:{xt:0.12,pv:[.65,.8,.66,.9,.05,.1]},trigger:{xt:0.18,pc:[.67,.53,.63,.6,.05,.08]},boxfish:{xt:0.22,pc:[.56,.52,.52,.62,.07,.12],bk:.45},
+mandarin:{xt:0.2,pc:[.62,.5,.56,.62,.08,.14],pv:[.55,.68,.52,.85,.07,.12],fk:1.3},koi:{xt:0.38,pc:[.6,.62,.53,.82,.12,.2],pv:[.45,.7,.35,.82,.12,.15],fk:1.6},
+idol:{sp:[.6,-.08],xt:0.32,pc:[.64,.52,.61,.6,.05,.08],pv:[.64,.84,.65,.93,.04,.07]},emp:{xt:0.2,pc:[.66,.47,.63,.57,.06,.12],pv:[.64,.83,.65,.93,.05,.08]},
+napo:{xt:0.16,pc:[.53,.42,.45,.55,.08,.15],pv:[.6,.84,.6,.93,.07,.08]},lantern:{xt:0.2,pv:[.48,.68,.47,.8,.05,.12]},
+hatchet:{xt:0.25,pv:[.42,.55,.38,.68,.06,.12]},angler:{sp:[.45,.05],xt:0.2,pc:[.58,.42,.52,.52,.07,.13],pv:[.52,.74,.5,.86,.05,.1]},
+viper:{xt:0.14,pv:[.4,.6,.38,.75,.06,.12],hd:.18},oar:{sp:[.5,.12],e:1},dragon:{sp:[.32,-.02],e:1},tripod:{xt:0.12,fk:.5},lancet:{e:1},
+piranha:{xt:0.22,pv:[.5,.72,.48,.83,.06,.1]},peacock:{xt:0.17,pv:[.57,.68,.56,.82,.05,.12]},
+bichir:{e:1,pc:[.66,.58,.6,.75,.07,.2]},eel:{e:1},mahseer:{xt:0.19,pc:[.7,.64,.66,.8,.05,.15],pv:[.48,.68,.45,.83,.05,.13]},gar:{e:1,pv:[.58,.62,.56,.78,.05,.15]},
+goliath:{xt:0.2,pc:[.76,.68,.73,.84,.04,.13],pv:[.5,.72,.48,.86,.04,.1]},mekong:{xt:0.17,pc:[.65,.66,.61,.82,.05,.14],pv:[.44,.72,.42,.86,.04,.1]},
+sturgeon:{xt:0.18,pc:[.64,.66,.6,.82,.05,.15],pv:[.38,.68,.36,.84,.04,.12]},arapaima:{xt:0.12,pc:[.73,.7,.7,.85,.04,.13],pv:[.38,.72,.35,.86,.04,.1]}};
+function hswOn(f){return HSW.on&&!!f&&!!HSWG[f.type]&&!state.lowGfx&&LQ<2&&!(state.admOff||{}).bend}
+// durum: [kuyruk vuruşu Hz, gövde dalgası (rad), kuyruk eklemi (rad), göğüs yüzgeci etkinliği 0-1, hız çarpanı]
+const HSWS={cruise:[1.5,.17,.22,.35,1],burst:[2.7,.3,.32,.08,1.35],glide:[.55,.05,.08,.6,.68],turn:[1.9,.24,.3,.9,.8],rest:[.8,.06,.1,1,1],chase:[2.4,.26,.3,.2,1]};
+function hswS(a,b,x){const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t)}
+// animasyon durumu balık nesnesinin dışında tutulur (kayda yazılmaz)
+const HSWF=new WeakMap();function hswB(f){let b=HSWF.get(f);if(!b){b=hswNew();HSWF.set(f,b)}return b}
+function hswNew(){return{st:"cruise",t:rand(1,3),fq:1.2,ab:.1,at:.12,pa:.4,k:1,ph:rand(0,6),pp:rand(0,6),mt:-1,mk:null,V:null,S:null,Q:new Float32Array(4),cv:null,NX:0,NY:0}}
+function hswPiv(S,col,NX,a,R,Q,o){const X=a[0],i=Math.min(NX-1,Math.max(0,Math.floor(X*NX))),u=X*NX-i,k=i*3,t=S[k+2]*(1-u)+S[k+5]*u,yb=(col[i*5+3]*(1-u)+col[i*5+8]*u)*R,d=a[1]*R-yb;Q[o]=S[k]*(1-u)+S[k+3]*u-d*Math.sin(t);Q[o+1]=S[k+1]*(1-u)+S[k+4]*u+d*Math.cos(t)}
+// davranış: fizik adımında, delta time ile
+function hswStep(f,h,food,sn){const b=hswB(f),G=HSWG[f.type],turning=Math.abs((f.dir||1)-(f.fs==null?1:f.fs))>.35,rest=(f.rest&&!food)||isSleepy(f);let st=b.st;b.t-=h;
+ if(turning)st="turn";else if(food)st="chase";else if(rest)st="rest";
+ else if(st==="turn"||st==="chase"||st==="rest"){st="cruise";b.t=rand(1.5,3)}
+ else if(G.e||NOGLIDE[f.type]){st="cruise";b.t=1}
+ else if(b.t<=0){if(st==="burst"){st="glide";b.t=rand(.8,1.8)}else if(st==="glide"){st="cruise";b.t=rand(2,5)}else{const r=Math.random();if(r<.55){st="burst";b.t=rand(.45,.9)}else if(r<.7){st="glide";b.t=rand(.8,1.6)}else b.t=rand(2,4)}}
+ b.st=st;const P=HSWS[st],SP=SWP[f.type]||SWP.clown,sz=Math.max(.6,Math.min(1.5,Math.pow(80/Math.max(20,fishW(f)),.35))),sc=st==="rest"?1:.45+.55*Math.min(1,sn*1.25),bk=(G.bk||1)*(G.e?2.3:SP[0]);
+ const e1=1-Math.exp(-h/.4),e2=1-Math.exp(-h/.3),e3=1-Math.exp(-h/.55),e4=1-Math.exp(-h/.45);
+ b.fq+=(P[0]*sz*SP[1]*(st==="rest"?1:.65+.35*Math.min(1,sn*1.3))-b.fq)*e1;b.ab+=(P[1]*sc*bk-b.ab)*e2;b.at+=((G.e?0:P[2]*sc)-b.at)*e3;b.pa+=(P[3]-b.pa)*e2;b.k+=(P[4]-b.k)*e4;
+ b.ph+=6.283185307179586*b.fq*h;b.pp+=6.283185307179586*(1.2+1.3*b.pa)*h;if(b.ph>1e4)b.ph-=6283.185307179586;if(b.pp>1e4)b.pp-=6283.185307179586}
+function hswK(f){const b=HSWF.get(f);return b?b.k:1}
+// resim çözümlemesi (resim başına bir kez): sınır kutusu, sütun sütun üst/alt sınır ve ağırlık merkezi → omurga doğrusu, kuyruk sapı
+const HSWI=new WeakMap();
+function hswInfo(img,iw,ih){let o=HSWI.get(img);if(o&&o.w===iw&&o.h===ih)return o;o={w:iw,h:ih,bx0:0,bx1:1,by0:0,by1:1,sa:.5,sb:0,xt:.22,T:new Float32Array(65),B:new Float32Array(65),P:new Map()};
+ try{const c=document.createElement("canvas");c.width=iw;c.height=ih;const x=c.getContext("2d");x.drawImage(img,0,0,iw,ih);const d=x.getImageData(0,0,iw,ih).data;let x0=iw,x1=-1,y0=ih,y1=-1;
+  for(let yy=0;yy<ih;yy++)for(let xx=0;xx<iw;xx++)if(d[(yy*iw+xx)*4+3]>20){if(xx<x0)x0=xx;if(xx>x1)x1=xx;if(yy<y0)y0=yy;if(yy>y1)y1=yy}
+  if(x1>x0&&y1>y0){o.bx0=x0/iw;o.bx1=(x1+1)/iw;o.by0=y0/ih;o.by1=(y1+1)/ih;const C=new Float32Array(65),M=new Float32Array(65);
+   for(let k=0;k<=64;k++){const xx=Math.min(x1,Math.round(x0+(x1-x0)*k/64));let t=-1,bt=-1,rs=-1,bl=0,bs=-1;for(let yy=y0;yy<=y1+1;yy++){const a=yy<=y1?d[(yy*iw+xx)*4+3]:0;if(a>40){if(t<0)t=yy;bt=yy;if(rs<0)rs=yy}else if(rs>=0){if(yy-rs>bl){bl=yy-rs;bs=rs}rs=-1}}o.T[k]=t<0?.5:t/ih;o.B[k]=bt<0?.5:(bt+1)/ih;C[k]=bs<0?.5:(bs+bl/2)/ih;M[k]=bt<0?0:(bt+1-t)/ih}
+   // omurga: gövdenin orta-ön kısmında ağırlık merkezlerine doğru
+   let n=0,sx=0,sy=0,sxx=0,sxy=0;for(let k=19;k<=54;k++){const X=k/64;n++;sx+=X;sy+=C[k];sxx+=X*X;sxy+=X*C[k]}const den=n*sxx-sx*sx;o.sb=den?(n*sxy-sx*sy)/den:0;o.sa=(sy-o.sb*sx)/n;
+   // kuyruk sapı: arka yarıda gövdenin en ince olduğu yer
+   let bi=14,bv=1e9;for(let k=4;k<=30;k++){const v=(M[k-1]+M[k]+M[k+1])/3;if(v<bv){bv=v;bi=k}}o.xt=bi/64}}catch(e){}
+ HSWI.set(img,o);return o}
+// çizim planı ve sabit ağırlıklar (resim + ızgara boyutu başına bir kez)
+function hswPlan(f,I,NX,NY){const key=NX*64+NY;let P=I.P.get(key);if(P)return P;const G=HSWG[f.type],n=(NX+1)*(NY+1),bw=I.bx1-I.bx0,bh=I.by1-I.by0,e=!!G.e,hd=G.hd||(e?.12:.25),xt=e?0:(G.xt!=null?G.xt:I.xt);
+ P={NX,NY,I,col:new Float32Array((NX+1)*5),wp:new Float32Array(n),wv:new Float32Array(n),wr:new Float32Array(n),pc:null,pv:null,ops:null,e};
+ const fin=a=>a?[I.bx0+a[0]*bw,I.by0+a[1]*bh,I.bx0+a[2]*bw,I.by0+a[3]*bh,a[4]*bw,a[5]*bh]:null;P.pc=fin(G.pc);P.pv=fin(G.pv);const kap=6.283185307179586*(e?1.5:.9);
+ for(let i=0;i<=NX;i++){const X=i/NX,Xb=Math.max(0,Math.min(1,(X-I.bx0)/bw)),sN=1-Xb,o=i*5;P.col[o]=e?hswS(hd*.5,.55,sN):hswS(hd,.95,sN);P.col[o+1]=kap*sN;P.col[o+2]=e?0:hswS(xt,xt-.05,Xb);P.col[o+3]=G.sp?I.by0+(G.sp[0]+G.sp[1]*Xb)*(I.by1-I.by0):(I.sa+I.sb*Xb);P.col[o+4]=Xb}
+ P.ph2=kap*(1-xt)+.9;
+ const sm=(k,Xb)=>{const q=Xb*64,a=Math.min(63,Math.floor(q)),u=q-a;return k[a]*(1-u)+k[a+1]*u};
+ const ew=(a,X,v)=>{if(!a)return 0;const q=1-((X-a[2])/a[4])**2-((v-a[3])/a[5])**2;return q>0?hswS(0,.45,q):0};
+ const fk=NX<12?0:(G.fk||1);
+ for(let i=0;i<=NX;i++){const X=i/NX,Xb=P.col[i*5+4],sy=P.col[i*5+3],tp=sm(I.T,Xb),bt=sm(I.B,Xb),xr=Xb<=0||Xb>=1?0:hswS(xt+.04,xt+.12,Xb)*hswS(.86,.72,Xb);
+  for(let j=0;j<=NY;j++){const v=j/NY,k=i*(NY+1)+j;P.wp[k]=ew(P.pc,X,v);P.wv[k]=ew(P.pv,X,v);let w=0;if(xr>0){const o=v<sy?(sy-v)/Math.max(.02,sy-tp):(v-sy)/Math.max(.02,bt-sy);w=xr*hswS(.62,1,o)*(v<sy?1:-1)}P.wr[k]=w*fk}}
+ // boş hücreler atlanır; ağırlığı olmayan hücreler sütun boyunca en çok 3 satırlık parçalar halinde birleştirilir
+ const a=new Uint8Array(NX*NY),F=new Uint8Array(NX*NY);
+ for(let i=0;i<NX;i++){const X0=i/NX,X1=(i+1)/NX;for(let j=0;j<NY;j++){const v0=j/NY,v1=(j+1)/NY,k=i*NY+j,c0=Math.max(0,Math.floor((Math.max(X0,I.bx0)-I.bx0)/bw*64)),c1=Math.min(64,Math.ceil((Math.min(X1,I.bx1)-I.bx0)/bw*64));let on=0;
+  if(X1>I.bx0&&X0<I.bx1&&v1>I.by0&&v0<I.by1)for(let c=c0;c<=c1&&!on;c++)if(I.T[c]<v1+.01&&I.B[c]>v0-.01)on=1;a[k]=on;
+  const q=t=>{const kk=t;return P.wp[kk]>0||P.wv[kk]>0||P.wr[kk]!==0};F[k]=q(i*(NY+1)+j)||q((i+1)*(NY+1)+j)||q(i*(NY+1)+j+1)||q((i+1)*(NY+1)+j+1)?1:0}}
+ const ops=[];for(let i=0;i<NX;i++){let j=0;while(j<NY){const k=i*NY+j;if(!a[k]){j++;continue}if(F[k]){ops.push(i,j,j);j++;continue}let e2=j;while(e2+1<NY&&e2-j<2&&a[i*NY+e2+1]&&!F[i*NY+e2+1])e2++;ops.push(i,j,e2);j=e2+1}}
+ P.ops=Int16Array.from(ops);I.P.set(key,P);return P}
+// ızgara noktaları (genişlik birimi). Aynı karede aynı plan için tekrar kullanılır.
+function hswMesh(f,P,R){const b=hswB(f);if(b.mt===simT&&b.mk===P&&b.R===R&&b.V)return b.V;const NX=P.NX,NY=P.NY,n=(NX+1)*(NY+1);
+ if(!b.V||b.V.length!==n*2){b.V=new Float32Array(n*2);b.S=new Float32Array((NX+1)*3)}const V=b.V,S=b.S,col=P.col;b.mt=simT;b.mk=P;b.R=R;b.NX=NX;b.NY=NY;
+ // dönüş: dış çizim yalnızca aynalar; genişlik baştan kuyruğa farklı daralır, hiç sıfırlanmaz ve işaret değiştirmez (gövde katlanmaz)
+ const fs=f.fs==null?1:f.fs,sg=fs>=0?1:-1,fa=Math.min(1,Math.abs(fs)),lead=.3*(1-fa),hf=sg!==(f.dir||1)?-1:1,ab=b.ab,at=b.at,ph=b.ph,p2=ph-P.ph2;
+ for(let i=0;i<=NX;i++){const o=i*5;S[i*3+2]=ab*col[o]*Math.sin(ph-col[o+1])+at*col[o+2]*Math.sin(p2)}
+ S[NX*3]=1;S[NX*3+1]=col[NX*5+3]*R;
+ for(let i=NX-1;i>=0;i--){const tm=(S[i*3+2]+S[i*3+5])*.5,o=i*3,ds=1/NX;S[o]=S[o+3]-ds*Math.cos(tm);S[o+1]=S[o+4]-ds*Math.sin(tm)+(col[i*5+3]-col[i*5+8])*R}
+ const ps=-.12*ab*Math.sin(ph)*(P.e?.4:1),pc=Math.cos(ps),pn=Math.sin(ps),cy0=.5*R;
+ const Q=b.Q,qa=!!P.pc,qb=!!P.pv;if(qa)hswPiv(S,col,NX,P.pc,R,Q,0);if(qb)hswPiv(S,col,NX,P.pv,R,Q,2);const ap=b.pa*.38*Math.sin(b.pp)+(1-b.pa)*.2,av=b.pa*.16*Math.sin(b.pp-1.2)+(1-b.pa)*.12,ra=.004+.035*Math.min(.5,ab);
+ for(let i=0;i<=NX;i++){const o=i*3,X=i/NX,Xb=col[i*5+4],yb=col[i*5+3]*R,sx=S[o],sy=S[o+1],t=S[o+2],cs=Math.cos(t),sn=Math.sin(t),c=Math.max(.16,Math.min(1,fa+hf*lead*(2*Xb-1))),r1=ra*Math.sin(ph*.9-9*X+1),r2=ra*Math.sin(ph*.9-9*X+2.2);
+  for(let j=0;j<=NY;j++){const k=i*(NY+1)+j,d=j/NY*R-yb;let x=sx-d*sn,y=sy+d*cs;
+   let w=P.wp[k];if(w>0&&qa){const a=ap*w,dx=x-Q[0],dy=y-Q[1],ca=Math.cos(a),sa=Math.sin(a);x=Q[0]+dx*ca-dy*sa;y=Q[1]+dx*sa+dy*ca}
+   w=P.wv[k];if(w>0&&qb){const a=av*w,dx=x-Q[2],dy=y-Q[3],ca=Math.cos(a),sa=Math.sin(a);x=Q[2]+dx*ca-dy*sa;y=Q[3]+dx*sa+dy*ca}
+   w=P.wr[k];if(w!==0){const m=w>0?w*r1:w*r2;x-=m*sn;y+=m*cs}
+   const rx=x-.5,ry=y-cy0;x=.5+(rx*pc-ry*pn)*c;y=cy0+rx*pn+ry*pc;V[k*2]=x;V[k*2+1]=y}}
+ return V}
+// ızgaradan yerel koordinat (çizim merkezine göre): ağız, ışık organları ve yem ışığı gövdeyle birlikte hareket etsin
+function hswLocal(f,fx,fy,w,h){const b=HSWF.get(f);if(!b||!b.V||!b.NX)return[-w/2+fx*w,-h/2+fy*h];const NX=b.NX,NY=b.NY,V=b.V,qx=Math.max(0,Math.min(NX-1e-4,fx*NX)),qy=Math.max(0,Math.min(NY-1e-4,fy*NY)),i=Math.floor(qx),j=Math.floor(qy),u=qx-i,v=qy-j,
+ k00=(i*(NY+1)+j)*2,k10=((i+1)*(NY+1)+j)*2,k01=k00+2,k11=k10+2,X=(V[k00]*(1-u)+V[k10]*u)*(1-v)+(V[k01]*(1-u)+V[k11]*u)*v,Y=(V[k00+1]*(1-u)+V[k10+1]*u)*(1-v)+(V[k01+1]*(1-u)+V[k11+1]*u)*v;return[-w/2+X*w,-h/2+Y*w]}
+// dokulu hücre: kaynak dikdörtgen → hedef dörtgen; kırpma yok, 4 köşeye en iyi uyan afin dönüşümle tek drawImage
+function hswQuad(x,img,iw,ih,sx,sy,sw,sh,X0,Y0,X1,Y1,X2,Y2,X3,Y3){const ax=(X1-X0+X3-X2)/2,ay=(Y1-Y0+Y3-Y2)/2,bx=(X2-X0+X3-X1)/2,by=(Y2-Y0+Y3-Y1)/2,ox=(X0+X1+X2+X3)/4-(ax+bx)/2,oy=(Y0+Y1+Y2+Y3)/4-(ay+by)/2,a=ax/sw,b=ay/sw,c=bx/sh,d=by/sh;
+ x.setTransform(a,b,c,d,ox-a*sx-c*sy,oy-b*sx-d*sy);const s0=Math.max(0,sx-1),t0=Math.max(0,sy-1),s1=Math.min(iw,sx+sw+1),t1=Math.min(ih,sy+sh+1);x.drawImage(img,s0,t0,s1-s0,t1-t0,s0,t0,s1-s0,t1-t0)}
+function hswDraw(f,img,ox,oy,ww,h,ref){const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height;if(!iw||!ih)return;const t0=performance.now();
+ const b=hswB(f),G=HSWG[f.type],R=ih/iw,wpx=ww*K;
+ // ızgara yoğunluğu ekrandaki boyuta göre (küçük balıkta seyrek); küçük değişimlerde sabit kalır
+ let NX=G.e?Math.max(10,Math.min(24,Math.round(wpx/20))):Math.max(8,Math.min(18,Math.round(wpx/16)));if(b.NX&&Math.abs(NX-b.NX)<2)NX=b.NX;
+ const I=ref&&ref!==img&&(ref.naturalWidth||ref.width)===iw&&(ref.naturalHeight||ref.height)===ih?hswInfo(ref,iw,ih):hswInfo(img,iw,ih),NY=Math.max(4,Math.min(12,Math.round(NX*R*(I.by1-I.by0)/Math.max(.05,I.bx1-I.bx0)*1.15)));
+ const P=hswPlan(f,I,NX,NY),px=HSW.px,py=Math.min(.6,Math.max(.3,.2/R)),CW=Math.ceil(iw*(1+2*px)),CH=Math.ceil(ih*(1+2*py));
+ if(!b.cv)b.cv=new Map();let r=b.cv.get(img);if(!r){if(b.cv.size>=3){for(const v of b.cv.values()){v.c.width=v.c.height=0;if(v.fg)v.fg.width=v.fg.height=0}b.cv.clear()}r={c:document.createElement("canvas"),fg:null,t:-1e9};b.cv.set(img,r)}
+ if(HSWT!==simT){HSWT=simT;HSWB=LQ?4:6}const thr=HSW.thr*(LQ?1.7:1),c=r.c,must=c.width!==CW||c.height!==CH||r.P!==P||t0-r.t>150,go=must||(t0-r.t>=thr&&HSWB>0);if(go)HSWB--;
+ if(go){r.t=t0;r.P=P;hswRender(f,img,iw,ih,ww,h,c,CW,CH,P,px,py,R)}else hswMesh(f,P,R);
+ const dx=-ww/2+ox-px*ww,dy=-h/2+oy-py*h,dw=ww*(1+2*px),dh=h*(1+2*py),dz=f.zd||0;ctx.drawImage(c,dx,dy,dw,dh);
+ if(dz>=.04){if(!r.fg)r.fg=document.createElement("canvas");const g=r.fg;if(go||g.width!==CW||g.height!==CH){if(g.width!==CW||g.height!==CH){g.width=CW;g.height=CH}const y=g.getContext("2d");y.globalCompositeOperation="source-over";y.clearRect(0,0,CW,CH);y.drawImage(c,0,0);y.globalCompositeOperation="source-atop";y.fillStyle=fogCol();y.fillRect(0,0,CW,CH)}const a0=ctx.globalAlpha;ctx.globalAlpha=a0*Math.min(.5,.55*dz);ctx.drawImage(g,dx,dy,dw,dh);ctx.globalAlpha=a0}
+ HSWP.n++;HSWP.ms+=performance.now()-t0;if(go){HSWP.rn++;HSWP.rms+=performance.now()-t0}}
+function hswRender(f,img,iw,ih,ww,h,c,CW,CH,P,px,py,R){const V=hswMesh(f,P,R),ops=P.ops,NY=P.NY,NX=P.NX,ofx=px*iw,ofy=py*ih,cw=iw/NX,ch=ih/NY;
+ if(c.width!==CW||c.height!==CH){c.width=CW;c.height=CH}const x=c.getContext("2d");x.setTransform(1,0,0,1,0,0);x.globalCompositeOperation="source-over";x.globalAlpha=1;x.clearRect(0,0,CW,CH);try{x.imageSmoothingQuality="high"}catch(e){}
+ for(let q=0;q<ops.length;q+=3){const i=ops[q],j=ops[q+1],e=ops[q+2],k00=(i*(NY+1)+j)*2,k10=((i+1)*(NY+1)+j)*2,k01=(i*(NY+1)+e+1)*2,k11=((i+1)*(NY+1)+e+1)*2;
+  hswQuad(x,img,iw,ih,i*cw,j*ch,cw,ch*(e-j+1),V[k00]*iw+ofx,V[k00+1]*iw+ofy,V[k10]*iw+ofx,V[k10+1]*iw+ofy,V[k01]*iw+ofx,V[k01+1]*iw+ofy,V[k11]*iw+ofx,V[k11+1]*iw+ofy)}
+ x.setTransform(1,0,0,1,0,0);
+ // yüzeyden gelen ışık deseni (eski çizimdeki gibi)
+ if(fishCaus()&&!f._noC){const ct=causticTex();if(ct)try{const cw0=ct.naturalWidth||ct.width,ch0=ct.naturalHeight||ct.height,s=iw/ww*600/320,TW=cw0*s,TH=ch0*s,tt=performance.now()/1000,wx=(f.x*W-ww/2+tt*9)*iw/ww,wy=(f.y*H-h/2-tt*4)*iw/ww;if(!FCV)FCV=document.createElement("canvas");if(FCV.width!==CW||FCV.height!==CH){FCV.width=CW;FCV.height=CH}const q=FCV.getContext("2d");q.setTransform(1,0,0,1,0,0);q.globalCompositeOperation="source-over";q.globalAlpha=1;q.clearRect(0,0,CW,CH);const o1=-(((wx%TW)+TW)%TW),o2=-(((wy%TH)+TH)%TH);for(let yy=o2;yy<CH;yy+=TH)for(let xx=o1;xx<CW;xx+=TW)q.drawImage(ct,xx,yy,TW,TH);
+  q.globalCompositeOperation="destination-in";const gr=q.createLinearGradient(0,ofy,0,ofy+ih);gr.addColorStop(0,"rgba(0,0,0,1)");gr.addColorStop(.55,"rgba(0,0,0,.55)");gr.addColorStop(1,"rgba(0,0,0,.12)");q.fillStyle=gr;q.fillRect(0,0,CW,CH);q.drawImage(c,0,0);x.globalCompositeOperation="lighter";x.globalAlpha=.55*(1-nightAmt()*.85);x.drawImage(FCV,0,0);x.globalAlpha=1;x.globalCompositeOperation="source-over"}catch(e){}}}
+let HSWB=0,HSWT=-1;
+// ölçüm (test için; window.__hsw ile okunur)
+const HSWP={n:0,ms:0,rn:0,rms:0};try{window.__hsw=HSWP}catch(e){}
+try{const hb=$("hswBtn"),lb=()=>{hb.textContent="🐟 Hibrit yüzme: "+(HSW.on?"Açık":"Kapalı")};lb();hb.addEventListener("click",()=>{HSW.on=!HSW.on;try{localStorage.setItem("akvHyb",HSW.on?"1":"0")}catch(e){}lb();notify(HSW.on?"🐟 Hibrit yüzme açık":"Hibrit yüzme kapalı, eski animasyon")})}catch(e){}
 function fogCol(){const w=curWater(),n=nightAmt()>.5;return w==="deep"?"#071640":w==="river"?(n?"#0b2c36":"#2e6b4a"):w==="fresh"?(n?"#0a3040":"#138a8e"):(n?"#0c2456":"#127fae")}
 // derinlik: her balık ara sıra öne ya da arkaya süzülür; dokunulan balık öne gelir
 function depthStep(f,t){if(state.lowGfx||(state.admOff||{}).depth){f.zd=0;return}if(f.zd==null){f.zd=((f.id||0)*.6180339887%1)*.75;f.zt=f.zd;f.zT=t+rand(6,25)}
@@ -1496,19 +1622,19 @@ function phInt(P,o,i,n,t,ph){let a;switch(P.m){
  const bo=t-o.boT;if(bo>=0&&bo<1.2)a*=bo<.12?1-bo/.12:bo>.85?(bo-.85)/.35:0;
  return a>0?a:0}
 let LUREW=[];
-function phCollect(f,w,h,Yc,t,im,mu,N){const S=PHOT[f.type],P=PHS[f.type];if(!S||!P||curWater()!=="deep")return;const m=ctx.getTransform(),k=1/K,sc=Math.sqrt(Math.abs(m.a*m.d-m.b*m.c))*k,o=phState(f),ph=(f.phase||0)*3;
+function phCollect(f,w,h,Yc,t,im,mu,N,PT){const S=PHOT[f.type],P=PHS[f.type];if(!S||!P||curWater()!=="deep")return;const m=ctx.getTransform(),k=1/K,sc=Math.sqrt(Math.abs(m.a*m.d-m.b*m.c))*k,o=phState(f),ph=(f.phase||0)*3;
  if(t>o.flT+o.fl){o.flT=t;o.fl=rand(5,13)}if(t>o.boT+o.bo){o.boT=t;o.bo=rand(28,75)}
  const mul=(f.slp?.4:1)*(f.sick?.6:1)*(ev("biolum")?1.3:1)*(.55+.45*Math.min(1,f.age)),T=(lx,ly)=>[(m.a*lx+m.c*ly+m.e)*k,(m.b*lx+m.d*ly+m.f)*k],C=T(0,0),ws=w*sc;
  const MU=mu&&im&&im!==fishImgs[f.type]?mu:"normal",col=MGC[MU]||P.c;let lure=null;
  if(MU){// mutasyonlu resim: ışık haritası resmin kendisinden
-  const em=emisMap(im,MU,f.type);let sa=0;const al=[];for(let i=0;i<N;i++){const a=phInt(P,o,i,N,t,ph)*mul;al.push(a*1.2);sa+=a}
+  const em=emisMap(im,MU,f.type);let sa=0;const al=[],tf=PT?Math.pow(Math.min(1,Math.abs(f.fs==null?1:f.fs)),2):1;for(let i=0;i<N;i++){const a=phInt(P,o,i,N,t,ph)*mul;al.push(a*1.2*tf);sa+=a}
   if(em){const Ys=[];for(let b=0;b<=N;b++)Ys.push(Yc(b/N));EMI.push({f,img:em,m:[m.a,m.b,m.c,m.d,m.e,m.f],w,h,N,Ys,al})}
   ENV.push([C[0],C[1],Math.max(40,ws*1.1),col,Math.min(.6,(MENV[MU]||P.env)*(.5+.5*sa/N)*mul+.04)]);
   const L=PML[MU+"_"+f.type];if(L)lure=[L[0],L[1],L[2],L[3]||col]}
- else{const n=S.length;let sa=0;for(let i=0;i<n;i++){const d=S[i],p=T(-w/2+d[0]*w,-h/2+d[1]*h+Yc(d[0])),a=phInt(P,o,i,n,t,ph)*mul;EM.push([p[0],p[1],Math.max(.55,d[2]*w*sc),P.c,a,0]);sa+=a}
+ else{const n=S.length;let sa=0;for(let i=0;i<n;i++){const d=S[i],q=PT?PT(d[0],d[1]):null,p=q?T(q[0],q[1]):T(-w/2+d[0]*w,-h/2+d[1]*h+Yc(d[0])),a=phInt(P,o,i,n,t,ph)*mul;EM.push([p[0],p[1],Math.max(.55,d[2]*w*sc),P.c,a,0]);sa+=a}
   if(sa>0)ENV.push([C[0],C[1],Math.max(38,ws*1.05),P.c,Math.min(.55,P.env*sa/n)]);if(P.lure)lure=[P.lure[0],P.lure[1],P.lure[2],P.lc]}
  if(P.down)ENV.push([C[0],C[1]+h*sc*.75,ws*.8,col,.16*mul]);
- if(lure&&P.lr){const p=T(-w/2+lure[0]*w,-h/2+lure[1]*h+Yc(lure[0]));let a=(.9+.07*Math.sin(t*1.1+ph)+.03*Math.sin(t*7.3+ph)+.02*Math.sin(t*13.7))*mul;
+ if(lure&&P.lr){const q=PT?PT(lure[0],lure[1]):null,p=q?T(q[0],q[1]):T(-w/2+lure[0]*w,-h/2+lure[1]*h+Yc(lure[0]));let a=(.9+.07*Math.sin(t*1.1+ph)+.03*Math.sin(t*7.3+ph)+.02*Math.sin(t*13.7))*mul;
   for(const d of drops)if(!d.eaten&&Math.abs(d.x-p[0])<115&&Math.abs(d.y-p[1])<115){a*=1.12+.22*Math.sin(t*17);break}
   EM.push([p[0],p[1],Math.max(1.4,Math.min(lure[2],.045)*ws),lure[3],a,1]);ENV.push([p[0],p[1],P.lr*Math.min(1.2,Math.max(.6,ws/110)),lure[3],.45*a]);LUREW.push([p[0],p[1],f])}
  const RD=PRED[MU+"_"+f.type];if(RD){const p=T(-w/2+RD[0]*w,-h/2+RD[1]*h+Yc(RD[0]));EM.push([p[0],p[1],Math.max(1,ws*.011),[255,72,52],.8*mul,0])}
@@ -1711,7 +1837,7 @@ if(Math.abs(food.x-x)<95&&mo!==fd&&Math.abs(food.y-y)<90)f.dir=fd;const dm=Math.
 {const SR=Math.max(20,fw*.26)*(TR.lunge?1.25:1)*(f.type==="angler"?1.9:1)+food.r0;if(!food.sk&&dm<SR&&mo===fd&&simT>(f.biteT||0)){f.biteT=simT+(fw<70?.42:.3)+(f.type==="angler"?.5:0);if(f.type!=="angler"&&f.hunger>60&&Math.random()<.05&&food.ph!=="floor"){food.vx+=mo*rand(25,45);food.vy+=rand(-15,15);f.jawT=simT;f.jawA=.5;f.jawH=.06}else{suckStart(f,food);if(f.type==="angler")f.burst=.15}}}}
 else{if(behave(f,TR,x,y,fw,fh,mx0,my0,h,p,bx0,bx1,by0,by1))cruise=vmax*.9;f.tt-=h;if(f.tt<=0||(!f.rest&&f.act!=="graze"&&f.act!=="forage"&&Math.hypot(f.tx-x,f.ty-y)<18))pick(f,p)}
 // varışa yavaşlayarak yönelme (dikey ivme daha düşük)
-const deep=(food&&food.ph==="floor")||f.act==="forage",by1e=deep?Math.max(by1,FLOOR+6-fh*.22):by1,by0e=(food&&food.ph==="surf")||f.act==="beg"||f.act==="air"?Math.min(by0,SURF+fh*.12):by0;const dx=f.tx-x,dy=f.ty-y,dist=Math.hypot(dx,dy)||1,want=food?bm*cruise*Math.max(.35,Math.min(1,dist/35)):bm*f.rest&&!sl?Math.min(cruise*.25,dist*.8):cruise*Math.min(1,dist/90)*bgK(f,h)*(.55+.45*Math.min(1,Math.abs(f.fs||1)));
+const deep=(food&&food.ph==="floor")||f.act==="forage",by1e=deep?Math.max(by1,FLOOR+6-fh*.22):by1,by0e=(food&&food.ph==="surf")||f.act==="beg"||f.act==="air"?Math.min(by0,SURF+fh*.12):by0;const dx=f.tx-x,dy=f.ty-y,dist=Math.hypot(dx,dy)||1,want=food?bm*cruise*Math.max(.35,Math.min(1,dist/35)):bm*f.rest&&!sl?Math.min(cruise*.25,dist*.8):cruise*Math.min(1,dist/90)*(hswOn(f)?hswK(f):bgK(f,h))*(.55+.45*Math.min(1,Math.abs(f.fs||1)));
 // komşular: ayrılma + (uygun türlerde) sürü uyumu/merkezleme
 let cand=fs;if(G){cand=[];const cx=(x/170)|0,cy=(y/170)|0;for(let i=-1;i<2;i++)for(let j=-1;j<2;j++){const a=G.get(cx+i+(cy+j)*10);if(a)for(const o of a)cand.push(o)}}
 let sx=0,sy=0,cx2=0,cy2=0,mvx=0,mvy=0,c=0;
@@ -1740,7 +1866,7 @@ if(!VISIT&&!coll&&f.age>=MATURE&&!f.sick&&f.id!==undefined){let cd=cdMap.get(f.i
 // yön (histerezisli) ve görsel durum: gövde eğimi, yumuşak çevirme, kuyruk fazı
 if(Math.abs(f.vx)>9&&Math.sign(f.vx)!==f.dir)f.dir=Math.sign(f.vx);
 const sn=Math.min(1,Math.hypot(f.vx,f.vy)/vmax);
-const tilt=(f.type==="dragon"&&f.rest&&!food?-.3:0)+(f.act==="forage"&&Math.hypot(f.tx-x,f.ty-y)<40?.42:0)+(food&&food.ph==="surf"&&Math.hypot(food.x-x,food.y-y)<70?-.3:0);f.ang+=(Math.max(-.6,Math.min(.6,Math.atan2(f.vy,Math.abs(f.vx)+25)+tilt))-f.ang)*Math.min(1,6*h);f.fs+=(f.dir-f.fs)*Math.min(1,4.2*h);f.tp+=h*(2+sn*11+(1-Math.min(1,Math.abs(f.fs)))*7)*swimFq(f)*(sl?.4:1);f.sn=sl?sn*.45:sn}
+const tilt=(f.type==="dragon"&&f.rest&&!food?-.3:0)+(f.act==="forage"&&Math.hypot(f.tx-x,f.ty-y)<40?.42:0)+(food&&food.ph==="surf"&&Math.hypot(food.x-x,food.y-y)<70?-.3:0);f.ang+=(Math.max(-.6,Math.min(.6,Math.atan2(f.vy,Math.abs(f.vx)+25)+tilt))-f.ang)*Math.min(1,6*h);f.fs+=(f.dir-f.fs)*Math.min(1,4.2*h);f.tp+=h*(2+sn*11+(1-Math.min(1,Math.abs(f.fs)))*7)*swimFq(f)*(sl?.4:1);f.sn=sl?sn*.45:sn;if(hswOn(f))hswStep(f,h,food,f.sn)}
 foodStep(h)}
 let lastDraw=0,ftN=0,ftS=0,ftT=0,feedOnC=null;const PRF={n:0,ph:0,fl:0,fi:0,pl:0,ot:0,all:0,ns:0,iv:0,mx:0};let adaptHold=0,kUser=0;try{kUser=+localStorage.getItem("fvK3")||0}catch(e){}function setK(v){K=v;canvas.width=Math.round(W*K);canvas.height=Math.round(H*K);try{ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high"}catch(e){}}
 function adaptK(now,d){if(d>1000||document.hidden||globalThis.__noAdapt||PT||now<adaptHold||document.querySelector("#game.glx")){ftN=0;ftS=0;return}if(!ftT)ftT=now;ftN++;ftS+=Math.min(d,100);if(ftN>=90){const avg=ftS/ftN;ftN=0;ftS=0;if(now-ftT<4000)return;const top=Math.min(kCap,kUser>=1?Math.min(KMAX,kUser):KMAX);if(avg>26&&K>1){kCap=Math.max(1,K-.25);setK(avg>60?1:kCap);adaptHold=now+1500}else if(avg>30&&K<=1&&LQ<2){LQ++;lqGood=0;adaptHold=now+3000}else if(avg<19&&LQ>0){if(++lqGood>=4){LQ--;lqGood=0;adaptHold=now+3000}}else if(avg<18.5&&K<top&&!state.lowGfx){setK(Math.min(top,K+.25));adaptHold=now+2000}else lqGood=0}}
