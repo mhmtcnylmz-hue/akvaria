@@ -1104,8 +1104,8 @@ const FLI=[];
 function flSh(cx,base,w,nf){const r=w*.5;if(r<2)return;ctx.save();ctx.translate(cx,base-2);ctx.scale(1,.2);const g=ctx.createRadialGradient(0,0,0,0,0,r);g.addColorStop(0,"rgba(0,16,26,"+(.42+.16*nf)+")");g.addColorStop(.6,"rgba(0,16,26,"+(.16+.06*nf)+")");g.addColorStop(1,"rgba(0,16,26,0)");ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,r,0,7);ctx.fill();ctx.restore()}
 function floorItems(t){FLI.length=0;const nf=nightAmt(),dp=curWater()==="deep",K2=dkHere();
  for(let i=0;i<K2.length;i++)FLI.push([dkY(K2[i]),0,K2[i],i]);const D=state.decor||[];for(let i=0;i<D.length;i++)FLI.push([decY(D[i])+8,1,D[i],i]);
- const si=eimg("🐌");if(si){snStep(t);for(let i=0;i<state.snails;i++)FLI.push([SNL[i].y,2,si,i])}
- FLI.sort((a,b)=>a[0]-b[0]);for(const e of FLI){if(e[1]===0)dkOne(e[2],e[3],t,nf,dp);else if(e[1]===1)decOne(e[2],e[3],t,nf,dp);else{const S=SNL[e[3]],sw=40,sh=sw*si.naturalHeight/si.naturalWidth,st=1+.05*S.mv*Math.sin(S.ph);flSh(S.x,S.y,sw*.8,nf);ctx.save();ctx.translate(S.x,S.y);ctx.scale(S.dir*st,1/Math.sqrt(st));drawTinted(si,"snail",-sw/2,-sh,sw,sh,.06,nf);ctx.restore()}}}
+ if(state.chest)FLI.push([CHY(),3,state.chest,0]);const si=eimg("🐌");if(si){snStep(t);for(let i=0;i<state.snails;i++)FLI.push([SNL[i].y,2,si,i])}
+ FLI.sort((a,b)=>a[0]-b[0]);for(const e of FLI){if(e[1]===3)chestDraw(e[2],t);else if(e[1]===0)dkOne(e[2],e[3],t,nf,dp);else if(e[1]===1)decOne(e[2],e[3],t,nf,dp);else{const S=SNL[e[3]],sw=40,sh=sw*si.naturalHeight/si.naturalWidth,st=1+.05*S.mv*Math.sin(S.ph);flSh(S.x,S.y,sw*.8,nf);ctx.save();ctx.translate(S.x,S.y);ctx.scale(S.dir*st,1/Math.sqrt(st));drawTinted(si,"snail",-sw/2,-sh,sw,sh,.06,nf);ctx.restore()}}}
 // salyangozlar: yavaş sürünür (gövde hafifçe uzayıp kısalır), ara sıra uzun durur ya da geri döner; yalnızca zeminde yatay ilerler
 const SNL=[];let snT=-1;function snStep(t){const dt=snT<0?0:Math.min(.1,Math.max(0,t-snT));snT=t;while(SNL.length<state.snails){const i=SNL.length;SNL.push({x:BX0+(BX1-BX0)*((i*.618+.2)%1),y:FLOOR+34+(i%3)*9,dir:i%2?-1:1,mv:0,p:rand(1,6),ph:0})}
  for(let i=0;i<state.snails;i++){const S=SNL[i];S.p-=dt;if(S.p<=0){const r=Math.random();if(S.mv>.5&&r<.35){S.go=0;S.p=rand(3,9)}else{if(r<.25)S.dir*=-1;S.go=1;S.p=rand(6,14)}}S.mv+=((S.go?1:0)-S.mv)*Math.min(1,dt*1.5);
@@ -1115,12 +1115,20 @@ function decOne(d,i,t,nf,dp){const im=decImg(d.k);if(!im)return;const b=decBox(d
   const ph=i*1.93+d.x*7,sc=Math.max(0,Math.sin(t*.35+ph))**12,dx=Math.sin(t*.9+ph)*1.2+Math.sin(t*.35+ph)*sc*4;ctx.save();ctx.translate(cx+dx,base);drawTinted(im,"dec"+v,-b.w/2,-b.h,b.w,b.h,.1,nf);ctx.restore()}
  else drawTinted(im,"dec"+v,b.x,b.y,b.w,b.h,dp?.05:.1,nf);
  const gc=DGLOW[d.k];if(gc&&dp&&!state.lowGfx){const fk=.85+.15*Math.sin(t*1.7+d.x*20),cy=b.y+b.h*.5;ENV.push([cx,cy,b.w*1.4,gc,.42*fk]);EM.push([cx,b.y+b.h*.4,2.4,gc,.55*fk,0])}}
+// sürüm 166: hazine sandığı kuma oturur (sallanmaz), temas gölgesi alır, sahnenin ışığı ve suyun rengiyle çizilir.
+// Açılmayı bekleyen sandığın kilit deliğinden yumuşak bir ışık sızar, ara sıra kapağın kenarından birkaç kabarcık yükselir.
+const CHW=()=>PORT?118:104,CHY=()=>FLOOR+(PORT?92:70);
+function chestDraw(c,t){const img=chestClosedImg;if(!img.complete||!img.naturalWidth)return;const nf=nightAmt(),cw=CHW(),ch=cw*img.naturalHeight/img.naturalWidth,cx=c.x*W,base=CHY();
+ flSh(cx,base-2,cw*1.05,nf);drawTinted(img,"chestC",cx-cw/2,base-ch,cw,ch,.08,nf);
+ if(!state.lowGfx){const p=.55+.45*Math.pow(Math.sin(t*1.6),2),kx=cx+cw*.065,ky=base-ch*.38,r=cw*.28;ctx.save();ctx.globalCompositeOperation="lighter";const g=ctx.createRadialGradient(kx,ky,0,kx,ky,r);g.addColorStop(0,"rgba(255,226,140,"+(.42*p*(1+nf*.6))+")");g.addColorStop(.35,"rgba(255,200,90,"+(.16*p*(1+nf*.6))+")");g.addColorStop(1,"rgba(255,190,80,0)");ctx.fillStyle=g;ctx.fillRect(kx-r,ky-r,r*2,r*2);
+  // kapak aralığından kabarcıklar
+  for(let k=0;k<3;k++){const u=((t*.35+k*.37+c.x*3)%1.6);if(u>1)continue;const bx=cx+cw*(-.2+k*.2)+Math.sin(u*9+k)*3,by=base-ch*.62-u*ch*1.1,br=1.4+k*.5;ctx.globalAlpha=Math.sin(u*Math.PI)*.75;ctx.strokeStyle="rgba(230,250,255,.9)";ctx.lineWidth=1;ctx.beginPath();ctx.arc(bx,by,br,0,7);ctx.stroke()}ctx.restore()}}
 function drawFloor(t){
 drawPlants2(t,0);
 if(curWater()!=="deep")try{drawShadows()}catch(e){}
 if(!(state.admOff||{}).props)drawProps();try{floorItems(t)}catch(e){}if(!(state.admOff||{}).caust)drawCaustics(t);if(EDIT&&EDIT.mode==="deco")editOverlay();
-if(chestAnim&&Date.now()<chestAnim.until&&chestOpenImg.complete&&chestOpenImg.naturalWidth){{const cw=112,ch=cw*chestOpenImg.naturalHeight/chestOpenImg.naturalWidth;drawTinted(chestOpenImg,"chestO",chestAnim.x*W-cw/2,FLOOR+38-ch,cw,ch,.06,nightAmt())}}
-const c=state.chest;if(c){ctx.save();ctx.translate(c.x*W,FLOOR-8+Math.sin(t*3)*3);ctx.globalAlpha=.25+Math.sin(t*4)*.1;ctx.fillStyle="#ffe58a";ctx.beginPath();ctx.arc(0,0,40,0,7);ctx.fill();ctx.globalAlpha=1;const img=chestClosedImg;if(img.complete&&img.naturalWidth){const cw=96,ch=cw*img.naturalHeight/img.naturalWidth;drawTinted(img,"chestC",-cw/2,37-ch,cw,ch,.06,nightAmt())}else{ctx.fillStyle="#8a4b1d";ctx.fillRect(-26,-6,52,30);ctx.fillStyle="#a8621f";ctx.beginPath();ctx.ellipse(0,-6,26,16,0,Math.PI,0);ctx.fill();ctx.fillStyle="#ffd36b";ctx.fillRect(-4,-6,8,16);ctx.fillRect(-26,6,52,4)}ctx.restore()}
+if(chestAnim&&Date.now()<chestAnim.until&&chestOpenImg.complete&&chestOpenImg.naturalWidth){{const cw=CHW()*1.04,ch=cw*chestOpenImg.naturalHeight/chestOpenImg.naturalWidth,cx=chestAnim.x*W;flSh(cx,CHY()-2,cw,nightAmt());drawTinted(chestOpenImg,"chestO",cx-cw/2,CHY()-ch,cw,ch,.08,nightAmt())}}
+
 }
 
 let moodTxt="",moodAt=0;const moodSeen={};function moodSet(t){const e=$("tankMood");if(!e)return;if(t!==moodTxt){moodTxt=t;e.textContent=t;const k=String(t).replace(/[0-9~]+/g,""),n=Date.now();if(!(moodSeen[k]&&n-moodSeen[k]<120000)){moodAt=n;e.classList.remove("quiet")}moodSeen[k]=n}}
@@ -1915,7 +1923,7 @@ function physics(h){
 const fs=state.fish,n=fs.length,coll=isColl(state.tank);simT+=h;let G=null;coinStep(h);
 fs.forEach(f=>phys(f,getSpecies(f.type)));
 if(n>10){if(!gridG||gridArr!==fs||gridN!==n||(++gridT)%4===0){gridArr=fs;gridG=new Map();fs.forEach(f=>{const k=((f.x*W/170)|0)+((f.y*H/170)|0)*10,a=gridG.get(k);a?a.push(f):gridG.set(k,[f])});gridN=n}G=gridG}
-const okey=state.decor.map(d=>d.x+","+d.y).join(";")+"|"+state.props.join()+"|"+JSON.stringify(state.propPos)+"|"+(state.chest?state.chest.x:"-")+"|"+curWater();if(okey!==obsKey||!obsC){obsKey=okey;obsC=state.decor.map(d=>[d.x*W,decY(d)-14,34]);PROPS.forEach(p=>{if(pk(p.id)&&propsHere()){const cp=state.propPos[p.id];obsC.push(cp?[cp.x*W,cp.y-26*p.sc-10,48*p.sc]:[p.x*W,FLOOR+p.dy*.5-14,48*p.sc])}});if(state.chest)obsC.push([state.chest.x*W,FLOOR-8,50])}const obs=obsC;
+const okey=state.decor.map(d=>d.x+","+d.y).join(";")+"|"+state.props.join()+"|"+JSON.stringify(state.propPos)+"|"+(state.chest?state.chest.x:"-")+"|"+curWater();if(okey!==obsKey||!obsC){obsKey=okey;obsC=state.decor.map(d=>[d.x*W,decY(d)-14,34]);PROPS.forEach(p=>{if(pk(p.id)&&propsHere()){const cp=state.propPos[p.id];obsC.push(cp?[cp.x*W,cp.y-26*p.sc-10,48*p.sc]:[p.x*W,FLOOR+p.dy*.5-14,48*p.sc])}});if(state.chest)obsC.push([state.chest.x*W,CHY()-30,58])}const obs=obsC;
 for(const f of fs){
 const s=getSpecies(f.type),p=PH[s.id]||PH.clown,ps=f.personality==="Hareketli"?1.3:f.personality==="Utangaç"?.8:f.personality==="Uysal"?.9:1,yg=Math.min(1,f.age),
 sz=fsz(f),sl=isSleepy(f),nm=NOCT.includes(f.type)?(NIGHT()?1.2:.8):1,vmax=p[0]*ps*nm*(sl?.3:1)*(f.sick?.55:1)*(f.hunger<15?.8:1)*(1.15-.25*yg),A=p[1]*p[5]*(sl?.4:1)*(1.2-.3*yg);
@@ -1985,7 +1993,7 @@ const P5=performance.now();if(admFps){PRF.n++;PRF.ph+=P1-P0;PRF.fl+=P2-P1;PRF.fi
 requestAnimationFrame(frame)}
 canvas.addEventListener("pointerdown",e=>{audio();startAmbience();const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;if(EDIT){editDown(e,x,y);return}if(SELLM){sellTap(x,y);return}if(TIBTN&&tapInfo&&tapInfo.id===TIBTN.id&&x>=TIBTN.x&&x<=TIBTN.x+TIBTN.w&&y>=TIBTN.y&&y<=TIBTN.y+TIBTN.h){renOpen(TIBTN.id);return}if(!VISIT){let cc=null,cd=1e9;for(const c of coinsLoose){const d=Math.hypot(x-c.x,y-c.y);if(d<34&&d<cd){cc=c;cd=d}}if(cc){pickCoin(cc);return}}
 if(!VISIT&&feedModeOn()&&!isColl(state.tank)){dropFood(x,y,4);lastDrag=performance.now();return}
-if(!VISIT&&state.chest&&Math.hypot(x-state.chest.x*W,y-FLOOR)<55){openChest();return}deepTap(x,y);if(critTap(x,y))return;let hit=null,dist=Infinity;state.fish.forEach(f=>{const s=getSpecies(f.type),fx=f.x*W,fy=f.y*H;if(Math.hypot(x-fx,y-fy)<Math.max(55,fishW(f)*.42)&&Math.hypot(x-fx,y-fy)<dist){hit=f;dist=Math.hypot(x-fx,y-fy)}});if(hit){
+if(!VISIT&&state.chest&&Math.abs(x-state.chest.x*W)<CHW()*.6&&y>CHY()-CHW()*.9&&y<CHY()+12){openChest();return}deepTap(x,y);if(critTap(x,y))return;let hit=null,dist=Infinity;state.fish.forEach(f=>{const s=getSpecies(f.type),fx=f.x*W,fy=f.y*H;if(Math.hypot(x-fx,y-fy)<Math.max(55,fishW(f)*.42)&&Math.hypot(x-fx,y-fy)<dist){hit=f;dist=Math.hypot(x-fx,y-fy)}});if(hit){
 selectedFish=hit.id;hit.wake=simT+8;if(!VISIT){Q("tap");if((PHS[hit.type]||hit.type==="oar")&&curWater()==="deep")Q("dtap")}tapInfo={id:hit.id,until:performance.now()+3200};
 for(let k=0;k<4;k++) particles.push({x:x+rand(-8,8), y:y+rand(-12,4), vx:rand(-18,18), vy:rand(-55,-15), life:rand(.9,1.6), type:"heart"});
 const s=getSpecies(hit.type);
