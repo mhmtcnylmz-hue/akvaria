@@ -457,22 +457,56 @@ function botRow(){return{id:BOT_ID,d:botData()}}
 function botHelp(){try{const d=dayKey();if(state.helpGot[BOT_ID]===d)return;state.helpGot[BOT_ID]=d;state.coins+=10;state.dirt=Math.max(0,state.dirt-20);if(!tutOn())notify("🤝 Deniz bugün tankını temizledi! +10 🪙");renderUI();save(true)}catch(e){}}
 async function fetchTanks(){const snap=await NET.db.collection("tanks").orderBy("score","desc").limit(50).get();const rows=snap.docs.filter(x=>x.exists).map(x=>({id:x.id,d:x.data()}));let ps={};try{ps=await NET.user.profiles(rows.map(r=>r.id))}catch(e){}rows.push(botRow());ps[BOT_ID]=BOT_P;rows.sort((a,b)=>(+b.d.score||0)-(+a.d.score||0));return{rows,ps}}
 
-// sürüm 154: oyuncu profili — seviye, istatistikler ve kazanılan başarım rozetleri. Komşu listesinde bir oyuncuya dokununca, üstteki seviye rozetine dokununca açılır.
-function profTitle(lv){return lv>=45?"Akvaryum efendisi":lv>=25?"Usta akvaryumcu":lv>=10?"Akvaryumcu":"Çırak"}
-function profStats(){try{const got=ACH.filter(a=>state.ach&&state.ach[a.id]),mf=state.mutsFound||[];return{lv:state.level||1,sp:(state.discovered||[]).length,spT:species.length,mut:mf.length,gl:mf.filter(k=>k.indexOf("glitch_")===0).length,ach:got.length,achT:ACH.length,fish:allFish().length,str:(state.streak&&state.streak.count)||0,badges:got.slice(-12).map(a=>a.n)}}catch(e){return null}}
+// sürüm 161: oyuncu profili v2 — kahraman başlık (en değerli balık, seviye halkası, ünvan, açılmış tanklar), ilerleme çubukları,
+// mutasyon vitrini, kademeli rozetler (bronz/gümüş/altın/elmas), başarım kartları ve detaylı istatistikler.
+// Komşu/sıralama listesinde bir oyuncuya ya da üstteki seviye rozetine dokununca açılır.
+// Görseller: başarım kartı resmi ACHART[id], rozet amblemi BDGART[aile], çerçeve BDGFRM[kademe] (resim yoksa emoji/CSS ile çizilir).
+const ACHI={ord5:"📦",first:"🐟",crowd:"🐠",col:"📖",alb:"🤍",tra:"🔮",mel:"🖤",gold1:"👑",glitch1:"👾",bin:"🏆",gold5:"💰",gen24:"🧬",giant:"🐋",dwarf:"🤏",hatch:"🥚",mendel:"🧪",salt:"🌊",props:"🏛️",lv5:"⭐",lv10:"🌟",rich:"🪙",cleaner:"🧽",hunter:"🗝️",loyal:"📅",neigh:"🤝",deep:"🌌",dcol:"🔦",dragon:"🐉",river:"🌳",rcol:"🐊"};
+const ACHART={},BDGART={},BDGFRM={};
+// rozet aileleri: [kimlik, ad, amblem, ölçü adı, eşikler (bronz, gümüş, altın, elmas)]
+const BDG=[["lv","Seviye","⭐","Seviye",[10,25,50,80]],["col","Koleksiyoncu","📖","Tür",[10,20,30,38]],["mut","Mutasyon Avcısı","🧬","Mutasyon",[5,15,30,60]],["gl","Glitch Avcısı","👾","Glitch",[1,3,6,10]],
+ ["hat","Yetiştirici","🥚","Yavru",[10,50,200,1000]],["trd","Tüccar","🪙","Satış",[50,500,2000,10000]],["nb","İyi Komşu","🤝","Yardım",[5,25,100,300]],["str","Sadakat","🔥","Gün seri",[7,30,100,365]]];
+const BDGT=["Bronz","Gümüş","Altın","Elmas"];
+function profTitle(lv){return lv>=70?"Okyanus efsanesi":lv>=45?"Akvaryum efendisi":lv>=25?"Usta akvaryumcu":lv>=10?"Akvaryumcu":"Çırak"}
+function profStats(){try{const got=ACH.filter(a=>state.ach&&state.ach[a.id]),mf=state.mutsFound||[],cnt=p=>mf.filter(k=>k.indexOf(p+"_")===0).length,sold=S("sell")+S("dsell")+S("rsell"),gl=cnt("glitch");
+ const st={lv:state.level||1,xp:Math.max(0,Math.min(1,(state.xp||0)/xpNeed(state.level||1))),sp:(state.discovered||[]).length,spT:species.length,mut:mf.length,mutT:MSP().length*5,gl,mt:[cnt("albino"),cnt("transparent"),cnt("melanistic"),cnt("gold"),gl,mf.filter(k=>k.indexOf("hyb_")===0).length],
+  ach:got.length,achT:ACH.length,achL:got.map(a=>a.id),fish:allFish().length,str:(state.streak&&state.streak.count)||0,tk:TKEYS.filter(k=>hasTank(k)),sold,hatch:S("hatch"),breed:S("breed"),clean:S("clean")+S("dclean")+S("rclean"),chest:S("chest"),ord:S("order"),help:S("help"),fav:favType(),badges:got.slice(-12).map(a=>a.n)};
+ // rozetler bir kez kazanılınca kalır (seri bozulsa da)
+ const val={lv:st.lv,col:st.sp,mut:st.mut,gl,hat:st.hatch,trd:sold,nb:st.help,str:st.str};if(!state.bdg||typeof state.bdg!=="object")state.bdg={};
+ for(const B of BDG){let t=-1;B[4].forEach((v,i)=>{if(val[B[0]]>=v)t=i});if(t>(state.bdg[B[0]]==null?-1:state.bdg[B[0]]))state.bdg[B[0]]=t}st.bd=Object.assign({},state.bdg);st.bv=val;return st}catch(e){return null}}
+function pfN(v){v=+v||0;return v.toLocaleString(LOC)}
+function pfEl(t,c,tx){const e=document.createElement(t);if(c)e.className=c;if(tx!=null)e.textContent=tx;return e}
 function openProf(r,p,me){const box=$("prof");if(!box)return;const d=(r&&r.d)||{};const st=me?profStats():((p&&p.st)||null);
-const av=me?spSrc(favType()):((p&&p.avatarUrl)||spSrc((p&&p.av)||"neon"));
-const name=me?(myName()||"Sen"):(cleanName(p&&p.name)||cleanName(d.nm)||"Bir komşu");
-const lv=st?st.lv:(+(me?state.level:d.level)||1);
-$("pfAv").src=av;$("pfName").textContent=name;$("pfTitle").textContent=profTitle(lv)+" · Seviye "+lv;
-const rows=st?[["Keşfedilen tür",st.sp+" / "+st.spT],["Mutasyon",st.mut],["Glitch",st.gl],["Başarım",st.ach+" / "+st.achT],["Balık",st.fish],["Günlük seri",st.str+" gün"]]:[["Balık",nbCount(d)],["Mutasyon",+d.mut||0],["Puan",(+d.score||0).toLocaleString(LOC)]];
-const g=$("pfGrid");g.textContent="";rows.forEach(([k,v])=>{const t=document.createElement("div");t.className="pfs";const b=document.createElement("b");b.textContent=String(v);const s=document.createElement("small");s.textContent=k;t.append(b,s);g.append(t)});
-const bb=$("pfBadges");bb.textContent="";const list=(st&&st.badges)||[];
-if(!list.length){const n=document.createElement("small");n.textContent=st?"Henüz rozet yok":"—";bb.append(n)}
-list.forEach(n=>{const s=document.createElement("span");s.textContent="🏅 "+n;bb.append(s)});
-$("pfNote").hidden=!!st||me;
-const vb=$("pfVisit");vb.hidden=me;vb.textContent=state.helped&&state.helped[r.id]===dayKey()?"✓ Ziyaret":"Ziyaret et";vb.onclick=()=>{closeProf();startVisit(r,p)};
-box.hidden=false;box.classList.remove("go");void box.offsetWidth;box.classList.add("go")}
+ const fav=st&&species.some(s=>s.id===st.fav)?st.fav:me?favType():((p&&p.av)||"neon");
+ const av=me?spSrc(favType()):((p&&p.avatarUrl)||spSrc((p&&p.av)||"neon"));
+ const name=me?(myName()||"Sen"):(cleanName(p&&p.name)||cleanName(d.nm)||"Bir komşu");
+ const lv=Math.max(1,Math.min(MAXLV,+(st?st.lv:(me?state.level:d.level))||1)),xp=st&&isFinite(+st.xp)?Math.max(0,Math.min(1,+st.xp)):0;
+ $("pfAv").src=av;$("pfFav").src=spSrc(fav);$("pfName").textContent=name;$("pfTitle").textContent=profTitle(lv);$("pfLv").textContent=lv;
+ $("pfRing").style.background="conic-gradient(#ffd34d "+Math.round(xp*360)+"deg,#ffffff1f 0)";
+ // açılmış tanklar
+ const tk=$("pfTanks");tk.textContent="";(st&&Array.isArray(st.tk)?st.tk:[]).filter(k=>TANKS[k]).forEach(k=>{const s=pfEl("span","",TANKS[k].icon);s.title=TANKS[k].name;tk.append(s)});
+ // hızlı özet
+ const qk=$("pfQuick");qk.textContent="";const Q2=st?[["🐟",pfN(st.fish),"Balık"],["📖",(+st.sp||0)+"/"+(+st.spT||species.length),"Tür"],["🏆",(+st.ach||0)+"/"+(+st.achT||ACH.length),"Başarım"],["🔥",pfN(st.str),"Gün seri"]]:[["🐟",pfN(nbCount(d)),"Balık"],["🧬",pfN(d.mut),"Mutasyon"],["⭐",pfN(d.score),"Puan"]];
+ Q2.forEach(q=>{const t=pfEl("div","pfqt");t.append(pfEl("i","",q[0]),pfEl("b","",q[1]),pfEl("small","",q[2]));qk.append(t)});
+ // ilerleme
+ const pg=$("pfProg");pg.textContent="";pg.parentElement.hidden=!st;if(st)[["Türler",+st.sp,+st.spT],["Mutasyonlar",+st.mut,+st.mutT||1],["Başarımlar",+st.ach,+st.achT||ACH.length]].forEach(a=>{const v=Math.max(0,Math.min(1,(a[1]||0)/(a[2]||1))),row=pfEl("div","pfpr"),top=pfEl("div","pfpt"),bar=pfEl("div","pfpb"),fill=pfEl("i");top.append(pfEl("span","",a[0]),pfEl("b","",(a[1]||0)+" / "+(a[2]||0)));fill.style.width=Math.round(v*100)+"%";bar.append(fill);row.append(top,bar);pg.append(row)});
+ // mutasyon vitrini
+ const mu=$("pfMut");mu.textContent="";mu.parentElement.hidden=!st||!Array.isArray(st.mt);if(st&&Array.isArray(st.mt))[["albino","🤍"],["transparent","🔮"],["melanistic","🖤"],["gold","👑"],["glitch","👾"],["hyb","🧬"]].forEach((m,i)=>{const n=+st.mt[i]||0,c=pfEl("div","pfmc"+(n?"":" off")+" m-"+m[0]);c.append(pfEl("i","",m[1]),pfEl("b","",String(n)),pfEl("small","",m[0]==="hyb"?"Hibrit":MUTS[m[0]].name));mu.append(c)});
+ // rozetler
+ const bb=$("pfBadges");bb.textContent="";const bd=st&&st.bd&&typeof st.bd==="object"?st.bd:{};bb.parentElement.hidden=!st;
+ if(st)BDG.forEach(B=>{const t=Math.max(-1,Math.min(3,bd[B[0]]==null?-1:+bd[B[0]])),c=pfEl("div","pfbg"+(t<0?" off":" t"+t)),m=pfEl("div","pfbm");
+  if(BDGFRM[t]){const fr=pfEl("img","pfbf");fr.src=BDGFRM[t];fr.alt="";m.append(fr)}if(BDGART[B[0]]){const im=pfEl("img","pfbi");im.src=BDGART[B[0]];im.alt="";m.append(im)}else m.append(pfEl("span","pfbe",B[2]));
+  const nx=t<3?B[4][t+1]:null,cur=st.bv&&isFinite(+st.bv[B[0]])?+st.bv[B[0]]:null;c.append(m,pfEl("b","",B[1]),pfEl("small","",t<0?(nx!=null&&cur!=null?pfN(cur)+"/"+pfN(nx):"Kilitli"):BDGT[t]));bb.append(c)});
+ // başarımlar (kazanılanlar önce)
+ const ac=$("pfAch");ac.textContent="";const have=new Set(st&&Array.isArray(st.achL)?st.achL.filter(x=>typeof x==="string"):[]);if(st&&!st.achL&&Array.isArray(st.badges))ACH.forEach(a=>{if(st.badges.includes(a.n))have.add(a.id)});ac.parentElement.hidden=!st;
+ $("pfAchN").textContent=st?have.size+" / "+ACH.length:"";
+ if(st)[...ACH].sort((a,b)=>(have.has(b.id)?1:0)-(have.has(a.id)?1:0)).forEach(a=>{const ok=have.has(a.id),c=pfEl("div","pfa"+(ok?"":" off")),ic=pfEl("div","pfai");if(ACHART[a.id]){const im=pfEl("img");im.src=ACHART[a.id];im.alt="";ic.append(im)}else ic.textContent=ACHI[a.id]||"🏅";
+  const tx=pfEl("div","pfat");tx.append(pfEl("b","",a.n),pfEl("small","",a.d));c.append(ic,tx);if(!ok)c.append(pfEl("span","pfal","🔒"));ac.append(c)});
+ // istatistikler
+ const sl=$("pfStats");sl.textContent="";sl.parentElement.hidden=!st;if(st)[["🪙","Satılan balık",st.sold],["🥚","Çıkan yavru",st.hatch],["💞","Çiftleştirme",st.breed],["🧽","Temizlik",st.clean],["🗝️","Açılan sandık",st.chest],["📦","Teslim edilen sipariş",st.ord],["🤝","Komşu yardımı",st.help],["👾","Bulunan glitch",st.gl]].forEach(s=>{if(s[2]==null)return;const row=pfEl("div","pfsr");row.append(pfEl("i","",s[0]),pfEl("span","",s[1]),pfEl("b","",pfN(s[2])));sl.append(row)});
+ $("pfNote").hidden=!!st||me;
+ const vb=$("pfVisit");vb.hidden=me;vb.textContent=state.helped&&state.helped[r.id]===dayKey()?"✓ Ziyaret":"Ziyaret et";vb.onclick=()=>{closeProf();startVisit(r,p)};
+ box.hidden=false;const sc=box.querySelector(".pfc");if(sc)sc.scrollTop=0;box.classList.remove("go");void box.offsetWidth;box.classList.add("go")}
 function closeProf(){const b=$("prof");if(b)b.hidden=true}
 function personRow(r,ps,i,rank){const p=ps[r.id]||{},me=r.id===NET.uid||r.id==="local",row=document.createElement("div");row.className="nrow";
 const left=document.createElement(rank?"span":"img");if(rank){left.className="rk";left.textContent="#"+(i+1)}else{const d0=r.d||{},av=p.avatarUrl||spSrc(p.av||d0.av||((d0.deep||d0.river||d0.salt||d0.fresh||d0.cfresh||d0.coll2||[])[0]||{}).t||"neon");left.src=av;left.alt="";if(!p.avatarUrl)left.className="fav";left.onerror=()=>{left.onerror=null;left.src=spSrc("neon")}}
@@ -1315,7 +1349,7 @@ function renderBook(){$("bookList").innerHTML='<p class="note" style="margin:0 0
 try{$("critShop").onclick=e=>{const b=e.target.closest("[data-crit]");if(b){audio();buyCrit(b.dataset.crit);renderShop()}}}catch(e){}
 $("props").onclick=e=>{const b=e.target.closest("[data-prop]");if(b)buyProp(b.dataset.prop)};$("shop").onclick=shopClick;$("inventory").addEventListener("change",e=>{const t=e.target;if(!t||!t.dataset)return;if(t.dataset.ffs){FFILT=t.value;sellArm=null;renderUI()}else if(t.dataset.fss){FSORT=t.value;renderUI()}});$("inventory").onclick=e=>{if(invClick(e))return;const b=e.target.closest("[data-gene],[data-move]");if(!b)return;if(0);else if(b.dataset.gene)geneTest(+b.dataset.gene);else moveFish(+b.dataset.move)};$("shopCount").textContent=species.length+" tür";
 $("orders").onclick=e=>{const b=e.target.closest("[data-order]"),x=e.target.closest("[data-orderx]");if(b){if(deliverOrder(+b.dataset.order))renderQuests()}else if(x)skipOrder(+x.dataset.orderx)};$("quests").onclick=e=>{const b=e.target.closest("[data-quest]");if(b)claimQuest(b.dataset.quest)};$("achList").onclick=e=>{const b=e.target.closest("[data-ach]");if(b)claimAch(b.dataset.ach)};
-$("tankList").onclick=e=>{const b=e.target.closest("button");if(!b)return;if(b.dataset.unlock)unlockTank(b.dataset.unlock);else if(b.dataset.go){switchTank(b.dataset.go);closeSheet()}};$("inventory").addEventListener("change",e=>{const s=e.target.closest("[data-mv]");if(s&&s.value)moveFish(+s.dataset.mv,s.value)});$("night").onclick=()=>{audio();toggleNight()};$("nightBtn").onclick=()=>{audio();toggleNight()};$("fsBtn").onclick=()=>{const d=document,e=d.documentElement,on=d.fullscreenElement||d.webkitFullscreenElement;try{if(on){(d.exitFullscreen||d.webkitExitFullscreen).call(d)}else{const f=e.requestFullscreen||e.webkitRequestFullscreen;if(!f){notify("Bu cihaz tam ekrana izin vermiyor. Ana ekrana ekleyebilirsin.");return}const p=f.call(e);if(p&&p.catch)p.catch(()=>notify("Bu pencere tam ekrana izin vermiyor. Ana ekrana ekleyebilirsin."))}}catch(x){notify("Bu pencere tam ekrana izin vermiyor. Ana ekrana ekleyebilirsin.")}};$("lvOk").onclick=closeLevelUp;$("pfClose").onclick=closeProf;$("prof").addEventListener("pointerdown",e=>{if(e.target.id==="prof")closeProf()});try{document.querySelector("#topbar .lvbox").addEventListener("click",()=>{if(!VISIT)openProf({id:NET.uid||"local",d:{}},null,true)})}catch(e){}
+$("tankList").onclick=e=>{const b=e.target.closest("button");if(!b)return;if(b.dataset.unlock)unlockTank(b.dataset.unlock);else if(b.dataset.go){switchTank(b.dataset.go);closeSheet()}};$("inventory").addEventListener("change",e=>{const s=e.target.closest("[data-mv]");if(s&&s.value)moveFish(+s.dataset.mv,s.value)});$("night").onclick=()=>{audio();toggleNight()};$("nightBtn").onclick=()=>{audio();toggleNight()};$("fsBtn").onclick=()=>{const d=document,e=d.documentElement,on=d.fullscreenElement||d.webkitFullscreenElement;try{if(on){(d.exitFullscreen||d.webkitExitFullscreen).call(d)}else{const f=e.requestFullscreen||e.webkitRequestFullscreen;if(!f){notify("Bu cihaz tam ekrana izin vermiyor. Ana ekrana ekleyebilirsin.");return}const p=f.call(e);if(p&&p.catch)p.catch(()=>notify("Bu pencere tam ekrana izin vermiyor. Ana ekrana ekleyebilirsin."))}}catch(x){notify("Bu pencere tam ekrana izin vermiyor. Ana ekrana ekleyebilirsin.")}};$("lvOk").onclick=closeLevelUp;$("pfClose").onclick=closeProf;$("pfClose2").onclick=closeProf;$("prof").addEventListener("pointerdown",e=>{if(e.target.id==="prof")closeProf()});try{document.querySelector("#topbar .lvbox").addEventListener("click",()=>{if(!VISIT)openProf({id:NET.uid||"local",d:{}},null,true)})}catch(e){}
 $("mrOk").onclick=closeMutReveal;$("mrv").addEventListener("pointerdown",e=>{if(e.target.id==="mrv")closeMutReveal()});$("lvl").addEventListener("pointerdown",e=>{if(e.target.id==="lvl")closeLevelUp()});$("breed").addEventListener("click",breed);$("pa").addEventListener("change",fillParents);$("pb").addEventListener("change",fillParents);$("upgradeFilter").addEventListener("click",()=>upgrade("filter"));$("upgradeFeeder").addEventListener("click",()=>upgrade("feeder"));$("decorate").addEventListener("click",addDecor);
 function initScenery(){for(let i=0;i<30;i++)bubbles.push({x:rand(0,W),y:rand(0,H),r:rand(1.5,5),speed:rand(8,27),drift:rand(-7,7),alpha:rand(.12,.38),phase:rand(0,7)})}
 function curWater(){return VISIT?tw(VISIT.tank):tw(state.tank)}
