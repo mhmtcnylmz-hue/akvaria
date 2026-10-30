@@ -684,23 +684,66 @@ const CRIT=[
 {id:"iso",t:"iso",w:"deep",n:"Dev İzopod",img:"a/aba3ffc3ffb51498.webp",p:2500,lv:40},
 {id:"comb",t:"ct",w:"deep",n:"Taraklı Denizanası",img:"a/cb8856e631632404.webp",rows:"a/0dac2ca06132cb86.webp",g:14,lv:41},
 {id:"atolla",t:"at",w:"deep",n:"Atolla Taç Denizanası",img:"a/cd22652d99d8797c.webp",arm:"a/55c2a8810a60ff65.webp",g:18,lv:44},
-{id:"gsquid",t:"sq",w:"deep",n:"Cam Mürekkep Balığı",img:"a/b50963a080ee65a2.webp",arm:"a/70658b53bc321b03.webp",p:6000,lv:45}];
-const CMAX={sh:4,je:3,iso:2,ct:3,at:2,sq:2},CIM={};
+{id:"gsquid",t:"sq",w:"deep",n:"Cam Mürekkep Balığı",img:"a/b50963a080ee65a2.webp",arm:"a/70658b53bc321b03.webp",p:6000,lv:45},{id:"octo",t:"oc",w:"salt",n:"Kızıl Ahtapot",img:"a/22a3212cdf25161e.webp",p:900,lv:7},{id:"seah",t:"hs",w:"salt",n:"Altın Denizatı",img:"a/7f42ce35019f2f8e.webp",p:450,lv:5}];
+const CMAX={sh:4,je:3,iso:2,ct:3,at:2,sq:2,oc:1,hs:3},CIM={};
 // tür adı ve faydası (mağaza ve uyarılar için)
-const CTN={sh:"karides",je:"denizanası",iso:"izopod",ct:"taraklı denizanası",at:"Atolla",sq:"mürekkep balığı"},CPERK={sh:"Kirlenmeyi %8 yavaşlatır · tank başına en fazla 4",iso:"Dipteki artıkları yer · kirlenmeyi %10 yavaşlatır · tank başına en fazla 2",je:"Gece parlar · XP +%4 · tank başına en fazla 3",ct:"Kirpikleriyle süzülür, tarak sıralarında gökkuşağı dalgaları akar · XP +%4 · en fazla 3",at:"Dokununca dönen mavi ışık çarkıyla alarm verir · XP +%5 · en fazla 2",sq:"Jet gibi fırlar, dokununca top olup mürekkep bırakır · kirlenmeyi %6 yavaşlatır · en fazla 2"},CBUY={sh:"Suyun daha yavaş kirlenmesini sağlar.",iso:"Dipteki artıkları yer, su daha yavaş kirlenir.",je:"Gece parlar, kazandığın XP'yi artırır.",ct:"Tarak sıralarındaki gökkuşağı dalgalarını izle!",at:"Ona dokun: ışık alarmını gör.",sq:"Ona dokun: top olup mürekkep bırakır."};
+const CTN={sh:"karides",je:"denizanası",iso:"izopod",ct:"taraklı denizanası",at:"Atolla",sq:"mürekkep balığı"},CPERK={sh:"Kirlenmeyi %8 yavaşlatır · tank başına en fazla 4",iso:"Dipteki artıkları yer · kirlenmeyi %10 yavaşlatır · tank başına en fazla 2",je:"Gece parlar · XP +%4 · tank başına en fazla 3",ct:"Kirpikleriyle süzülür, tarak sıralarında gökkuşağı dalgaları akar · XP +%4 · en fazla 3",at:"Dokununca dönen mavi ışık çarkıyla alarm verir · XP +%5 · en fazla 2",sq:"Jet gibi fırlar, dokununca top olup mürekkep bırakır · kirlenmeyi %6 yavaşlatır · en fazla 2",oc:"Dipte yaşar, kollarıyla dibi yoklar · dokununca mürekkep bırakıp kaçar · kirlenmeyi %6 yavaşlatır · en fazla 1",hs:"Kuyruğuyla tutunur, sırt yüzgecini çırparak süzülür · XP +%4 · en fazla 3"},CBUY={sh:"Suyun daha yavaş kirlenmesini sağlar.",iso:"Dipteki artıkları yer, su daha yavaş kirlenir.",je:"Gece parlar, kazandığın XP'yi artırır.",ct:"Tarak sıralarındaki gökkuşağı dalgalarını izle!",at:"Ona dokun: ışık alarmını gör.",sq:"Ona dokun: top olup mürekkep bırakır.",oc:"Ona dokun: mürekkep bırakıp kaçar.",hs:"Kuyruğunu bir bitkiye dolayıp akıntıda sallanır."};
 function cImg(src){let i=CIM[src];if(!i){i=CIM[src]=new Image();i.src=""+B64(src)}return i.complete&&i.naturalWidth?i:null}
 function critList(k){if(!state.crit||typeof state.crit!=="object")state.crit={};const a=state.crit[k||state.tank];return Array.isArray(a)?a:[]}
 function critCount(k,t){return critList(k).filter(c=>{const d=CRIT.find(x=>x.id===c.k);return d&&d.t===t}).length}
-function critShrimpK(){return Math.max(.6,1-.08*critCount(state.tank,"sh")-.1*critCount(state.tank,"iso")-.06*critCount(state.tank,"sq"))}
-function critXPK(){let n=0;for(const k in (state.crit||{}))n+=.04*(critCount(k,"je")+critCount(k,"ct"))+.05*critCount(k,"at");return 1+n}
+function critShrimpK(){return Math.max(.6,1-.08*critCount(state.tank,"sh")-.1*critCount(state.tank,"iso")-.06*critCount(state.tank,"sq")-.06*critCount(state.tank,"oc"))}
+function critXPK(){let n=0;for(const k in (state.crit||{}))n+=.04*(critCount(k,"je")+critCount(k,"ct"))+.05*critCount(k,"at")+.04*critCount(k,"hs");return 1+n}
 function buyCrit(id){const d=CRIT.find(x=>x.id===id);if(!d||VISIT)return;if(isColl(state.tank)){notify("Koleksiyon tankına eklenemez");return}if(tw(state.tank)!==d.w){notify(d.n+" "+TANKS[d.w].name+" tankında yaşar");return}if(state.level<d.lv){notify("Seviye "+d.lv+lokEk(d.lv)+" açılır");return}if(critCount(state.tank,d.t)>=CMAX[d.t]){notify("Bu tank en fazla "+CMAX[d.t]+" "+CTN[d.t]+" alabilir");return}
  if(d.g){if((state.gems||0)<d.g){notify("Yeterli 💎 yok");return}state.gems-=d.g}else{if(state.coins<d.p){notify("Yeterli 🪙 yok");return}state.coins-=d.p}
  if(!state.crit||typeof state.crit!=="object")state.crit={};const a=state.crit[state.tank]=critList(state.tank).slice();a.push({id:state.nextId++,k:id});sfx("buy");notify(d.n+" tanka girdi! "+CBUY[d.t]);renderUI();save(true)}
+
+// ===== sürüm 180: Kızıl Ahtapot ve Altın Denizatı — görüntü motorunun ağıyla canlandırılır (motor kapalıysa sade çizim)
+const OCX=new WeakMap();
+function meshDraw(o,im,NX,NY,fn){const v=window.AkvVE,n=(NX+1)*(NY+1);let X=OCX.get(o);if(!X||X.length!==n*2){X=new Float32Array(n*2);OCX.set(o,X)}
+ for(let i=0;i<=NX;i++)for(let j=0;j<=NY;j++){const a=(i*(NY+1)+j)*2,p=fn(i/NX,j/NY);X[a]=p[0];X[a+1]=p[1]}
+ if(v&&v.ok&&v.fishOn&&pxWanted()&&!state.lowGfx&&v.drawMesh(ctx,im,NX,NY,X))return;
+ // yedek: ağın köşelerinden kaba bir dönüşümle tek resim
+ const p0=fn(0,0),p1=fn(1,1);ctx.drawImage(im,p0[0],p0[1],p1[0]-p0[0],p1[1]-p0[1])}
+const sstep=(a,b,x)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t)};
+function mkOc(d){const gy=FLOOR+rand(16,40);return{d,x:rand(BX0+70,BX1-70),y:gy,gy,dir:Math.random()<.5?1:-1,vx:0,vy:0,t:rand(0,9),mode:"sit",next:rand(4,8),jet:0,W:92,H:96,tilt:0,sp:0,col:0}}
+function stepOc(o,dt){const u=CU;o.t+=dt;o.next-=dt;
+ if(o.mode==="sit"){o.vx*=Math.exp(-dt*4);if(o.next<0){const r=Math.random();if(r<.55){o.mode="crawl";o.next=rand(3,6);if(Math.random()<.4)o.dir*=-1}else if(r<.68){o.mode="jet";o.jet=1;o.vx=o.dir*rand(70,110)*u;o.vy=-rand(90,130)*u;o.next=rand(2,3)}else o.next=rand(3,7)}}
+ else if(o.mode==="crawl"){o.vx+=(o.dir*16*u*(.4+.6*Math.max(0,Math.sin(o.t*2.2)))-o.vx)*Math.min(1,dt*3);if(o.next<0){o.mode="sit";o.next=rand(5,10)}}
+ else if(o.mode==="jet"){o.jet=Math.max(0,o.jet-dt*.9);o.vx*=Math.exp(-dt*1.2);o.vy+=40*u*dt;o.vy*=Math.exp(-dt*.9);if(o.y>=o.gy-1&&o.vy>=0&&o.jet<.5){o.mode="sit";o.next=rand(5,9);o.vy=0}}
+ if(o.mode!=="jet"){o.vy+=(o.gy-o.y)*dt*6;o.vy*=Math.exp(-dt*5)}
+ o.x+=o.vx*dt;o.y+=o.vy*dt;if(o.y>o.gy)o.y=o.gy;if(o.y<H*.2){o.y=H*.2;o.vy=Math.abs(o.vy)}if(o.x<BX0+o.W*.5){o.x=BX0+o.W*.5;o.dir=1}if(o.x>BX1-o.W*.5){o.x=BX1-o.W*.5;o.dir=-1}
+ const tt=o.mode==="jet"&&o.jet>.15?Math.atan2(o.vx,-o.vy)*.8:0;o.tilt+=(tt-o.tilt)*Math.min(1,dt*3);
+ o.sp+=((o.mode==="jet"?(o.jet>.3?-.32:.05):o.mode==="crawl"?.06:.13)-o.sp)*Math.min(1,dt*(o.mode==="jet"?6:1.5))}
+function ocScare(o,tx){o.dir=tx>o.x?-1:1;o.mode="jet";o.jet=1;o.vx=o.dir*rand(110,150)*CU;o.vy=-rand(120,160)*CU;o.next=3;for(let i=0;i<16;i++)INK.push({x:o.x+rand(-12,12),y:o.y-o.H*.4+rand(-10,10),vx:rand(-16,16),vy:rand(-12,8),r:rand(6,12),life:rand(2.5,4),l0:4});sfx("bubble")}
+function drawOc(o){const im=cImg(o.d.img);if(!im)return;const iw=im.naturalWidth||im.width,ih=im.naturalHeight||im.height,Wd=o.W,Hd=Wd*ih/iw,t=o.t,sp=o.sp,cr=o.mode==="crawl"?1:0,jt=o.mode==="jet"?1:0,br=1+.035*Math.sin(t*1.7)+(jt?.06*Math.sin(t*9)*o.jet:0);
+ ctx.save();ctx.translate(o.x,o.y);if(o.y>=o.gy-6){ctx.save();ctx.scale(1,.25);ctx.beginPath();ctx.ellipse(0,8,Wd*.48,Wd*.2,0,0,7);ctx.fillStyle="rgba(0,20,30,.2)";ctx.fill();ctx.restore()}
+ ctx.translate(0,-Hd*.45);ctx.rotate(o.tilt);ctx.translate(0,Hd*.45);ctx.scale(o.dir,1);
+ // kollar: dalga, oturunca yayılır, kaçarken arkada toplanıp uzar; baş nefes alır
+ meshDraw(o,im,14,18,(u,v)=>{let x=(u-.5)*Wd,y=(v-1)*Hd;const tw=sstep(.4,.62,v),hw=1-tw,k=Math.pow(tw,1.5),ph=u*9.5;
+  x+=(x-(.3-.5)*Wd)*(br-1)*hw;y+=(y-(.22-1)*Hd)*(br-1)*hw;
+  x+=k*Wd*(.035+.03*cr+.02*jt)*Math.sin(t*(1.6+2*cr+5*jt)+ph+v*5)+(u-.5)*Wd*sp*Math.pow(tw,1.3);
+  y+=k*Hd*(.02*Math.sin(t*1.3+ph*.8)+(jt?.18*Math.max(0,o.jet-.2):0))-(cr?Math.max(0,Math.sin(t*4.4+ph))*k*Hd*.03:0);return[x,y]});
+ ctx.restore()}
+function mkHs(d){const y=FLOOR-rand(10,60);return{d,x:rand(BX0+50,BX1-50),y,ax:0,ay:y,dir:Math.random()<.5?1:-1,vx:0,vy:0,t:rand(0,9),mode:"hold",next:rand(5,10),Hh:rand(58,66),sip:-9,fin:1,rk:0,fs:1}}
+function stepHs(o,dt){const u=CU;o.t+=dt;o.next-=dt;if(o.fs===undefined)o.fs=o.dir;
+ if(o.mode==="hold"){o.vx*=Math.exp(-dt*3);o.vy*=Math.exp(-dt*3);o.y+=(o.ay-o.y)*Math.min(1,dt*2);o.fin+=(.35-o.fin)*Math.min(1,dt*2);if(Math.random()<dt*.25)o.sip=o.t;if(o.next<0){o.mode="swim";o.next=rand(4,8);o.tx=Math.max(BX0+40,Math.min(BX1-40,o.x+rand(-140,140)));o.ty=Math.max(H*.3,Math.min(FLOOR-8,o.y+rand(-90,70)));o.dir=o.tx>=o.x?1:-1}}
+ else{o.fin+=(1-o.fin)*Math.min(1,dt*3);const dx=o.tx-o.x,dy=o.ty-o.y,d=Math.hypot(dx,dy)||1;o.vx+=(dx/d*14*u-o.vx)*Math.min(1,dt*1.5);o.vy+=(dy/d*10*u-o.vy)*Math.min(1,dt*1.5);if(d<6||o.next<0){o.mode="hold";o.ay=o.y;o.next=rand(6,12)}}
+ o.x+=o.vx*dt;o.y+=o.vy*dt+Math.sin(o.t*1.1)*1.2*dt;o.x=Math.max(BX0+20,Math.min(BX1-20,o.x));o.y=Math.max(H*.25,Math.min(FLOOR,o.y));o.fs+=(o.dir-o.fs)*Math.min(1,dt*3);o.rk=(o.mode==="hold"?.09:.04)*Math.sin(o.t*.8)+o.vx*.004}
+function hsScare(o,tx){o.dir=tx>o.x?-1:1;o.mode="swim";o.fin=1.6;o.tx=Math.max(BX0+40,Math.min(BX1-40,o.x+o.dir*rand(80,130)));o.ty=Math.max(H*.3,o.y-rand(30,60));o.vx=o.dir*30*CU;o.next=3;sfx("bubble")}
+function drawHs(o){const im=cImg(o.d.img);if(!im)return;const iw=im.naturalWidth||im.width,ih=im.naturalHeight||im.height,Hd=o.Hh,Wd=Hd*iw/ih,t=o.t,fa=o.fin,sp=Math.max(0,1-(t-o.sip)/.5),sip=sp>0?Math.sin(sp*Math.PI):0;
+ ctx.save();ctx.translate(o.x,o.y);ctx.rotate(o.rk);ctx.scale(Math.max(.2,Math.abs(o.fs))*Math.sign(o.fs||1),1);
+ // sırt yüzgeci hızlı çırpar, kuyruk sarmalı hafifçe açılıp kapanır, burun ara sıra yem kapar
+ meshDraw(o,im,12,22,(u,v)=>{let x=(u-.5)*Wd,y=(v-1)*Hd;
+  const wf=Math.exp(-(Math.pow((u-.13)/.17,2)+Math.pow((v-.47)/.17,2)));if(wf>.02){x+=wf*Wd*.04*fa*Math.sin(t*21+v*26);y+=wf*Hd*.012*fa*Math.sin(t*21+v*26+1)}
+  const wt=sstep(.66,.8,v);if(wt>0){const cx=(.56-.5)*Wd,cy=(.83-1)*Hd,a=wt*(.1*Math.sin(t*.9)),dx=x-cx,dy=y-cy;x=cx+dx*Math.cos(a)-dy*Math.sin(a);y=cy+dx*Math.sin(a)+dy*Math.cos(a)}
+  const ws=sstep(.6,.72,u)*Math.exp(-Math.pow((v-.33)/.1,2));if(ws>0&&sip>0){const cx=(.62-.5)*Wd,cy=(.33-1)*Hd,a=-.16*sip*ws,dx=x-cx,dy=y-cy;x=cx+dx*Math.cos(a)-dy*Math.sin(a);y=cy+dx*Math.sin(a)+dy*Math.cos(a)}
+  return[x,y]});
+ ctx.restore()}
 function critShopHTML(){return CRIT.map(d=>{const n=critCount(state.tank,d.t),lock=state.level<d.lv,wr=isColl(state.tank)||tw(state.tank)!==d.w;const perk=CPERK[d.t]||"";const pr=d.g?d.g+" 💎":d.p+" 🪙";
  return '<div class="fish-card qrow crit"><div class="qicon"><img class="cuimg" alt="" src="'+B64(d.img)+'"></div><div><strong>'+d.n+'</strong><small>'+(d.w==="salt"?"🌊 Tuzlu su":d.w==="deep"?"🌌 Derin Okyanus":"🌿 Tatlı su")+" · "+perk+(lock?" · Seviye "+d.lv+lokEk(d.lv)+" açılır":"")+'</small></div><button class="sm" data-crit="'+d.id+'"'+(lock||wr||n>=CMAX[d.t]?" disabled":"")+'>'+pr+"</button></div>"}).join("")}
 const CRT=new Map();
 function critRT(){if(VISIT){CRT.clear();return[]}const L=critList(state.tank),ids=new Set(L.map(c=>c.id));for(const id of [...CRT.keys()])if(!ids.has(id))CRT.delete(id);
- return L.map(c=>{let o=CRT.get(c.id);if(!o){const d=CRIT.find(x=>x.id===c.k);if(!d)return null;o=d.t==="sh"?mkShr(d):d.t==="iso"?mkIso(d):d.t==="ct"?mkCt(d):d.t==="at"?mkAt(d):d.t==="sq"?mkSq(d):mkJel(d);CRT.set(c.id,o)}return o}).filter(Boolean)}
+ return L.map(c=>{let o=CRT.get(c.id);if(!o){const d=CRIT.find(x=>x.id===c.k);if(!d)return null;o=d.t==="sh"?mkShr(d):d.t==="iso"?mkIso(d):d.t==="ct"?mkCt(d):d.t==="at"?mkAt(d):d.t==="sq"?mkSq(d):d.t==="oc"?mkOc(d):d.t==="hs"?mkHs(d):mkJel(d);CRT.set(c.id,o)}return o}).filter(Boolean)}
 const CU=.5;
 function mkJel(d){const r=rand(26,34),x=rand(BX0+r,BX1-r),y=rand(H*.3,H*.55),j={d,x,y,r,ph:Math.random(),period:rand(2.1,2.9),vx:0,vy:0,tx:x,c:0,fl:0,tent:[],arms:[],t:Math.random()*10};
  const len=r*rand(1.6,2.3);for(let i=0;i<9;i++){const pts=[];for(let k=0;k<10;k++)pts.push({x,y:y+k*len/10,px:x,py:y+k*len/10});j.tent.push({pts,sl:len/10*rand(.85,1.15)})}
@@ -854,12 +897,14 @@ function drawShr(s){const L=s.len,im0=cImg(s.d.img);if(!im0)return;const im=nigh
 // sürüm 130: yeni hedef seçerken birkaç aday arasından diğer canlılara en uzak olanı al (hepsi ortada üst üste birikmesin)
 let CRL=[];function spaceScore(x,y,self){let m=1e9;for(const f of state.fish){if(f===self)continue;const d=Math.hypot(f.x*W-x,(f.y*H-y)*1.4);if(d<m)m=d}for(const o of CRL){if(o===self||o.d.t==="sh"||o.d.t==="iso")continue;const d=Math.hypot(o.x-x,(o.y-y)*1.4);if(d<m)m=d}return m}
 function bestSpot(self,n,gen){let b=gen(),bs=spaceScore(b[0],b[1],self);for(let i=1;i<n;i++){const c=gen(),cs=spaceScore(c[0],c[1],self);if(cs>bs){b=c;bs=cs}}return b}
-function critDraw(dt){CPOST.length=0;const L=critRT();CRL=L;if(!L.length)return;for(const o of L){const T=o.d.t;if(T==="sh")stepShr(o,dt);else if(T==="iso")stepIso(o,dt);else if(T==="ct")stepCt(o,dt);else if(T==="sq")stepSq(o,dt);else stepJel(o,dt);if(T==="at")o.al=Math.max(0,(o.al||0)-dt)}
- L.filter(o=>o.d.t==="iso").forEach(drawIso);L.filter(o=>o.d.t==="sh").sort((a,b)=>a.y-b.y).forEach(drawShr);L.filter(o=>o.d.t==="je").forEach(drawJel);L.filter(o=>o.d.t==="at").forEach(drawAt);L.filter(o=>o.d.t==="ct").forEach(drawCt);L.filter(o=>o.d.t==="sq").forEach(drawSq);inkDraw(dt)}
+function critDraw(dt){CPOST.length=0;const L=critRT();CRL=L;if(!L.length)return;for(const o of L){const T=o.d.t;if(T==="sh")stepShr(o,dt);else if(T==="iso")stepIso(o,dt);else if(T==="ct")stepCt(o,dt);else if(T==="sq")stepSq(o,dt);else if(T==="oc")stepOc(o,dt);else if(T==="hs")stepHs(o,dt);else stepJel(o,dt);if(T==="at")o.al=Math.max(0,(o.al||0)-dt)}
+ L.filter(o=>o.d.t==="iso").forEach(drawIso);L.filter(o=>o.d.t==="hs").forEach(drawHs);L.filter(o=>o.d.t==="sh"||o.d.t==="oc").sort((a,b)=>a.y-b.y).forEach(o=>o.d.t==="oc"?drawOc(o):drawShr(o));L.filter(o=>o.d.t==="je").forEach(drawJel);L.filter(o=>o.d.t==="at").forEach(drawAt);L.filter(o=>o.d.t==="ct").forEach(drawCt);L.filter(o=>o.d.t==="sq").forEach(drawSq);inkDraw(dt)}
 function critTap(x,y){if(VISIT)return false;let hit=false;for(const o of CRT.values()){const T=o.d.t;
  if(T==="ct"){if(Math.abs(x-o.x)<o.r*1.3&&Math.abs(y-o.y)<o.r*o.ar*1.2){o.fl=1.6;o.vx+=(o.x-x)*1.5;o.vy+=(o.y-y)*1.5;hit=true}continue}
  if(T==="at"){if(Math.hypot(x-o.x,y-(o.y-o.r*.3))<o.r*2.2){atollaAlarm(o);hit=true}continue}
  if(T==="sq"){if(Math.abs(x-o.x)<Math.max(36,o.L*.6)&&Math.abs(y-o.y)<Math.max(26,o.L*.3)){squidScare(o,x);hit=true}continue}
+ if(T==="oc"){if(Math.abs(x-o.x)<o.W*.55&&y>o.y-o.H*1.05&&y<o.y+8){ocScare(o,x);hit=true}continue}
+ if(T==="hs"){if(Math.abs(x-o.x)<o.Hh*.4&&Math.abs(y-(o.y-o.Hh*.5))<o.Hh*.6){hsScare(o,x);hit=true}continue}
  if(o.d.t==="iso"){if(Math.hypot(x-o.x,y-(o.y-o.len*.15))<o.len*.6){isoPoke(o);hit=true}}else if(o.d.t==="sh"){if(Math.hypot(x-o.x,y-o.y)<o.len*1.15){o.dir=x>=o.x?1:-1;o.flip=.32;o.mode="flip";o.vx=-o.dir*rand(380,480)*CU;o.vy=-rand(90,160)*CU;hit=true}}
  else{const d=Math.hypot(x-o.x,y-(o.y-o.r*.3));if(d<o.r*2.2){const k=1/(d||1);o.vx+=(o.x-x)*k*120*CU;o.vy+=Math.min(0,(o.y-y)*k*60*CU);o.fl=2.5;o.ph=Math.ceil(o.ph);o.tx=Math.max(BX0+o.r,Math.min(BX1-o.r,o.x+(o.x-x)*3));hit=true}}}
  if(hit)sfx("bubble");return hit}
