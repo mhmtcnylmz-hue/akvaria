@@ -2024,19 +2024,21 @@ function smartPick(){if(VISIT||EDIT||SELLM||openKey)return null;if(tutOn()&&TUT[
  if(pend>=1)return["i-gift","Topla",pend.toLocaleString(LOC)+" altın",()=>$("surprise").click(),0];
  if(co)return null;const hu=state.fish.length?state.fish.reduce((a,f)=>a+f.hunger,0)/state.fish.length:100;
  return["i-feed","Yemle",hu<45?"acıktılar":"",()=>$("feed").click(),hu<30?1:0]}
-function rateTxt(){let r=0;try{r=pendCap()/480}catch(e){}if(!(r>0))return"";return"+"+(r<10?String(Math.round(r*10)/10).replace(".",","):Math.round(r).toLocaleString(LOC))+"/dk"}
+function rateTxt(){let r=0;try{r=pendCap()/480}catch(e){}if(!(r>=.05))return"";return"+"+(r<10?String(Math.round(r*10)/10).replace(".",","):Math.round(r).toLocaleString(LOC))+"/dk"}
 function bnote(k,ic,lab,fn){if(BN.el[k])return;const b=document.createElement("button");b.className="bnote";b.setAttribute("aria-label",lab);b.innerHTML='<svg class="ic"><use href="#'+ic+'"/></svg><span class="bl">'+lab+"</span>";
  b.onclick=e=>{e.stopPropagation();audio();sfx("bubble");BN.done[k]=1;delete BN.el[k];b.classList.add("pop");setTimeout(()=>b.remove(),400);try{fn()}catch(_){}};$("bnotes").appendChild(b);BN.el[k]=b}
 function bnoteOff(k){const b=BN.el[k];if(b){delete BN.el[k];b.classList.add("out");setTimeout(()=>b.remove(),650)}delete BN.done[k]}
 function uiTick(){try{const r=$("rate");if(r){const t=rateTxt();if(r.textContent!==t)r.textContent=t}
  const a=smartPick(),sm=$("smart");SMA=a;const k=a?a[0]+a[1]+a[2]:"";if(k!==SMK){SMK=k;if(sm){sm.hidden=!a;if(a){$("smartI").setAttribute("href","#"+a[0]);$("smartT").textContent=a[1];$("smartS").textContent=a[2]}}}if(sm)sm.classList.toggle("pulse",!!(a&&a[4]));
+ {const pa=$("pendAmt"),pn=Math.floor(state.pending||0),tx=pn>=1?pn.toLocaleString(LOC):"";if(pa&&pa.textContent!==tx)pa.textContent=tx;const co=isColl(state.tank),hu=state.fish.length?state.fish.reduce((q,f)=>q+f.hunger,0)/state.fish.length:100;
+  const tg=(id,on)=>{const e=$(id);if(e)e.classList.toggle("pulse",!!on)};tg("surprise",pn>=1);tg("clean",!co&&state.dirt>=50);tg("feed",!co&&hu<35&&!feedModeOn());tg("cureBtn",true)}
  const C={chest:!VISIT&&!!state.chest,wheel:!VISIT&&state.level>=2&&wheelReady(),dm:!VISIT&&typeof dmUnread==="function"&&dmUnread()>0&&openKey!=="dm"};
  for(const k2 in C){if(!C[k2]){if(BN.el[k2]||BN.done[k2])bnoteOff(k2);continue}if(BN.done[k2]||BN.el[k2])continue;
   if(k2==="chest")bnote("chest","i-chest","Sandık",()=>openChest());else if(k2==="wheel")bnote("wheel","i-wheel","Çark hazır",()=>openSheet("quest","📋 Görevler"));else bnote("dm","i-mail","Yeni mesaj",()=>openSheet("dm","✉️ Mesajlar"))}
  document.body.classList.toggle("lowfx",!!state.lowGfx);document.body.classList.toggle("sheeton",!!openKey);if(openKey&&document.body.classList.contains("uiidle"))uiWake()}catch(e){reportErr(e,"arayüz")}}
 // 5 sn dokunulmazsa arayüz yumuşakça solar; ilk dokunuş sadece geri getirir
 let uiIdleT=0,uiSwallow=0;
-function uiWake(){document.body.classList.remove("uiidle");clearTimeout(uiIdleT);uiIdleT=setTimeout(uiSleep,5000)}
+function uiWake(){document.body.classList.remove("uiidle");clearTimeout(uiIdleT);uiIdleT=setTimeout(uiSleep,20000)}
 function uiSleep(){if(openKey||EDIT||SELLM||VISIT||ZEN||tutOn()||feedModeOn()||(typeof TOPEN!=="undefined"&&TOPEN)||!$("lvl")||!$("lvl").hidden){uiIdleT=setTimeout(uiSleep,2000);return}document.body.classList.add("uiidle")}
 // ===== sürüm 171: görüntü motoru adaptörü (px/akv-visual.js). Oyun verisi esas; motor sadece çizer. Kapalıysa ya da hata verirse eski çizim kullanılır.
 let VEENV=false;const VEX=new WeakMap(),VEORIG={};
@@ -2060,7 +2062,7 @@ const PXQN={3:"Yüksek",2:"Orta",1:"Düşük"};
 function pxLabel(){const b=$("pxBtn"),q=$("pxQBtn"),v=window.AkvVE,bad=v&&!v.ok&&v.err;if(b)b.textContent="🧪 Yeni görüntü motoru: "+(bad?"Desteklenmiyor":pxWanted()?(v&&v.autoOff?"Açık (balıklar yavaş, eski çizimde)":"Açık"):"Kapalı");if(q){q.textContent="💫 Efekt kalitesi: "+PXQN[state.pxQ||3];q.disabled=!pxWanted()||!!bad}}
 // sürüm 168: Zen modu — tek dokunuşla bütün menüler kaybolur, ekranda akvaryum ve müzik kalır
 let ZEN=false,zenT=0;
-function zenSet(on){ZEN=!!on;document.body.classList.toggle("zen",ZEN);let x=$("zenExit");if(ZEN){closeSheet();if(SELLM)sellModeSet(false);tapInfo=null;try{audio();startAmbience()}catch(e){}if(!x){x=document.createElement("button");x.id="zenExit";x.textContent="✕ Zen modundan çık";x.onclick=ev=>{ev.stopPropagation();zenSet(false)};document.body.appendChild(x)}zenHint()}else if(x)x.remove()}
+function zenSet(on){ZEN=!!on;document.body.classList.toggle("zen",ZEN);let x=$("zenExit");if(ZEN){closeSheet();if(SELLM)sellModeSet(false);tapInfo=null;try{audio();startAmbience()}catch(e){}if(!x){x=document.createElement("button");x.id="zenExit";x.innerHTML='<svg viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg><span>Zen\'den çık</span>';x.onclick=ev=>{ev.stopPropagation();zenSet(false)};document.body.appendChild(x)}zenHint()}else if(x)x.remove()}
 function zenHint(){const x=$("zenExit");if(!x)return;x.classList.add("on");clearTimeout(zenT);zenT=setTimeout(()=>x.classList.remove("on"),2600)}
 function ptXY(e){const r=canvas.getBoundingClientRect();return[(e.clientX-r.left)/r.width*W,(e.clientY-r.top)/r.height*H]}
 function ghostAt(x,y){const gh=$("ghost");if(!gh||!EDIT||EDIT.mode!=="place")return;try{const gw=fishW({type:EDIT.arg,age:.35,mutation:"normal",sizeGrowth:0});gh.style.width=(gw/W*100).toFixed(2)+"%"}catch(e){}gh.style.backgroundImage="var(--f-"+EDIT.arg+")";gh.style.left=x/W*100+"%";gh.style.top=y/H*100+"%";gh.hidden=false}
@@ -2106,7 +2108,7 @@ $("wspin").onclick=()=>{audio();wheelSpin()}}
 const TUT=[{t:"🐠 Akvaryumuna hoş geldin! Balıklarına bakacak, onları büyütüp satarak para kazanacaksın.",btn:"Başlayalım"},
 {t:"🍤 Önce balıklarını besle: Yemle'ye dokun, sonra tankın üstüne dokun.",el:"feed",ev:"feed"},
 {t:"🛒 Yeni bir balık al: Mağaza'ya dokun, bir balık seç ve tankta istediğin yere bırak.",el:"dshop",ev:"buy"},
-{t:"🎁 Balıklar büyüdükçe para biriktirir. Para birikince alttaki düğme Topla olur, dokununca kasana gelir. Hazine sandığı çıkınca da orada belirir.",el:"smart",btn:"Anladım"},
+{t:"🎁 Balıklar büyüdükçe para biriktirir. Biriken parayı soldaki Topla kabarcığına dokunarak alırsın. Hazine sandığı çıkınca yükselen bir kabarcık haber verir.",el:"surprise",btn:"Anladım"},
 {t:"🧽 Su zamanla kirlenir. Kirlenince Temizle'ye bas, yoksa balıkların hastalanır.",el:"clean",btn:"Anladım"},
 {t:"🐟 Büyüyen balıklarını Balıklarım'dan satabilirsin. Yeni özellikler seviye atladıkça açılır. İyi eğlenceler!",el:"fishes",btn:"Bitir"}];
 function tutOn(){return typeof state.tut==="number"&&state.tut<TUT.length}
