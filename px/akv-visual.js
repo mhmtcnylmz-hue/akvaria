@@ -80,7 +80,7 @@ function fdraw(ctx,o){var gl=FR.gl,now=PM.t0=performance.now();frGrid(o.NX,o.NY)
  ctx.drawImage(FR.cv,0,0,pw,ph,x0,y0,x1-x0,y1-y0);VE.stat.fish++;return true}
 
 // hazır ağ: konumları oyun hesaplar (ahtapot, denizatı)
-VE.drawMesh=function(ctx,src,NX,NY,X){if(!VE.ok||!VE.fishOn||FR.lost)return false;return fdraw(ctx,{src:src,NX:NX,NY:NY,X:X,raw:1})};
+VE.drawMesh=function(ctx,src,NX,NY,X){if(!VE.ok||FR.lost)return false;return fdraw(ctx,{src:src,NX:NX,NY:NY,X:X,raw:1})};
 // ---------- EnvironmentRenderer: ışık, su parçacıkları ve kabarcıklar (oyun tuvalinin üstünde, dokunmaları geçirir) ----------
 var EN={cv:null,gl:null,p:null,b:null,aP:0,aU:0,aC:0,uM:null,t:null,D:null,n:0,motes:[],bub:[],emit:[],rays:[],W:0,H:0,on:false};
 var MAXQ=400;

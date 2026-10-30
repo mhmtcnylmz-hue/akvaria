@@ -672,10 +672,10 @@ state.lastTick=now;OFFLINE=false;return res;
 
 // ===== Omurgasızlar: karidesler ve denizanaları (satılmaz, tanka yardım eder)
 const CRIT=[
-{id:"cherry",t:"sh",w:"fresh",n:"Kiraz Karides",img:"a/1e07524026983c15.webp",p:120,lv:3,leg:"rgba(215,40,30,.85)",leg2:"rgba(240,90,70,.85)",ant:"rgba(230,80,60,.85)"},
-{id:"blue",t:"sh",w:"fresh",n:"Mavi Kadife Karides",img:"a/6171cb1c56c1d802.webp",p:150,lv:3,leg:"rgba(40,90,210,.85)",leg2:"rgba(110,170,255,.85)",ant:"rgba(150,200,255,.85)"},{id:"yellow",t:"sh",w:"fresh",n:"Sarı Neon Karides",img:"a/4d764f013a182ac5.webp",p:140,lv:4,leg:"rgba(240,190,40,.85)",leg2:"rgba(250,215,90,.85)",ant:"rgba(245,200,70,.85)"},{id:"green",t:"sh",w:"fresh",n:"Yeşil Yeşim Karides",img:"a/162aa3f377aeaa10.webp",p:160,lv:5,leg:"rgba(70,170,40,.85)",leg2:"rgba(140,210,80,.85)",ant:"rgba(120,200,60,.85)"},{id:"black",t:"sh",w:"fresh",n:"Siyah Kristal Karides",img:"a/abe2658a25e0ce8d.webp",p:180,lv:6,leg:"rgba(30,34,44,.85)",leg2:"rgba(70,80,96,.85)",ant:"rgba(50,56,70,.85)"},{id:"snow",t:"sh",w:"fresh",n:"Kar Tanesi Karides",img:"a/edbcf70af2cf7935.webp",p:200,lv:7,leg:"rgba(235,240,245,.85)",leg2:"rgba(250,250,252,.85)",ant:"rgba(240,244,248,.85)"},
-{id:"cleaner",t:"sh",w:"salt",n:"Temizlikçi Karides",img:"a/d8fa39637c8e9e22.webp",p:180,lv:3,leg:"rgba(255,245,240,.92)",leg2:"rgba(230,60,40,.9)",ant:"rgba(255,250,245,.9)"},
-{id:"tiger",t:"sh",w:"salt",n:"Kaplan Karides",img:"a/9a08cf4dad7ac9bb.webp",p:200,lv:3,leg:"rgba(225,165,80,.85)",leg2:"rgba(90,50,20,.85)",ant:"rgba(240,200,140,.85)"},
+{id:"cherry",t:"sh",w:"fresh",n:"Kiraz Karides",img:"a/2f348e7e5511936f.webp",p:120,lv:3,leg:"rgba(215,40,30,.85)",leg2:"rgba(240,90,70,.85)",ant:"rgba(230,80,60,.85)"},
+{id:"blue",t:"sh",w:"fresh",n:"Mavi Kadife Karides",img:"a/650752e883f9f95f.webp",p:150,lv:3,leg:"rgba(40,90,210,.85)",leg2:"rgba(110,170,255,.85)",ant:"rgba(150,200,255,.85)"},{id:"yellow",t:"sh",spr:1,hid:1,w:"fresh",n:"Sarı Neon Karides",img:"a/4d764f013a182ac5.webp",p:140,lv:4,leg:"rgba(240,190,40,.85)",leg2:"rgba(250,215,90,.85)",ant:"rgba(245,200,70,.85)"},{id:"green",t:"sh",spr:1,hid:1,w:"fresh",n:"Yeşil Yeşim Karides",img:"a/162aa3f377aeaa10.webp",p:160,lv:5,leg:"rgba(70,170,40,.85)",leg2:"rgba(140,210,80,.85)",ant:"rgba(120,200,60,.85)"},{id:"black",t:"sh",spr:1,hid:1,w:"fresh",n:"Siyah Kristal Karides",img:"a/abe2658a25e0ce8d.webp",p:180,lv:6,leg:"rgba(30,34,44,.85)",leg2:"rgba(70,80,96,.85)",ant:"rgba(50,56,70,.85)"},{id:"snow",t:"sh",spr:1,hid:1,w:"fresh",n:"Kar Tanesi Karides",img:"a/edbcf70af2cf7935.webp",p:200,lv:7,leg:"rgba(235,240,245,.85)",leg2:"rgba(250,250,252,.85)",ant:"rgba(240,244,248,.85)"},
+{id:"cleaner",t:"sh",w:"salt",n:"Temizlikçi Karides",img:"a/616696193c06df18.webp",p:180,lv:3,leg:"rgba(255,245,240,.92)",leg2:"rgba(230,60,40,.9)",ant:"rgba(255,250,245,.9)"},
+{id:"tiger",t:"sh",w:"salt",n:"Kaplan Karides",img:"a/eec3f557cb8fe220.webp",p:200,lv:3,leg:"rgba(225,165,80,.85)",leg2:"rgba(90,50,20,.85)",ant:"rgba(240,200,140,.85)"},
 {id:"jpink",t:"je",w:"salt",n:"Pembe Ay Denizanası",img:"a/4d1c38eb1db8ed58.webp",arm:"a/2ff21647530ce6fe.webp",c:[330,80,72],g:6,lv:5},
 {id:"jcyan",t:"je",w:"salt",n:"Mavi Ay Denizanası",img:"a/b6c37055e6cca7ce.webp",arm:"a/e2aa3d086997318d.webp",c:[198,85,66],g:6,lv:5},
 {id:"jorange",t:"je",w:"salt",n:"Turuncu Denizanası",img:"a/7fb605be3c702081.webp",arm:"a/335f79dff38d4087.webp",c:[26,92,62],g:8,lv:5},
@@ -701,45 +701,66 @@ function buyCrit(id){const d=CRIT.find(x=>x.id===id);if(!d||VISIT)return;if(isCo
 const OCX=new WeakMap();
 function meshDraw(o,im,NX,NY,fn){const v=window.AkvVE,n=(NX+1)*(NY+1);let X=OCX.get(o);if(!X||X.length!==n*2){X=new Float32Array(n*2);OCX.set(o,X)}
  for(let i=0;i<=NX;i++)for(let j=0;j<=NY;j++){const a=(i*(NY+1)+j)*2,p=fn(i/NX,j/NY);X[a]=p[0];X[a+1]=p[1]}
- if(v&&v.ok&&v.fishOn&&pxWanted()&&!state.lowGfx&&v.drawMesh(ctx,im,NX,NY,X))return;
- // yedek: ağın köşelerinden kaba bir dönüşümle tek resim
- const p0=fn(0,0),p1=fn(1,1);ctx.drawImage(im,p0[0],p0[1],p1[0]-p0[0],p1[1]-p0[1])}
+ if(v&&v.ok&&pxWanted()&&v.drawMesh(ctx,im,NX,NY,X))return;triMesh(im,NX,NY,X)}
+// sürüm 181: motor yoksa da hareket etsin — her hücre iki üçgen, kırpılıp afin dönüşümle çizilir (ek yeri olmasın diye hafif taşırılır)
+function triMesh(im,NX,NY,X){const iw=im.naturalWidth||im.width,ih=im.naturalHeight||im.height,m=ctx.getTransform();
+ const tri=(a,b,c)=>{const u0=a[2]*iw,v0=a[3]*ih,u1=b[2]*iw,v1=b[3]*ih,u2=c[2]*iw,v2=c[3]*ih,x0=a[0],y0=a[1],x1=b[0],y1=b[1],x2=c[0],y2=c[1],den=(u1-u0)*(v2-v0)-(u2-u0)*(v1-v0);if(Math.abs(den)<1e-6)return;
+  const A=((x1-x0)*(v2-v0)-(x2-x0)*(v1-v0))/den,B=((y1-y0)*(v2-v0)-(y2-y0)*(v1-v0))/den,C=((x2-x0)*(u1-u0)-(x1-x0)*(u2-u0))/den,D=((y2-y0)*(u1-u0)-(y1-y0)*(u2-u0))/den,E=x0-A*u0-C*v0,F=y0-B*u0-D*v0;
+  const cx=(x0+x1+x2)/3,cy=(y0+y1+y2)/3,g=p=>{const dx=p[0]-cx,dy=p[1]-cy,l=Math.hypot(dx,dy)||1;return[p[0]+dx/l*.7,p[1]+dy/l*.7]},p0=g(a),p1=g(b),p2=g(c);
+  ctx.save();ctx.beginPath();ctx.moveTo(p0[0],p0[1]);ctx.lineTo(p1[0],p1[1]);ctx.lineTo(p2[0],p2[1]);ctx.closePath();ctx.clip();ctx.transform(A,B,C,D,E,F);ctx.drawImage(im,0,0);ctx.restore()};
+ const P=(i,j)=>{const k=(i*(NY+1)+j)*2;return[X[k],X[k+1],i/NX,j/NY]};
+ for(let i=0;i<NX;i++)for(let j=0;j<NY;j++){const a=P(i,j),b=P(i+1,j),c=P(i,j+1),d=P(i+1,j+1);tri(a,b,c);tri(b,d,c)}ctx.setTransform(m)}
 const sstep=(a,b,x)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t)};
 function mkOc(d){const gy=FLOOR+rand(16,40);return{d,x:rand(BX0+70,BX1-70),y:gy,gy,dir:Math.random()<.5?1:-1,vx:0,vy:0,t:rand(0,9),mode:"sit",next:rand(4,8),jet:0,W:92,H:96,tilt:0,sp:0,col:0}}
-function stepOc(o,dt){const u=CU;o.t+=dt;o.next-=dt;
- if(o.mode==="sit"){o.vx*=Math.exp(-dt*4);if(o.next<0){const r=Math.random();if(r<.55){o.mode="crawl";o.next=rand(3,6);if(Math.random()<.4)o.dir*=-1}else if(r<.68){o.mode="jet";o.jet=1;o.vx=o.dir*rand(70,110)*u;o.vy=-rand(90,130)*u;o.next=rand(2,3)}else o.next=rand(3,7)}}
- else if(o.mode==="crawl"){o.vx+=(o.dir*16*u*(.4+.6*Math.max(0,Math.sin(o.t*2.2)))-o.vx)*Math.min(1,dt*3);if(o.next<0){o.mode="sit";o.next=rand(5,10)}}
- else if(o.mode==="jet"){o.jet=Math.max(0,o.jet-dt*.9);o.vx*=Math.exp(-dt*1.2);o.vy+=40*u*dt;o.vy*=Math.exp(-dt*.9);if(o.y>=o.gy-1&&o.vy>=0&&o.jet<.5){o.mode="sit";o.next=rand(5,9);o.vy=0}}
+function stepOc(o,dt){const u=CU;o.t+=dt;o.next-=dt;o.ink=(o.ink||0);
+ if(o.mode==="sit"){o.vx*=Math.exp(-dt*4);if(o.next<0){const r=Math.random();if(r<.5){o.mode="crawl";o.next=rand(3,6);if(Math.random()<.4)o.dir*=-1}else if(r<.62){o.mode="jet";o.jet=1;o.vx=o.dir*rand(70,110)*u;o.vy=-rand(90,130)*u;o.next=rand(2,3)}else if(r<.8){o.mode="reach";o.next=rand(2.5,4);o.rs=Math.random()<.5?-1:1}else o.next=rand(2,5)}}
+ else if(o.mode==="reach"){o.vx*=Math.exp(-dt*4);if(o.next<0){o.mode="sit";o.next=rand(3,6)}}
+ else if(o.mode==="crawl"){o.vx+=(o.dir*20*u*(.3+.7*Math.max(0,Math.sin(o.t*2.4)))-o.vx)*Math.min(1,dt*3);if(o.next<0){o.mode="sit";o.next=rand(4,8)}}
+ else if(o.mode==="jet"){o.jet=Math.max(0,o.jet-dt*.9);o.vx*=Math.exp(-dt*1.2);o.vy+=40*u*dt;o.vy*=Math.exp(-dt*.9);if(o.y>=o.gy-1&&o.vy>=0&&o.jet<.5){o.mode="sit";o.next=rand(4,8);o.vy=0}}
  if(o.mode!=="jet"){o.vy+=(o.gy-o.y)*dt*6;o.vy*=Math.exp(-dt*5)}
  o.x+=o.vx*dt;o.y+=o.vy*dt;if(o.y>o.gy)o.y=o.gy;if(o.y<H*.2){o.y=H*.2;o.vy=Math.abs(o.vy)}if(o.x<BX0+o.W*.5){o.x=BX0+o.W*.5;o.dir=1}if(o.x>BX1-o.W*.5){o.x=BX1-o.W*.5;o.dir=-1}
- const tt=o.mode==="jet"&&o.jet>.15?Math.atan2(o.vx,-o.vy)*.8:0;o.tilt+=(tt-o.tilt)*Math.min(1,dt*3);
- o.sp+=((o.mode==="jet"?(o.jet>.3?-.32:.05):o.mode==="crawl"?.06:.13)-o.sp)*Math.min(1,dt*(o.mode==="jet"?6:1.5))}
-function ocScare(o,tx){o.dir=tx>o.x?-1:1;o.mode="jet";o.jet=1;o.vx=o.dir*rand(110,150)*CU;o.vy=-rand(120,160)*CU;o.next=3;for(let i=0;i<16;i++)INK.push({x:o.x+rand(-12,12),y:o.y-o.H*.4+rand(-10,10),vx:rand(-16,16),vy:rand(-12,8),r:rand(6,12),life:rand(2.5,4),l0:4});sfx("bubble")}
-function drawOc(o){const im=cImg(o.d.img);if(!im)return;const iw=im.naturalWidth||im.width,ih=im.naturalHeight||im.height,Wd=o.W,Hd=Wd*ih/iw,t=o.t,sp=o.sp,cr=o.mode==="crawl"?1:0,jt=o.mode==="jet"?1:0,br=1+.035*Math.sin(t*1.7)+(jt?.06*Math.sin(t*9)*o.jet:0);
- ctx.save();ctx.translate(o.x,o.y);if(o.y>=o.gy-6){ctx.save();ctx.scale(1,.25);ctx.beginPath();ctx.ellipse(0,8,Wd*.48,Wd*.2,0,0,7);ctx.fillStyle="rgba(0,20,30,.2)";ctx.fill();ctx.restore()}
+ const tt=o.mode==="jet"&&o.jet>.15?Math.atan2(o.vx,-o.vy)*.85:0;o.tilt+=(tt-o.tilt)*Math.min(1,dt*3);
+ o.sp+=((o.mode==="jet"?(o.jet>.3?-.36:.05):o.mode==="crawl"?.08:o.mode==="reach"?.12:.16)-o.sp)*Math.min(1,dt*(o.mode==="jet"?6:1.5));
+ o.rk=(o.rk||0)+((o.mode==="reach"?1:0)-(o.rk||0))*Math.min(1,dt*2.5)}
+function ocScare(o,tx){o.dir=tx>o.x?-1:1;o.mode="jet";o.jet=1;o.vx=o.dir*rand(110,150)*CU;o.vy=-rand(120,160)*CU;o.next=3;o.flash=1;for(let i=0;i<22;i++)INK.push({x:o.x+rand(-14,14),y:o.y-o.H*.4+rand(-12,12),vx:rand(-20,20)-o.dir*20,vy:rand(-12,10),r:rand(7,14),life:rand(3,5),l0:5});sfx("bubble")}
+function drawOc(o){const im=cImg(o.d.img);if(!im)return;const iw=im.naturalWidth||im.width,ih=im.naturalHeight||im.height,Wd=o.W,Hd=Wd*ih/iw,t=o.t,sp=o.sp,cr=o.mode==="crawl"?1:0,jt=o.mode==="jet"?o.jet:0,rk=o.rk||0,rs=o.rs||1;
+ const br=1+.07*Math.sin(t*1.9)+.12*jt*Math.sin(t*10),sw=.1*Math.sin(t*.7)+.05*Math.sin(t*1.9+1),bob=(1-jt)*Math.sin(t*1.9)*Hd*.025;
+ ctx.save();ctx.translate(o.x,o.y);if(o.y>=o.gy-6){ctx.save();ctx.scale(1,.25);ctx.beginPath();ctx.ellipse(0,8,Wd*.5,Wd*.2,0,0,7);ctx.fillStyle="rgba(0,20,30,.22)";ctx.fill();ctx.restore()}
  ctx.translate(0,-Hd*.45);ctx.rotate(o.tilt);ctx.translate(0,Hd*.45);ctx.scale(o.dir,1);
- // kollar: dalga, oturunca yayılır, kaçarken arkada toplanıp uzar; baş nefes alır
- meshDraw(o,im,14,18,(u,v)=>{let x=(u-.5)*Wd,y=(v-1)*Hd;const tw=sstep(.4,.62,v),hw=1-tw,k=Math.pow(tw,1.5),ph=u*9.5;
-  x+=(x-(.3-.5)*Wd)*(br-1)*hw;y+=(y-(.22-1)*Hd)*(br-1)*hw;
-  x+=k*Wd*(.035+.03*cr+.02*jt)*Math.sin(t*(1.6+2*cr+5*jt)+ph+v*5)+(u-.5)*Wd*sp*Math.pow(tw,1.3);
-  y+=k*Hd*(.02*Math.sin(t*1.3+ph*.8)+(jt?.18*Math.max(0,o.jet-.2):0))-(cr?Math.max(0,Math.sin(t*4.4+ph))*k*Hd*.03:0);return[x,y]});
+ // her kol kendi fazında kökten uca dalga taşır, uçlar kıvrılır; manto nefes alıp sallanır; yürürken kollar sırayla kalkar; uzanırken bir yandaki kollar ileri gider; kaçarken kollar arkada toplanıp uzar
+ meshDraw(o,im,16,22,(u,v)=>{let x=(u-.5)*Wd,y=(v-1)*Hd;const tw=sstep(.36,.6,v),hw=1-tw,k=tw*Math.pow(Math.max(0,(v-.36)/.64),1.1),ph=u*12.5+Math.sin(u*31)*.6;
+  // manto
+  const mx=(.33-.5)*Wd,my=(.24-1)*Hd;x+=(x-mx)*(br-1)*hw;y+=(y-my)*(br-1)*hw+bob*hw;{const px=(.45-.5)*Wd,py=(.46-1)*Hd,a=sw*hw,dx=x-px,dy=y-py;x=px+dx*Math.cos(a)-dy*Math.sin(a);y=py+dx*Math.sin(a)+dy*Math.cos(a)}
+  // kollar
+  const A=.075+.04*cr+.05*jt,w1=1.4+1.6*cr+6*jt;x+=k*Wd*A*Math.sin(t*w1+ph-v*8)+Math.pow(k,3)*Wd*.09*Math.sin(t*1.6+ph*1.7);
+  y+=k*Hd*.04*Math.sin(t*(1.1+cr)+ph*1.3-v*6)-Math.pow(k,2.5)*Hd*.05*Math.max(0,Math.sin(t*1.3+ph));
+  x+=(u-.5)*Wd*sp*Math.pow(tw,1.2);y+=k*Hd*.22*Math.max(0,jt-.15);
+  if(cr)y-=k*Hd*.07*Math.max(0,Math.sin(t*4.8+u*9));
+  if(rk>.01){const side=rs>0?sstep(.45,.85,u):sstep(.55,.15,u);x+=rs*k*side*Wd*.25*rk*(1+.2*Math.sin(t*3));y-=k*side*Hd*.12*rk}
+  return[x,y]});
+ if(o.flash>0){o.flash=Math.max(0,o.flash-.03)}
  ctx.restore()}
 function mkHs(d){const y=FLOOR-rand(10,60);return{d,x:rand(BX0+50,BX1-50),y,ax:0,ay:y,dir:Math.random()<.5?1:-1,vx:0,vy:0,t:rand(0,9),mode:"hold",next:rand(5,10),Hh:rand(58,66),sip:-9,fin:1,rk:0,fs:1}}
-function stepHs(o,dt){const u=CU;o.t+=dt;o.next-=dt;if(o.fs===undefined)o.fs=o.dir;
- if(o.mode==="hold"){o.vx*=Math.exp(-dt*3);o.vy*=Math.exp(-dt*3);o.y+=(o.ay-o.y)*Math.min(1,dt*2);o.fin+=(.35-o.fin)*Math.min(1,dt*2);if(Math.random()<dt*.25)o.sip=o.t;if(o.next<0){o.mode="swim";o.next=rand(4,8);o.tx=Math.max(BX0+40,Math.min(BX1-40,o.x+rand(-140,140)));o.ty=Math.max(H*.3,Math.min(FLOOR-8,o.y+rand(-90,70)));o.dir=o.tx>=o.x?1:-1}}
- else{o.fin+=(1-o.fin)*Math.min(1,dt*3);const dx=o.tx-o.x,dy=o.ty-o.y,d=Math.hypot(dx,dy)||1;o.vx+=(dx/d*14*u-o.vx)*Math.min(1,dt*1.5);o.vy+=(dy/d*10*u-o.vy)*Math.min(1,dt*1.5);if(d<6||o.next<0){o.mode="hold";o.ay=o.y;o.next=rand(6,12)}}
- o.x+=o.vx*dt;o.y+=o.vy*dt+Math.sin(o.t*1.1)*1.2*dt;o.x=Math.max(BX0+20,Math.min(BX1-20,o.x));o.y=Math.max(H*.25,Math.min(FLOOR,o.y));o.fs+=(o.dir-o.fs)*Math.min(1,dt*3);o.rk=(o.mode==="hold"?.09:.04)*Math.sin(o.t*.8)+o.vx*.004}
-function hsScare(o,tx){o.dir=tx>o.x?-1:1;o.mode="swim";o.fin=1.6;o.tx=Math.max(BX0+40,Math.min(BX1-40,o.x+o.dir*rand(80,130)));o.ty=Math.max(H*.3,o.y-rand(30,60));o.vx=o.dir*30*CU;o.next=3;sfx("bubble")}
-function drawHs(o){const im=cImg(o.d.img);if(!im)return;const iw=im.naturalWidth||im.width,ih=im.naturalHeight||im.height,Hd=o.Hh,Wd=Hd*iw/ih,t=o.t,fa=o.fin,sp=Math.max(0,1-(t-o.sip)/.5),sip=sp>0?Math.sin(sp*Math.PI):0;
- ctx.save();ctx.translate(o.x,o.y);ctx.rotate(o.rk);ctx.scale(Math.max(.2,Math.abs(o.fs))*Math.sign(o.fs||1),1);
- // sırt yüzgeci hızlı çırpar, kuyruk sarmalı hafifçe açılıp kapanır, burun ara sıra yem kapar
- meshDraw(o,im,12,22,(u,v)=>{let x=(u-.5)*Wd,y=(v-1)*Hd;
-  const wf=Math.exp(-(Math.pow((u-.13)/.17,2)+Math.pow((v-.47)/.17,2)));if(wf>.02){x+=wf*Wd*.04*fa*Math.sin(t*21+v*26);y+=wf*Hd*.012*fa*Math.sin(t*21+v*26+1)}
-  const wt=sstep(.66,.8,v);if(wt>0){const cx=(.56-.5)*Wd,cy=(.83-1)*Hd,a=wt*(.1*Math.sin(t*.9)),dx=x-cx,dy=y-cy;x=cx+dx*Math.cos(a)-dy*Math.sin(a);y=cy+dx*Math.sin(a)+dy*Math.cos(a)}
-  const ws=sstep(.6,.72,u)*Math.exp(-Math.pow((v-.33)/.1,2));if(ws>0&&sip>0){const cx=(.62-.5)*Wd,cy=(.33-1)*Hd,a=-.16*sip*ws,dx=x-cx,dy=y-cy;x=cx+dx*Math.cos(a)-dy*Math.sin(a);y=cy+dx*Math.sin(a)+dy*Math.cos(a)}
+function stepHs(o,dt){const u=CU;o.t+=dt;o.next-=dt;if(o.fs===undefined)o.fs=o.dir;o.sw=o.sw||0;
+ if(o.mode==="hold"){o.vx*=Math.exp(-dt*3);o.vy*=Math.exp(-dt*3);o.y+=(o.ay-o.y)*Math.min(1,dt*2);o.fin+=(.55-o.fin)*Math.min(1,dt*2);o.sw+=(0-o.sw)*Math.min(1,dt*1.5);
+  if(o.t-o.sip>rand(1.6,3.2)&&Math.random()<dt*1.2)o.sip=o.t;if(o.next<0){o.mode="swim";o.next=rand(4,7);o.tx=Math.max(BX0+40,Math.min(BX1-40,o.x+rand(-150,150)));o.ty=Math.max(H*.3,Math.min(FLOOR-8,o.y+rand(-90,70)));o.dir=o.tx>=o.x?1:-1}}
+ else{o.fin+=(1.25-o.fin)*Math.min(1,dt*3);o.sw+=(1-o.sw)*Math.min(1,dt*1.5);const dx=o.tx-o.x,dy=o.ty-o.y,d=Math.hypot(dx,dy)||1;o.vx+=(dx/d*16*u-o.vx)*Math.min(1,dt*1.5);o.vy+=(dy/d*12*u-o.vy)*Math.min(1,dt*1.5);if(d<6||o.next<0){o.mode="hold";o.ay=o.y;o.next=rand(4,8)}if(Math.random()<dt*.5)o.sip=o.t}
+ o.x+=o.vx*dt;o.y+=o.vy*dt;o.x=Math.max(BX0+20,Math.min(BX1-20,o.x));o.y=Math.max(H*.25,Math.min(FLOOR,o.y));o.fs+=(o.dir-o.fs)*Math.min(1,dt*2.5);
+ o.rk=(o.mode==="hold"?.16*Math.sin(o.t*.75)+.05*Math.sin(o.t*1.9):.06*Math.sin(o.t*1.2))+o.vx*.006}
+function hsScare(o,tx){o.dir=tx>o.x?-1:1;o.mode="swim";o.fin=2;o.tx=Math.max(BX0+40,Math.min(BX1-40,o.x+o.dir*rand(90,140)));o.ty=Math.max(H*.3,o.y-rand(40,70));o.vx=o.dir*34*CU;o.vy=-20*CU;o.next=3;sfx("bubble")}
+function drawHs(o){const im=cImg(o.d.img);if(!im)return;const iw=im.naturalWidth||im.width,ih=im.naturalHeight||im.height,Hd=o.Hh,Wd=Hd*iw/ih,t=o.t,fa=o.fin,swm=o.sw||0,sp=Math.max(0,1-(t-o.sip)/.45),sip=sp>0?Math.sin(sp*Math.PI):0,bob=Math.sin(t*2.1)*2.2;
+ ctx.save();ctx.translate(o.x,o.y+bob);ctx.rotate(o.rk);ctx.scale(Math.max(.15,Math.abs(o.fs))*Math.sign(o.fs||1),1);
+ // sırt yüzgecinde hızlı akan dalga, göğüs yüzgeci titrer, gövde S gibi esner, baş eğilip kalkar, burun yem kapar, kuyruk sarmalı tutunurken kıvrılır yüzerken açılıp dümen gibi sallanır
+ const bend=.07*Math.sin(t*.9)+.03*Math.sin(t*2.3),nod=.1*Math.sin(t*1.3+.5)-.22*sip,curl=(1-swm)*.28*Math.sin(t*.7)-swm*(.55+.12*Math.sin(t*2.6));
+ meshDraw(o,im,14,26,(u,v)=>{let x=(u-.5)*Wd,y=(v-1)*Hd;
+  const wf=Math.exp(-(Math.pow((u-.12)/.16,2)+Math.pow((v-.47)/.18,2)));if(wf>.02){const ph=t*26-v*42;x+=wf*Wd*.1*fa*Math.sin(ph)*(.6+.4*sstep(.3,0,u));y+=wf*Hd*.025*fa*Math.cos(ph)}
+  const wp=Math.exp(-(Math.pow((u-.52)/.07,2)+Math.pow((v-.3)/.05,2)));if(wp>.05){x+=wp*Wd*.05*Math.sin(t*30)}
+  const wt=sstep(.62,.8,v);if(wt>0){const cx=(.56-.5)*Wd,cy=(.83-1)*Hd,a=wt*curl,dx=x-cx,dy=y-cy;x=cx+dx*Math.cos(a)-dy*Math.sin(a)+wt*swm*Wd*.08*Math.sin(t*2.6);y=cy+dx*Math.sin(a)+dy*Math.cos(a)}
+  {const k=Math.pow(1-v,2);x+=bend*Hd*k}
+  const wh=sstep(.42,.3,v);if(wh>0){const cx=(.55-.5)*Wd,cy=(.38-1)*Hd,a=nod*wh,dx=x-cx,dy=y-cy;x=cx+dx*Math.cos(a)-dy*Math.sin(a);y=cy+dx*Math.sin(a)+dy*Math.cos(a)}
   return[x,y]});
  ctx.restore()}
-function critShopHTML(){return CRIT.map(d=>{const n=critCount(state.tank,d.t),lock=state.level<d.lv,wr=isColl(state.tank)||tw(state.tank)!==d.w;const perk=CPERK[d.t]||"";const pr=d.g?d.g+" 💎":d.p+" 🪙";
+function critShopHTML(){return CRIT.filter(d=>!d.hid).map(d=>{const n=critCount(state.tank,d.t),lock=state.level<d.lv,wr=isColl(state.tank)||tw(state.tank)!==d.w;const perk=CPERK[d.t]||"";const pr=d.g?d.g+" 💎":d.p+" 🪙";
  return '<div class="fish-card qrow crit"><div class="qicon"><img class="cuimg" alt="" src="'+B64(d.img)+'"></div><div><strong>'+d.n+'</strong><small>'+(d.w==="salt"?"🌊 Tuzlu su":d.w==="deep"?"🌌 Derin Okyanus":"🌿 Tatlı su")+" · "+perk+(lock?" · Seviye "+d.lv+lokEk(d.lv)+" açılır":"")+'</small></div><button class="sm" data-crit="'+d.id+'"'+(lock||wr||n>=CMAX[d.t]?" disabled":"")+'>'+pr+"</button></div>"}).join("")}
 const CRT=new Map();
 function critRT(){if(VISIT){CRT.clear();return[]}const L=critList(state.tank),ids=new Set(L.map(c=>c.id));for(const id of [...CRT.keys()])if(!ids.has(id))CRT.delete(id);
@@ -887,7 +908,25 @@ function stepShr(s,dt){const u=CU;s.t+=dt;const fy=s.gy||FLOOR+30;s.next-=dt;s.p
   else if(s.mode==="swim"){s.swim-=dt;s.leg+=dt*3;s.vx+=(s.dir*30*u-s.vx)*Math.min(1,dt*2);s.vy+=(24*u+(s.y<fy-40?40*u:0))*dt;s.vy*=Math.exp(-dt*1.6);if(s.swim<=0)s.mode="walk"}}
  s.x+=s.vx*dt;s.y+=s.vy*dt;if(s.y>fy){s.y=fy;s.vy=Math.min(0,s.vy)}if(s.y<fy-55){s.y=fy-55;s.vy=Math.abs(s.vy)}const m=s.len;if(s.x<BX0+m*.3){s.x=BX0+m*.3;if(s.flip<=0)s.dir=1}if(s.x>BX1-m*.3){s.x=BX1-m*.3;if(s.flip<=0)s.dir=-1}
  s.tilt+=((s.mode==="swim"?-.1:0)+(s.vy/(220*u))*.35-s.tilt)*Math.min(1,dt*4)}
-function drawShr(s){const L=s.len,im0=cImg(s.d.img);if(!im0)return;const im=nightAmt()>.5&&tinted(im0,"cr"+s.d.id,0,true,1)||im0;ctx.save();ctx.translate(s.x,s.y);ctx.scale(s.dir,1);ctx.rotate(s.tilt);
+function drawShr(s){if(s.d.spr){drawShrS(s);return}const L=s.len,im0=cImg(s.d.img);if(!im0)return;const im=nightAmt()>.5&&tinted(im0,"cr"+s.d.id,0,true,1)||im0;const SS=s.d;ctx.save();ctx.translate(s.x,s.y);ctx.scale(s.dir,1);ctx.rotate(s.tilt);
+ // gövde daha dolgun ve kısa (eski resim çok ince uzundu); kuyruk sadece kaçarken tek parça kıvrılır
+ const iw=im.naturalWidth||im.width,ih=im.naturalHeight||im.height,DW=L*1.02,DH=Math.min(DW*.42,DW*ih/iw*1.55),x0=-DW*.6,yT=-DH*.5,mv=Math.abs(s.vx)>2.5&&s.flip<=0,sw=s.mode==="swim"||s.flip>0,bob=mv?Math.sin(s.leg*2)*L*.006:0,lc=c=>String(c).replace(/[\d.]+\)$/,".55)");
+ ctx.save();ctx.scale(1,.25);ctx.beginPath();ctx.ellipse(-L*.08,((s.gy||FLOOR+30)+6-s.y)*4+L*.1,L*.5,L*.2,0,0,7);ctx.fillStyle="rgba(0,20,30,"+(s.mode==="walk"?.2:.09)+")";ctx.fill();ctx.restore();
+ ctx.lineCap="round";ctx.lineJoin="round";const by=DH*.2+bob,lw=Math.max(.7,L*.009);
+ // yürüme bacakları (5 çift, arkadakiler biraz soluk): sadece yürürken adım atar
+ for(let i=0;i<5;i++){const bx=DW*(.16-i*.075),ph=s.leg+i*1.3,swg=mv?Math.sin(ph)*L*.035:Math.sin(s.t*.8+i)*L*.004,lift=mv?Math.max(0,Math.cos(ph))*L*.025:0;
+  ctx.strokeStyle=lc(i%2?SS.leg2:SS.leg);ctx.lineWidth=lw;ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx+L*.035+swg*.4,by+L*.055-lift*.4);ctx.lineTo(bx-L*.005+swg,by+L*.115-lift);ctx.stroke()}
+ // ön ayaklar: durunca dibi gagalayarak yem toplar
+ for(const k of [0,1]){const pk=s.pause>0?Math.max(0,Math.sin(s.peck*3.1+k*1.7)):0,fx=DW*(.27+k*.03),fy2=by+L*.06+pk*L*.05;ctx.strokeStyle=lc(SS.leg);ctx.lineWidth=lw*.9;ctx.beginPath();ctx.moveTo(DW*.2,by-L*.01);ctx.lineTo(DW*.27+k*L*.01,by+L*.02-pk*L*.01);ctx.lineTo(fx,fy2);ctx.stroke()}
+ // yüzme ayakları (karın altında): yüzerken hızlı, dururken çok hafif
+ ctx.strokeStyle=lc(SS.leg2);ctx.lineWidth=lw*.85;for(let i=0;i<4;i++){const bx=-DW*(.08+i*.09),a=Math.sin(s.t*(sw?24:4)-i*.7)*(sw?.7:.12);ctx.beginPath();ctx.moveTo(bx,DH*.18+bob);ctx.lineTo(bx+Math.sin(a)*L*.04,DH*.18+bob+Math.cos(a)*L*.055);ctx.stroke()}
+ // gövde: kuyruk kıvrımı yoksa tek resim; kaçarken arka yarı kendi ekleminden döner
+ const sp=.46;if(s.curl<.02)ctx.drawImage(im,x0,yT+bob,DW,DH);else{ctx.drawImage(im,sp*iw-1,0,iw*(1-sp)+1,ih,x0+DW*sp-1,yT+bob,DW*(1-sp)+1,DH);ctx.save();ctx.translate(x0+DW*sp,bob);ctx.rotate(-s.curl*1.25);ctx.drawImage(im,0,0,sp*iw+1,ih,-DW*sp,yT,DW*sp+1,DH);ctx.restore()}
+ // antenler: iki uzun ince anten gövdenin üstünden geriye kavis yapar, iki kısa anten öne bakar
+ const hx=DW*.36,hy=-DH*.12+bob;ctx.strokeStyle=lc(SS.ant);for(const k of [0,1]){const ph=s.t*(s.pause>0?1.6:2.4)+k*2.1,sx=Math.sin(ph)*L*.06;ctx.lineWidth=Math.max(.55,L*.006);ctx.beginPath();ctx.moveTo(hx,hy);ctx.quadraticCurveTo(DW*(.5+k*.05),-DH*(1.2+k*.25)+sx*.5,-DW*(.15+k*.25)+sx,-DH*(1.05+k*.35)+Math.cos(ph)*L*.03);ctx.stroke()}
+ ctx.lineWidth=Math.max(.6,L*.007);for(const k of [0,1]){const ph=s.t*3+k;ctx.beginPath();ctx.moveTo(hx,hy+DH*.05);ctx.lineTo(hx+L*(.13+k*.03),hy-DH*(.15+k*.12)+Math.sin(ph)*L*.015);ctx.stroke()}
+ ctx.restore()}
+function drawShrS(s){const L=s.len,im0=cImg(s.d.img);if(!im0)return;const im=nightAmt()>.5&&tinted(im0,"cr"+s.d.id,0,true,1)||im0;ctx.save();ctx.translate(s.x,s.y);ctx.scale(s.dir,1);ctx.rotate(s.tilt);
  // sürüm 179: bacakları ve antenleri resimde olan yeni karides çizimleri; ayaklar dibe basar, dururken önü hafifçe eğilip kalkar (yem toplar), kaçarken kuyruk kıvrılır
  const iw=im.naturalWidth||im.width,ih=im.naturalHeight||im.height,DW=L*1.45,DH=DW*ih/iw,x0=-DW*.55,gnd=L*.2,yT=gnd-DH,mv=Math.abs(s.vx)>2.5&&s.flip<=0,bob=mv?Math.abs(Math.sin(s.leg))*L*.012:0,pk=s.pause>0?Math.max(0,Math.sin(s.peck*3.1))*.045:0;
  ctx.save();ctx.scale(1,.25);ctx.beginPath();ctx.ellipse(-L*.05,(gnd+Math.max(0,(s.gy||FLOOR+30)-s.y))*4,L*.5,L*.16,0,0,7);ctx.fillStyle="rgba(0,20,30,"+(s.mode==="walk"&&s.y>=(s.gy||FLOOR+30)-2?.24:.1)+")";ctx.fill();ctx.restore();
