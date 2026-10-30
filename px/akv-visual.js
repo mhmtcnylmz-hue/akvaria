@@ -12,8 +12,15 @@ VE.SPECIES={
  clown:{cruiseSpeed:null,acceleration:null,hoverChance:null,tailFrequency:null,tailAmplitude:null,
   pectoralAmp:.42,pelvicAmp:.2,dorsalAmp:.010,dorsalFreq:1.6,finLift:.028,gillFreq:.75,gillAmp:.012,gillX:.75,mouthAmp:.006,reactTime:.7}
 };
-VE.ENABLED=["clown"];
-VE.handles=function(type){return VE.ok&&VE.fishOn&&VE.ENABLED.indexOf(type)>=0&&!!VE.SPECIES[type]};
+// sürüm 176: motor bütün türlere açık. DEFAULT her türe uygulanır; VE.SPECIES[tür] sadece farklı olan değerleri içerir. VE.OFF listesindeki türler eski çizimde kalır.
+VE.DEFAULT={pectoralAmp:.42,pelvicAmp:.2,dorsalAmp:.010,dorsalFreq:1.6,finLift:.028,gillFreq:.75,gillAmp:.012,gillX:.75,mouthAmp:.006,reactTime:.7};
+VE.SPECIES.oar={dorsalAmp:.018,dorsalFreq:1.1,pectoralAmp:.25,gillAmp:.006};VE.SPECIES.eel={dorsalAmp:.014,pectoralAmp:.3};VE.SPECIES.lion={pectoralAmp:.3,finLift:.02};
+VE.SPECIES.betta={dorsalAmp:.016,dorsalFreq:1.2,finLift:.04};VE.SPECIES.angel={dorsalAmp:.012,dorsalFreq:1.2};VE.SPECIES.boxfish={pectoralAmp:.55};VE.SPECIES.angler={gillAmp:.016,mouthAmp:.01};
+VE.OFF=[];VE.ENABLED=null;
+var CC={};function conf(t){var c=CC[t];if(!c){c=CC[t]={};var k;for(k in VE.DEFAULT)c[k]=VE.DEFAULT[k];var o=VE.SPECIES[t]||{};for(k in o)if(o[k]!=null)c[k]=o[k]}return c}
+VE.handles=function(type){return VE.ok&&VE.fishOn&&VE.OFF.indexOf(type)<0};
+// kare bütçesi: bir karede motorla çizim bu süreyi aşarsa kalan balıklar o kare eski yolla çizilir
+var FB={t:0,ms:0};VE.frameStart=function(){FB.ms=0};VE.budget=function(){return VE.Q>=3?9:VE.Q===2?6:3};
 
 // ---------- RendererManager: küçük WebGL yardımcıları ----------
 function mkGL(cv){var o={alpha:true,premultipliedAlpha:true,preserveDrawingBuffer:true,antialias:false,depth:false,stencil:false};
@@ -41,7 +48,7 @@ function frGrid(NX,NY){var k=NX+"x"+NY;if(FR.grid===k)return;FR.grid=k;var gl=FR
 // ---------- FishAnimationController: oyunun yüzme ağına yüzgeç, solungaç, ağız ve tepki hareketleri ekler ----------
 var REACT=new WeakMap();
 VE.react=function(f){REACT.set(f,performance.now())};
-function animate(o,P){var C=VE.SPECIES[o.type]||{},NX=o.NX,NY=o.NY,I=o.I,ww=o.ww,h=o.h,bw=I.bx1-I.bx0,bh=I.by1-I.by0,t=o.t,pa=o.pa,pp=o.pp,Q=VE.Q;
+function animate(o,P){var C=conf(o.type),NX=o.NX,NY=o.NY,I=o.I,ww=o.ww,h=o.h,bw=I.bx1-I.bx0,bh=I.by1-I.by0,t=o.t,pa=o.pa,pp=o.pp,Q=VE.Q;
  var r0=REACT.get(o.f),rk=0;if(r0){var u0=(performance.now()-r0)/1000/(C.reactTime||.7);if(u0<1)rk=Math.sin(Math.PI*Math.min(1,u0*1.6))*(1-u0*.4);else REACT.delete(o.f)}
  var pc=o.pc,pv=o.pv,turn=Math.min(1,o.turn||0),lift=(C.finLift||0)*ww*(.35*turn+rk),dA=(C.dorsalAmp||0)*ww*(Q>0?1:.5),dF=6.2832*(C.dorsalFreq||1.5),
   br=Math.sin(t*6.2832*(C.gillFreq||.8)+(o.ph||0)),gO=Math.max(0,br),gA=(C.gillAmp||0)*h*gO,mA=(C.mouthAmp||0)*ww*(.5+.5*Math.sin(t*6.2832*(C.gillFreq||.8)+(o.ph||0)+2.4)),
@@ -60,7 +67,7 @@ function animate(o,P){var C=VE.SPECIES[o.type]||{},NX=o.NX,NY=o.NY,I=o.I,ww=o.ww
    P[a]=o.X[a]+dx;P[a+1]=o.X[a+1]+dy}}}
 
 // o: {f,type,src,NX,NY,X(konumlar, yerel birim),I,ww,h,t,pa,pp,pc,pv,mouth,turn,ph}; ctx dönüşümü balığın yerel uzayında
-VE.drawFish=function(ctx,o){if(!VE.fishOn||FR.lost)return false;var r=fdraw(ctx,o),ms=performance.now()-PM.t0;PM.fe+=(ms-PM.fe)*.05;if(PM.fe>6){if(++PM.fslow>90){VE.fishOn=false;VE.autoOff=true}}else PM.fslow=0;return r};
+VE.drawFish=function(ctx,o){if(!VE.fishOn||FR.lost||FB.ms>VE.budget())return false;var r=fdraw(ctx,o),ms=performance.now()-PM.t0;FB.ms+=ms;PM.fe+=(ms-PM.fe)*.05;if(PM.fe>6){if(++PM.fslow>90){VE.fishOn=false;VE.autoOff=true}}else PM.fslow=0;return r};
 function fdraw(ctx,o){var gl=FR.gl,now=PM.t0=performance.now();frGrid(o.NX,o.NY);var P=FR.P;animate(o,P);
  var n=(o.NX+1)*(o.NY+1),x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(var i=0;i<n*2;i+=2){var x=P[i],y=P[i+1];if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
  x0-=2;y0-=2;x1+=2;y1+=2;var m=ctx.getTransform(),sx=Math.max(.2,Math.hypot(m.a,m.b)),sy=Math.max(.2,Math.hypot(m.c,m.d)),pw=Math.min(1024,Math.ceil((x1-x0)*sx)),ph=Math.min(1024,Math.ceil((y1-y0)*sy));if(pw<4||ph<4)return true;
