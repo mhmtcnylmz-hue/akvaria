@@ -68,7 +68,7 @@ function animate(o,P){var C=conf(o.type),NX=o.NX,NY=o.NY,I=o.I,ww=o.ww,h=o.h,bw=
 
 // o: {f,type,src,NX,NY,X(konumlar, yerel birim),I,ww,h,t,pa,pp,pc,pv,mouth,turn,ph}; ctx dönüşümü balığın yerel uzayında
 VE.drawFish=function(ctx,o){if(!VE.fishOn||FR.lost||FB.ms>VE.budget())return false;var r=fdraw(ctx,o),ms=performance.now()-PM.t0;FB.ms+=ms;PM.fe+=(ms-PM.fe)*.05;if(PM.fe>6){if(++PM.fslow>90){VE.fishOn=false;VE.autoOff=true}}else PM.fslow=0;return r};
-function fdraw(ctx,o){var gl=FR.gl,now=PM.t0=performance.now();frGrid(o.NX,o.NY);var P=FR.P;if(o.raw)P.set(o.X);else animate(o,P);
+function fdraw(ctx,o){var gl=FR.gl,now=PM.t0=performance.now();frGrid(o.NX,o.NY);var P=FR.P;animate(o,P);
  var n=(o.NX+1)*(o.NY+1),x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(var i=0;i<n*2;i+=2){var x=P[i],y=P[i+1];if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
  x0-=2;y0-=2;x1+=2;y1+=2;var m=ctx.getTransform(),sx=Math.max(.2,Math.hypot(m.a,m.b)),sy=Math.max(.2,Math.hypot(m.c,m.d)),pw=Math.min(1024,Math.ceil((x1-x0)*sx)),ph=Math.min(1024,Math.ceil((y1-y0)*sy));if(pw<4||ph<4)return true;
  var cw=Math.max(64,Math.ceil(pw/64)*64),ch=Math.max(64,Math.ceil(ph/64)*64);if(cw>FR.cv.width||ch>FR.cv.height||cw<FR.cv.width/2||ch<FR.cv.height/2){FR.cv.width=Math.max(cw,64);FR.cv.height=Math.max(ch,64)}
@@ -79,8 +79,6 @@ function fdraw(ctx,o){var gl=FR.gl,now=PM.t0=performance.now();frGrid(o.NX,o.NY)
  gl.bindBuffer(gl.ARRAY_BUFFER,FR.bU);gl.enableVertexAttribArray(FR.aU);gl.vertexAttribPointer(FR.aU,2,gl.FLOAT,false,0,0);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,FR.bI);gl.drawElements(gl.TRIANGLES,FR.nI,gl.UNSIGNED_SHORT,0);
  ctx.drawImage(FR.cv,0,0,pw,ph,x0,y0,x1-x0,y1-y0);VE.stat.fish++;return true}
 
-// hazır ağ: konumları oyun hesaplar (ahtapot, denizatı)
-VE.drawMesh=function(ctx,src,NX,NY,X){if(!VE.ok||FR.lost)return false;return fdraw(ctx,{src:src,NX:NX,NY:NY,X:X,raw:1})};
 // ---------- EnvironmentRenderer: ışık, su parçacıkları ve kabarcıklar (oyun tuvalinin üstünde, dokunmaları geçirir) ----------
 var EN={cv:null,gl:null,p:null,b:null,aP:0,aU:0,aC:0,uM:null,t:null,D:null,n:0,motes:[],bub:[],emit:[],rays:[],W:0,H:0,on:false};
 var MAXQ=400;
