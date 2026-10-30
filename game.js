@@ -672,10 +672,10 @@ state.lastTick=now;OFFLINE=false;return res;
 
 // ===== Omurgasızlar: karidesler ve denizanaları (satılmaz, tanka yardım eder)
 const CRIT=[
-{id:"cherry",t:"sh",w:"fresh",n:"Kiraz Karides",img:"a/2f348e7e5511936f.webp",p:120,lv:3,leg:"rgba(215,40,30,.85)",leg2:"rgba(240,90,70,.85)",ant:"rgba(230,80,60,.85)"},
-{id:"blue",t:"sh",w:"fresh",n:"Mavi Kadife Karides",img:"a/650752e883f9f95f.webp",p:150,lv:3,leg:"rgba(40,90,210,.85)",leg2:"rgba(110,170,255,.85)",ant:"rgba(150,200,255,.85)"},
-{id:"cleaner",t:"sh",w:"salt",n:"Temizlikçi Karides",img:"a/616696193c06df18.webp",p:180,lv:3,leg:"rgba(255,245,240,.92)",leg2:"rgba(230,60,40,.9)",ant:"rgba(255,250,245,.9)"},
-{id:"tiger",t:"sh",w:"salt",n:"Kaplan Karides",img:"a/eec3f557cb8fe220.webp",p:200,lv:3,leg:"rgba(225,165,80,.85)",leg2:"rgba(90,50,20,.85)",ant:"rgba(240,200,140,.85)"},
+{id:"cherry",t:"sh",w:"fresh",n:"Kiraz Karides",img:"a/1e07524026983c15.webp",p:120,lv:3,leg:"rgba(215,40,30,.85)",leg2:"rgba(240,90,70,.85)",ant:"rgba(230,80,60,.85)"},
+{id:"blue",t:"sh",w:"fresh",n:"Mavi Kadife Karides",img:"a/6171cb1c56c1d802.webp",p:150,lv:3,leg:"rgba(40,90,210,.85)",leg2:"rgba(110,170,255,.85)",ant:"rgba(150,200,255,.85)"},{id:"yellow",t:"sh",w:"fresh",n:"Sarı Neon Karides",img:"a/4d764f013a182ac5.webp",p:140,lv:4,leg:"rgba(240,190,40,.85)",leg2:"rgba(250,215,90,.85)",ant:"rgba(245,200,70,.85)"},{id:"green",t:"sh",w:"fresh",n:"Yeşil Yeşim Karides",img:"a/162aa3f377aeaa10.webp",p:160,lv:5,leg:"rgba(70,170,40,.85)",leg2:"rgba(140,210,80,.85)",ant:"rgba(120,200,60,.85)"},{id:"black",t:"sh",w:"fresh",n:"Siyah Kristal Karides",img:"a/abe2658a25e0ce8d.webp",p:180,lv:6,leg:"rgba(30,34,44,.85)",leg2:"rgba(70,80,96,.85)",ant:"rgba(50,56,70,.85)"},{id:"snow",t:"sh",w:"fresh",n:"Kar Tanesi Karides",img:"a/edbcf70af2cf7935.webp",p:200,lv:7,leg:"rgba(235,240,245,.85)",leg2:"rgba(250,250,252,.85)",ant:"rgba(240,244,248,.85)"},
+{id:"cleaner",t:"sh",w:"salt",n:"Temizlikçi Karides",img:"a/d8fa39637c8e9e22.webp",p:180,lv:3,leg:"rgba(255,245,240,.92)",leg2:"rgba(230,60,40,.9)",ant:"rgba(255,250,245,.9)"},
+{id:"tiger",t:"sh",w:"salt",n:"Kaplan Karides",img:"a/9a08cf4dad7ac9bb.webp",p:200,lv:3,leg:"rgba(225,165,80,.85)",leg2:"rgba(90,50,20,.85)",ant:"rgba(240,200,140,.85)"},
 {id:"jpink",t:"je",w:"salt",n:"Pembe Ay Denizanası",img:"a/4d1c38eb1db8ed58.webp",arm:"a/2ff21647530ce6fe.webp",c:[330,80,72],g:6,lv:5},
 {id:"jcyan",t:"je",w:"salt",n:"Mavi Ay Denizanası",img:"a/b6c37055e6cca7ce.webp",arm:"a/e2aa3d086997318d.webp",c:[198,85,66],g:6,lv:5},
 {id:"jorange",t:"je",w:"salt",n:"Turuncu Denizanası",img:"a/7fb605be3c702081.webp",arm:"a/335f79dff38d4087.webp",c:[26,92,62],g:8,lv:5},
@@ -844,23 +844,12 @@ function stepShr(s,dt){const u=CU;s.t+=dt;const fy=s.gy||FLOOR+30;s.next-=dt;s.p
   else if(s.mode==="swim"){s.swim-=dt;s.leg+=dt*3;s.vx+=(s.dir*30*u-s.vx)*Math.min(1,dt*2);s.vy+=(24*u+(s.y<fy-40?40*u:0))*dt;s.vy*=Math.exp(-dt*1.6);if(s.swim<=0)s.mode="walk"}}
  s.x+=s.vx*dt;s.y+=s.vy*dt;if(s.y>fy){s.y=fy;s.vy=Math.min(0,s.vy)}if(s.y<fy-55){s.y=fy-55;s.vy=Math.abs(s.vy)}const m=s.len;if(s.x<BX0+m*.3){s.x=BX0+m*.3;if(s.flip<=0)s.dir=1}if(s.x>BX1-m*.3){s.x=BX1-m*.3;if(s.flip<=0)s.dir=-1}
  s.tilt+=((s.mode==="swim"?-.1:0)+(s.vy/(220*u))*.35-s.tilt)*Math.min(1,dt*4)}
-function drawShr(s){const L=s.len,im0=cImg(s.d.img);if(!im0)return;const im=nightAmt()>.5&&tinted(im0,"cr"+s.d.id,0,true,1)||im0;const SS=s.d;ctx.save();ctx.translate(s.x,s.y);ctx.scale(s.dir,1);ctx.rotate(s.tilt);
- // gövde daha dolgun ve kısa (eski resim çok ince uzundu); kuyruk sadece kaçarken tek parça kıvrılır
- const iw=im.naturalWidth||im.width,ih=im.naturalHeight||im.height,DW=L*1.02,DH=Math.min(DW*.42,DW*ih/iw*1.55),x0=-DW*.6,yT=-DH*.5,mv=Math.abs(s.vx)>2.5&&s.flip<=0,sw=s.mode==="swim"||s.flip>0,bob=mv?Math.sin(s.leg*2)*L*.006:0,lc=c=>String(c).replace(/[\d.]+\)$/,".55)");
- ctx.save();ctx.scale(1,.25);ctx.beginPath();ctx.ellipse(-L*.08,((s.gy||FLOOR+30)+6-s.y)*4+L*.1,L*.5,L*.2,0,0,7);ctx.fillStyle="rgba(0,20,30,"+(s.mode==="walk"?.2:.09)+")";ctx.fill();ctx.restore();
- ctx.lineCap="round";ctx.lineJoin="round";const by=DH*.2+bob,lw=Math.max(.7,L*.009);
- // yürüme bacakları (5 çift, arkadakiler biraz soluk): sadece yürürken adım atar
- for(let i=0;i<5;i++){const bx=DW*(.16-i*.075),ph=s.leg+i*1.3,swg=mv?Math.sin(ph)*L*.035:Math.sin(s.t*.8+i)*L*.004,lift=mv?Math.max(0,Math.cos(ph))*L*.025:0;
-  ctx.strokeStyle=lc(i%2?SS.leg2:SS.leg);ctx.lineWidth=lw;ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx+L*.035+swg*.4,by+L*.055-lift*.4);ctx.lineTo(bx-L*.005+swg,by+L*.115-lift);ctx.stroke()}
- // ön ayaklar: durunca dibi gagalayarak yem toplar
- for(const k of [0,1]){const pk=s.pause>0?Math.max(0,Math.sin(s.peck*3.1+k*1.7)):0,fx=DW*(.27+k*.03),fy2=by+L*.06+pk*L*.05;ctx.strokeStyle=lc(SS.leg);ctx.lineWidth=lw*.9;ctx.beginPath();ctx.moveTo(DW*.2,by-L*.01);ctx.lineTo(DW*.27+k*L*.01,by+L*.02-pk*L*.01);ctx.lineTo(fx,fy2);ctx.stroke()}
- // yüzme ayakları (karın altında): yüzerken hızlı, dururken çok hafif
- ctx.strokeStyle=lc(SS.leg2);ctx.lineWidth=lw*.85;for(let i=0;i<4;i++){const bx=-DW*(.08+i*.09),a=Math.sin(s.t*(sw?24:4)-i*.7)*(sw?.7:.12);ctx.beginPath();ctx.moveTo(bx,DH*.18+bob);ctx.lineTo(bx+Math.sin(a)*L*.04,DH*.18+bob+Math.cos(a)*L*.055);ctx.stroke()}
- // gövde: kuyruk kıvrımı yoksa tek resim; kaçarken arka yarı kendi ekleminden döner
- const sp=.46;if(s.curl<.02)ctx.drawImage(im,x0,yT+bob,DW,DH);else{ctx.drawImage(im,sp*iw-1,0,iw*(1-sp)+1,ih,x0+DW*sp-1,yT+bob,DW*(1-sp)+1,DH);ctx.save();ctx.translate(x0+DW*sp,bob);ctx.rotate(-s.curl*1.25);ctx.drawImage(im,0,0,sp*iw+1,ih,-DW*sp,yT,DW*sp+1,DH);ctx.restore()}
- // antenler: iki uzun ince anten gövdenin üstünden geriye kavis yapar, iki kısa anten öne bakar
- const hx=DW*.36,hy=-DH*.12+bob;ctx.strokeStyle=lc(SS.ant);for(const k of [0,1]){const ph=s.t*(s.pause>0?1.6:2.4)+k*2.1,sx=Math.sin(ph)*L*.06;ctx.lineWidth=Math.max(.55,L*.006);ctx.beginPath();ctx.moveTo(hx,hy);ctx.quadraticCurveTo(DW*(.5+k*.05),-DH*(1.2+k*.25)+sx*.5,-DW*(.15+k*.25)+sx,-DH*(1.05+k*.35)+Math.cos(ph)*L*.03);ctx.stroke()}
- ctx.lineWidth=Math.max(.6,L*.007);for(const k of [0,1]){const ph=s.t*3+k;ctx.beginPath();ctx.moveTo(hx,hy+DH*.05);ctx.lineTo(hx+L*(.13+k*.03),hy-DH*(.15+k*.12)+Math.sin(ph)*L*.015);ctx.stroke()}
+function drawShr(s){const L=s.len,im0=cImg(s.d.img);if(!im0)return;const im=nightAmt()>.5&&tinted(im0,"cr"+s.d.id,0,true,1)||im0;ctx.save();ctx.translate(s.x,s.y);ctx.scale(s.dir,1);ctx.rotate(s.tilt);
+ // sürüm 179: bacakları ve antenleri resimde olan yeni karides çizimleri; ayaklar dibe basar, dururken önü hafifçe eğilip kalkar (yem toplar), kaçarken kuyruk kıvrılır
+ const iw=im.naturalWidth||im.width,ih=im.naturalHeight||im.height,DW=L*1.45,DH=DW*ih/iw,x0=-DW*.55,gnd=L*.2,yT=gnd-DH,mv=Math.abs(s.vx)>2.5&&s.flip<=0,bob=mv?Math.abs(Math.sin(s.leg))*L*.012:0,pk=s.pause>0?Math.max(0,Math.sin(s.peck*3.1))*.045:0;
+ ctx.save();ctx.scale(1,.25);ctx.beginPath();ctx.ellipse(-L*.05,(gnd+Math.max(0,(s.gy||FLOOR+30)-s.y))*4,L*.5,L*.16,0,0,7);ctx.fillStyle="rgba(0,20,30,"+(s.mode==="walk"&&s.y>=(s.gy||FLOOR+30)-2?.24:.1)+")";ctx.fill();ctx.restore();
+ ctx.translate(0,gnd);ctx.rotate(pk);ctx.translate(0,-gnd-bob);
+ const sp=.4,jy=yT+DH*.58;if(s.curl<.02)ctx.drawImage(im,x0,yT,DW,DH);else{ctx.drawImage(im,sp*iw-1,0,iw*(1-sp)+1,ih,x0+DW*sp-1,yT,DW*(1-sp)+1,DH);ctx.save();ctx.translate(x0+DW*sp,jy);ctx.rotate(-s.curl*1.2);ctx.drawImage(im,0,0,sp*iw+1,ih,-DW*sp,yT-jy,DW*sp+1,DH);ctx.restore()}
  ctx.restore()}
 // sürüm 130: yeni hedef seçerken birkaç aday arasından diğer canlılara en uzak olanı al (hepsi ortada üst üste birikmesin)
 let CRL=[];function spaceScore(x,y,self){let m=1e9;for(const f of state.fish){if(f===self)continue;const d=Math.hypot(f.x*W-x,(f.y*H-y)*1.4);if(d<m)m=d}for(const o of CRL){if(o===self||o.d.t==="sh"||o.d.t==="iso")continue;const d=Math.hypot(o.x-x,(o.y-y)*1.4);if(d<m)m=d}return m}
