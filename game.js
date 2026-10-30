@@ -699,17 +699,18 @@ function buyCrit(id){const d=CRIT.find(x=>x.id===id);if(!d||VISIT)return;if(isCo
 
 // ===== sürüm 180: Kızıl Ahtapot ve Altın Denizatı — görüntü motorunun ağıyla canlandırılır (motor kapalıysa sade çizim)
 const OCX=new WeakMap();
-function meshDraw(o,im,NX,NY,fn){const v=window.AkvVE,n=(NX+1)*(NY+1);let X=OCX.get(o);if(!X||X.length!==n*2){X=new Float32Array(n*2);OCX.set(o,X)}
- for(let i=0;i<=NX;i++)for(let j=0;j<=NY;j++){const a=(i*(NY+1)+j)*2,p=fn(i/NX,j/NY);X[a]=p[0];X[a+1]=p[1]}
- if(v&&v.ok&&pxWanted()&&v.drawMesh(ctx,im,NX,NY,X))return;triMesh(im,NX,NY,X)}
-// sürüm 181: motor yoksa da hareket etsin — her hücre iki üçgen, kırpılıp afin dönüşümle çizilir (ek yeri olmasın diye hafif taşırılır)
-function triMesh(im,NX,NY,X){const iw=im.naturalWidth||im.width,ih=im.naturalHeight||im.height,m=ctx.getTransform();
- const tri=(a,b,c)=>{const u0=a[2]*iw,v0=a[3]*ih,u1=b[2]*iw,v1=b[3]*ih,u2=c[2]*iw,v2=c[3]*ih,x0=a[0],y0=a[1],x1=b[0],y1=b[1],x2=c[0],y2=c[1],den=(u1-u0)*(v2-v0)-(u2-u0)*(v1-v0);if(Math.abs(den)<1e-6)return;
-  const A=((x1-x0)*(v2-v0)-(x2-x0)*(v1-v0))/den,B=((y1-y0)*(v2-v0)-(y2-y0)*(v1-v0))/den,C=((x2-x0)*(u1-u0)-(x1-x0)*(u2-u0))/den,D=((y2-y0)*(u1-u0)-(y1-y0)*(u2-u0))/den,E=x0-A*u0-C*v0,F=y0-B*u0-D*v0;
-  const cx=(x0+x1+x2)/3,cy=(y0+y1+y2)/3,g=p=>{const dx=p[0]-cx,dy=p[1]-cy,l=Math.hypot(dx,dy)||1;return[p[0]+dx/l*.7,p[1]+dy/l*.7]},p0=g(a),p1=g(b),p2=g(c);
-  ctx.save();ctx.beginPath();ctx.moveTo(p0[0],p0[1]);ctx.lineTo(p1[0],p1[1]);ctx.lineTo(p2[0],p2[1]);ctx.closePath();ctx.clip();ctx.transform(A,B,C,D,E,F);ctx.drawImage(im,0,0);ctx.restore()};
- const P=(i,j)=>{const k=(i*(NY+1)+j)*2;return[X[k],X[k+1],i/NX,j/NY]};
- for(let i=0;i<NX;i++)for(let j=0;j<NY;j++){const a=P(i,j),b=P(i+1,j),c=P(i,j+1),d=P(i+1,j+1);tri(a,b,c);tri(b,d,c)}ctx.setTransform(m)}
+// sürüm 182: hızlı ve güvenli çizim — motor varsa ekran kartı; yoksa kırpmasız kaba ızgara (her hücre tek drawImage); süre ölçülür, pahalıysa sadeleşir
+const MDT={ms:0};
+function meshDraw(o,im,NX,NY,fn){const t0=performance.now(),v=window.AkvVE,lvl=o._lv||0;
+ if(lvl<2&&v&&v.ok&&pxWanted()){const n=(NX+1)*(NY+1);let X=OCX.get(o);if(!X||X.length!==n*2){X=new Float32Array(n*2);OCX.set(o,X)}
+  for(let i=0;i<=NX;i++)for(let j=0;j<=NY;j++){const a=(i*(NY+1)+j)*2,p=fn(i/NX,j/NY);X[a]=p[0];X[a+1]=p[1]}
+  if(v.drawMesh(ctx,im,NX,NY,X)){meshCost(o,t0);return}}
+ if(lvl<3){const nx=lvl>=1?5:8,ny=lvl>=1?7:11;quadMesh(im,nx,ny,fn)}else{const p0=fn(0,0),p1=fn(1,1);ctx.drawImage(im,p0[0],p0[1],p1[0]-p0[0],p1[1]-p0[1])}meshCost(o,t0)}
+function meshCost(o,t0){const ms=performance.now()-t0;o._ms=(o._ms||ms)*.9+ms*.1;if(o._ms>5&&(o._lv||0)<3&&!(o._lt>performance.now())){o._lv=(o._lv||0)+1;o._lt=performance.now()+1500;o._ms=2}}
+function quadMesh(im,NX,NY,fn){const iw=im.naturalWidth||im.width,ih=im.naturalHeight||im.height,m=ctx.getTransform(),cw=iw/NX,ch=ih/NY,P=[];
+ for(let i=0;i<=NX;i++){const c=[];for(let j=0;j<=NY;j++)c.push(fn(i/NX,j/NY));P.push(c)}
+ for(let i=0;i<NX;i++)for(let j=0;j<NY;j++){const a=P[i][j],b=P[i+1][j],c=P[i][j+1],d=P[i+1][j+1];{const sx=i*cw,sy=j*ch,ax=(b[0]-a[0]+d[0]-c[0])/2,ay=(b[1]-a[1]+d[1]-c[1])/2,bx=(c[0]-a[0]+d[0]-b[0])/2,by=(c[1]-a[1]+d[1]-b[1])/2,ox=(a[0]+b[0]+c[0]+d[0])/4-(ax+bx)/2,oy=(a[1]+b[1]+c[1]+d[1])/4-(ay+by)/2,A=ax/cw,B=ay/cw,C=bx/ch,D=by/ch,E=ox-A*sx-C*sy,F=oy-B*sx-D*sy;
+  ctx.setTransform(m.a*A+m.c*B,m.b*A+m.d*B,m.a*C+m.c*D,m.b*C+m.d*D,m.a*E+m.c*F+m.e,m.b*E+m.d*F+m.f);const s0=Math.max(0,sx-.6),t0=Math.max(0,sy-.6),s1=Math.min(iw,sx+cw+.6),t1=Math.min(ih,sy+ch+.6);ctx.drawImage(im,s0,t0,s1-s0,t1-t0,s0,t0,s1-s0,t1-t0)}}ctx.setTransform(m)}
 const sstep=(a,b,x)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t)};
 function mkOc(d){const gy=FLOOR+rand(16,40);return{d,x:rand(BX0+70,BX1-70),y:gy,gy,dir:Math.random()<.5?1:-1,vx:0,vy:0,t:rand(0,9),mode:"sit",next:rand(4,8),jet:0,W:92,H:96,tilt:0,sp:0,col:0}}
 function stepOc(o,dt){const u=CU;o.t+=dt;o.next-=dt;o.ink=(o.ink||0);
