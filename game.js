@@ -336,7 +336,7 @@ function dmOpen(uid,name){if(!uid||uid===NET.uid||uid===BOT_ID)return;DM.peer=ui
 function dmRender(){const box=$("dmBox");if(!box)return;if(!chatOK()){box.innerHTML='<p class="note">Özel mesajlar için internet bağlantısı gerekiyor.</p>';return}const me=NET.uid,all=dmAll();
  if(!DM.peer){const conv=new Map();for(const m of all){const o=m.from===me?m.to:m.from;if(CHAT.mute.has(o))continue;const c=conv.get(o)||{o,n:"",last:null,un:0};if(m.from!==me&&m.fn)c.n=m.fn;if(m.from===me&&m.tn&&!c.n)c.n=m.tn;c.last=m;if(m.from!==me&&tsOf(m)>(DM.seen[o]||0))c.un++;conv.set(o,c)}
   const L=[...conv.values()].sort((a,b)=>tsOf(b.last)-tsOf(a.last));let h='<button class="dmnew" data-dmnew="1">✏️ Yeni mesaj</button>';
-  h+=L.length?L.map(c=>'<button class="dmc" data-dmp="'+esc(c.o)+'" data-dmn="'+esc(cleanName(c.n)||"Oyuncu")+'"><b><span translate="no">'+esc(cleanName(c.n)||"Oyuncu")+"</span>"+(c.un?'<i class="dmu">'+c.un+"</i>":"")+"</b><small>"+(c.last.from===me?"Sen: ":"")+'<span translate="no">'+esc(cleanText(c.last.m,60))+"</span></small><em>"+chatTime(tsOf(c.last))+"</em></button>").join(""):'<p class="note">Henüz özel mesajın yok. Sohbette bir oyuncunun yanındaki ✉️ simgesine ya da "Yeni mesaj"a dokun.</p>';box.innerHTML=h;return}
+  h+=L.length?L.map(c=>'<button class="dmc" data-dmp="'+esc(c.o)+'" data-dmn="'+esc(cleanName(c.n)||"Oyuncu")+'"><b><span translate="no">'+esc(cleanName(c.n)||"Oyuncu")+"</span>"+(c.un?'<i class="dmu">'+c.un+"</i>":"")+"</b><small>"+(c.last.from===me?"Sen: ":"")+'<span translate="no">'+esc(cleanText(c.last.m,60))+"</span></small><em>"+chatTime(tsOf(c.last))+"</em></button>").join(""):'<p class="note">Henüz özel mesajın yok. Başlamak için "Yeni mesaj"a dokun.</p>';box.innerHTML=h;return}
  const p=DM.peer,th=all.filter(m=>(m.from===p&&m.to===me)||(m.from===me&&m.to===p));
  box.innerHTML='<div class="dmh"><button data-dmback="1">← Geri</button><b>'+esc(DM.pn)+'</b><button data-dmtr="1" title="Takas teklif et">🔁 Takas</button></div><div class="dml" id="dmList">'+(th.length?th.map(m=>'<div class="cm'+(m.from===me?" me":"")+'"><div class="bb"><div class="tx" translate="no">'+esc(cleanText(m.m,300))+'</div><small>'+chatTime(tsOf(m))+"</small></div></div>").join(""):'<p class="note">İlk mesajı sen yaz 👋</p>')+'</div><form class="chatf" id="dmForm" autocomplete="off"><input id="dmIn" maxlength="300" placeholder="'+esc(DM.pn)+' adlı oyuncuya yaz…" enterkeyhint="send"><button type="submit">Gönder</button></form>';
  const l=$("dmList");if(l)l.scrollTop=l.scrollHeight}
@@ -943,9 +943,9 @@ state.mutsFound=state.mutsFound||[];allFish().forEach(f=>{if(!isFinite(f.phase))
 function offlineReport(){
 normalize();
 const elapsed=(Date.now()-(state.lastTick||Date.now()))/1000;
-if(elapsed<60){state.lastTick=Date.now();return}
+if(elapsed<60){if(elapsed>0)advance(elapsed);state.lastTick=Date.now();return}
 const r=advance(Math.min(elapsed,72*3600)),gain=Math.floor(state.pending||0);if(gain>0){state.pending-=gain;state.coins+=gain;Q("earn",gain)}
-setTimeout(()=>notify("Sen yokken "+fmtTime(elapsed)+" geçti 🌊"+(r.dead.length?" · "+r.dead.length+" balık öldü 💀":"")+(r.sick?" · balıklar hastalandı 🤒":"")+(r.weak?" · balıkların çok acıktı, hemen besle 🍤":"")+(gain>0?" · balıkların "+gain+" 🪙 kazandırdı":"")+(state.chest?" · 🎁 sandık çıktı!":"")),600);
+if(elapsed>=300||gain>0||r.dead.length||r.sick||r.weak)setTimeout(()=>notify("Sen yokken "+fmtTime(elapsed)+" geçti 🌊"+(r.dead.length?" · "+r.dead.length+" balık öldü 💀":"")+(r.sick?" · balıklar hastalandı 🤒":"")+(r.weak?" · balıkların çok acıktı, hemen besle 🍤":"")+(gain>0?" · balıkların "+gain+" 🪙 kazandırdı":"")+(state.chest?" · 🎁 sandık çıktı!":"")),600);
 }
 const PROPS=[
 {id:"bonsai",name:"Mercan Bonsai",price:130,perk:"Balıklar %10 daha yavaş acıkır",x:.52,dy:-50,sc:.55,r:1,on:"table",img:"a/0f46c9e359980fff.webp"},
@@ -985,7 +985,7 @@ function dkPrice(it){return it.g?it.g+" 💎":it.p.toLocaleString(LOC)+" 🪙"}
 function dkCan(it,m){m=m||1;return it.g?(state.gems||0)>=Math.ceil(it.g*m):state.coins>=Math.ceil(it.p*m)}
 function dkPay(it,m){m=m||1;if(it.g)state.gems-=Math.ceil(it.g*m);else state.coins-=Math.ceil(it.p*m)}
 function dkLeft(ms){ms=Math.max(0,ms);const d=Math.floor(ms/DKDAY),h=Math.floor(ms%DKDAY/36e5),m=Math.floor(ms%36e5/6e4);return d>0?d+" gün "+h+" sa":h>0?h+" sa "+m+" dk":m+" dk"}
-function dkEffTxt(e,v){const D=DKE[e];if(!D)return"";return D[0]+" "+D[1]+" "+(e==="mut"?"×"+String(+v.toFixed(2)).replace(".",","):e==="rare"?"+"+String(+(v*100).toFixed(1)).replace(".",",")+" puan":(D[3]==="-"?"%"+Math.round(v*100)+(e==="egg"?" kısa":" az"):"+%"+Math.round(v*100)))}
+function dkEffTxt(e,v){const D=DKE[e];if(!D)return"";return D[0]+" "+D[1]+" "+(e==="mut"?"×"+String(+v.toFixed(2)).replace(".",","):e==="rare"?"+"+String(+(v*100).toFixed(1)).replace(".",",")+" puan":(D[3]==="-"?"−%"+Math.round(v*100):"+%"+Math.round(v*100)))}
 function dkShort(ms){ms=Math.max(0,ms);return ms>=DKDAY?Math.floor(ms/DKDAY)+" gün":ms>=36e5?Math.floor(ms/36e5)+" sa":Math.ceil(ms/6e4)+" dk"}
 function dkAnimTxt(it){return{bub:"Kabarcıklar",flick:"Titreyen ışık",pulse:"Nabız gibi parlar",mote:"Yükselen ışık zerreleri"}[it.fx]||(it.gc?"Hafif ışıltı":"Durağan")}
 function dkFreePos(k){const L=dkList(k),P=[.09,.93,.26,.77,.43,.6,.17,.85,.52];for(const x of P)if(!L.some(d=>Math.abs(d.x-x)<.07))return x;return rand(.1,.9)}
@@ -2009,7 +2009,7 @@ if(navigator.vibrate) navigator.vibrate(10);
 canvas.addEventListener("pointermove",e=>{const F=FING;if(!F||!F.on||e.pointerId!==F.p)return;const r=canvas.getBoundingClientRect();F.x=(e.clientX-r.left)/r.width*W;F.y=(e.clientY-r.top)/r.height*H;F.t=simT});
 ["pointerup","pointercancel","pointerleave"].forEach(ev=>canvas.addEventListener(ev,e=>{if(FING&&FING.p===e.pointerId){FING.on=0;FING.t=simT}}));
 canvas.addEventListener("pointermove",e=>{if(!feedModeOn()||VISIT||!(e.buttons||e.pointerType==="touch")||performance.now()-lastDrag<90)return;lastDrag=performance.now();const r=canvas.getBoundingClientRect();dropFood((e.clientX-r.left)/r.width*W,(e.clientY-r.top)/r.height*H,1)});
-document.addEventListener("visibilitychange",()=>{if(VISIT){acc=0;return}if(document.hidden){advance((Date.now()-state.lastTick)/1000);save(true);if(NET.timer){clearTimeout(NET.timer);NET.timer=0;cloudSave(true)}}else{acc=0;advance((Date.now()-state.lastTick)/1000);renderUI();checkHelps()}});
+document.addEventListener("visibilitychange",()=>{if(VISIT){acc=0;return}if(document.hidden){advance((Date.now()-state.lastTick)/1000);save(true);if(NET.timer){clearTimeout(NET.timer);NET.timer=0;cloudSave(true)}}else{acc=0;offlineReport();renderUI();checkHelps()}});
 const flush=()=>{if(VISIT)endVisit();advance((Date.now()-state.lastTick)/1000);save(true)};addEventListener("pagehide",flush);window.addEventListener("beforeunload",flush);
 let EDIT=null;
 // sürüm 168: Zen modu — tek dokunuşla bütün menüler kaybolur, ekranda akvaryum ve müzik kalır
@@ -2336,7 +2336,7 @@ function shopFishRender(){const tabs=[["all","Tümü"]].concat(TKEYS.filter(k=>!
   const hd='<h4 class="sg-h">'+T.icon+" "+T.name+" <small>"+got+"/"+sp.length+" keşfedildi</small></h4>";
   if(!hasTank(k))return hd+'<div class="sg-lock">🔒 Seviye '+T.lv+" · "+T.cost.toLocaleString(LOC)+" 🪙 ile açılır · "+sp.length+" tür</div>";
   return hd+'<div class="sg">'+sp.map(shopCell).join("")+"</div>"}).join("");
- $("shopCount").textContent=n+" tür · fiyatlar saatlik değişir · ayrıntı için balığa dokun";
+ $("shopCount").textContent=n+" tür · fiyatlar her hafta 3 tür %25 daha pahalı · ayrıntı için balığa dokun";
  let d=$("shopDet");if(!d){try{d=document.createElement("div");d.id="shopDet";d.className="sdet";d.onclick=shopClick;const sh=$("shop");sh.parentNode.insertBefore(d,sh.nextSibling)}catch(e){return}}const dh=shopDetHTML();d.hidden=!dh;d.innerHTML=dh}
 function shopClick(e){const n=e.target.closest("[data-buyn]");if(n){buyMany(n.dataset.buyn,+n.dataset.n);return}const b=e.target.closest("[data-buy]");if(b){startBuy(b.dataset.buy);return}
  if(e.target.closest("[data-sdx]")){SHDET=null;sfx("click");renderUI();return}const c=e.target.closest("[data-sdet]");if(c){SHDET=SHDET===c.dataset.sdet?null:c.dataset.sdet;sfx("click");renderUI()}}
