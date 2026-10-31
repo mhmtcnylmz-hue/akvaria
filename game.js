@@ -1704,7 +1704,12 @@ function bgK(f,h){if(NOGLIDE[f.type])return 1;f.bgT=(f.bgT||0)-h;if(f.bgT<=0){f.
 function schoolLead(f){let L=null;for(const o of state.fish)if(o.type===f.type&&!isSleepy(o)&&(!L||o.id<L.id))L=o;return L}
 function schoolPick(f,bx0,bx1,by0,by1){const p=PH[f.type];if(!p||!p[4])return;const L=schoolLead(f);if(!L)return;
  if(L===f){for(const o of state.fish)if(o!==f&&o.type===f.type&&!o.rest&&!isSleepy(o))o.tt=Math.min(o.tt||9,rand(.08,.6));return}
- if(L.rest)return;const a=(f.id*.6180339887)%1,b=(f.id*.7548776662)%1,sp=Math.sqrt(fishW(f))*7;f.tx=Math.min(bx1,Math.max(bx0,L.tx-(L.tx>=L.x*W?1:-1)*(20+a*sp*2)));f.ty=Math.min(by1,Math.max(by0,L.ty+(b-.5)*sp*2.2));f.tt=Math.max(.6,(L.tt||2)+rand(-.3,.3))}
+ // sürüm 189: sürü düzeni — her balığın liderin arkasında kendine ait, aralıklı bir yeri var (üst üste binip yumak olmasınlar)
+ const M=state.fish.filter(o=>o.type===f.type&&o!==L&&!isSleepy(o)).sort((p,q)=>p.id-q.id),i=Math.max(0,M.indexOf(f)),fw=fishW(f),fh=fishH(f),a=(f.id*.6180339887)%1,b=(f.id*.7548776662)%1;
+ const col=Math.floor(i/3)+1,row=i%3,LX=L.rest?L.x*W:L.tx,LY=L.rest?L.y*H:L.ty,dir=L.rest?(L.dir||1):(L.tx>=L.x*W?1:-1),back=col*fw*.95+(a-.5)*fw*.3,vy=((row-1)+(col%2?.5:0)-.25)*fh*1.5+(b-.5)*fh*.4,bm=(Math.floor(M.length/3)+1)*fw*.95+fw*.2,hm=fh*2;
+ // düzen tankın kenarına sıkışmasın: liderin hedefi kenara yakınsa bütün düzen içeri kayar
+ const cx=dir>0?Math.max(LX,Math.min(bx1,bx0+bm)):Math.min(LX,Math.max(bx0,bx1-bm)),cy=Math.min(Math.max(by0,by1-hm),Math.max(Math.min(by1,by0+hm),LY));
+ f.tx=Math.min(bx1,Math.max(bx0,cx-dir*back));f.ty=Math.min(by1,Math.max(by0,cy+vy));f.tt=Math.max(.6,(L.tt||2)+rand(-.3,.3))}
 // ışık: yüzeyden gelen dalgalı ışık deseni balığın gövdesinde de gezer (üst taraf daha çok ışık alır)
 let FCV=null;function fishCaus(){return !state.lowGfx&&LQ<1&&!VISIT&&curWater()!=="deep"&&!(state.admOff||{}).fcaus&&nightAmt()<.85}
 function depthSort(a){if(state.lowGfx)return a;return a.slice().sort((p,q)=>(q.zd||0)-(p.zd||0))}
@@ -1978,7 +1983,7 @@ if(!VISIT&&!coll&&f.age>=MATURE&&!f.sick&&f.id!==undefined){let cd=cdMap.get(f.i
 // yön (histerezisli) ve görsel durum: gövde eğimi, yumuşak çevirme, kuyruk fazı
 if(Math.abs(f.vx)>9&&Math.sign(f.vx)!==f.dir)f.dir=Math.sign(f.vx);
 const sn=Math.min(1,Math.hypot(f.vx,f.vy)/vmax);
-const tilt=(f.type==="dragon"&&f.rest&&!food?-.3:0)+(f.act==="forage"&&Math.hypot(f.tx-x,f.ty-y)<40?.42:0)+(food&&food.ph==="surf"&&Math.hypot(food.x-x,food.y-y)<70?-.3:0);f.ang+=(Math.max(-.6,Math.min(.6,Math.atan2(f.vy,Math.abs(f.vx)+25)+tilt))-f.ang)*Math.min(1,6*h);f.fs+=(f.dir-f.fs)*Math.min(1,4.2*h);f.tp+=h*(2+sn*11+(1-Math.min(1,Math.abs(f.fs)))*7)*swimFq(f)*(sl?.4:1);f.sn=sl?sn*.45:sn;if(hswOn(f))hswStep(f,h,food,f.sn);eyeStep(f,h,food,x,y,fw,sl)}
+const tilt=(f.type==="dragon"&&f.rest&&!food?-.3:0)+(f.act==="forage"&&Math.hypot(f.tx-x,f.ty-y)<40?.42:0)+(food&&food.ph==="surf"&&Math.hypot(food.x-x,food.y-y)<70?-.3:0);f.ang+=((am=>Math.max(-am,Math.min(am,Math.atan2(f.vy,Math.abs(f.vx)+25)+tilt)))(Math.max(.14,Math.min(.6,.5*95/fishW(f))))-f.ang)*Math.min(1,6*h);f.fs+=(f.dir-f.fs)*Math.min(1,4.2*h);f.tp+=h*(2+sn*11+(1-Math.min(1,Math.abs(f.fs)))*7)*swimFq(f)*(sl?.4:1);f.sn=sl?sn*.45:sn;if(hswOn(f))hswStep(f,h,food,f.sn);eyeStep(f,h,food,x,y,fw,sl)}
 foodStep(h)}
 let lastDraw=0,ftN=0,ftS=0,ftT=0,feedOnC=null;const PRF={n:0,ph:0,fl:0,fi:0,pl:0,ot:0,all:0,ns:0,iv:0,mx:0};let adaptHold=0,kUser=0;try{kUser=+localStorage.getItem("fvK3")||0}catch(e){}function setK(v){K=v;canvas.width=Math.round(W*K);canvas.height=Math.round(H*K);try{ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high"}catch(e){}}
 function adaptK(now,d){if(d>1000||document.hidden||globalThis.__noAdapt||PT||now<adaptHold||document.querySelector("#game.glx")){ftN=0;ftS=0;return}if(!ftT)ftT=now;ftN++;ftS+=Math.min(d,100);if(ftN>=90){const avg=ftS/ftN;ftN=0;ftS=0;if(now-ftT<4000)return;const top=Math.min(kCap,kUser>=1?Math.min(KMAX,kUser):KMAX);if(avg>26&&K>1){kCap=Math.max(1,K-.25);setK(avg>60?1:kCap);adaptHold=now+1500}else if(avg>30&&K<=1&&LQ<2){LQ++;lqGood=0;adaptHold=now+3000}else if(avg<19&&LQ>0){if(++lqGood>=4){LQ--;lqGood=0;adaptHold=now+3000}}else if(avg<18.5&&K<top&&!state.lowGfx){setK(Math.min(top,K+.25));adaptHold=now+2000}else lqGood=0}}
@@ -2279,6 +2284,8 @@ if(TR.terr&&simT>(f.chCd||0)&&!f.rest){const c0=TR.home&&f.home!=null?f.home:x;f
 if(f.chase&&simT<f.chT){f.tx=f.chase.x*W;f.ty=f.chase.y*H;f.tt=.3;busy=true}else f.chase=null;
 if(f.flee&&simT<f.fleeT){const ox=x-f.flee.x*W,oy=y-f.flee.y*H,d=Math.hypot(ox,oy)||1;f.tx=Math.min(bx1,Math.max(bx0,x+ox/d*140));f.ty=Math.min(by1,Math.max(by0,y+oy/d*90));f.burst=Math.max(f.burst||0,.1);f.tt=.4}else f.flee=null;
 if(fingK(f,TR,x,y,fw,fh,bx0,bx1,by0,by1))return true;
+// sürüm 189: sürüdeki balık yerine varınca liderle aynı yöne bakar, olduğu yerde dönüp durmaz
+if(PH[f.type]&&PH[f.type][4]&&!f.rest){const L=schoolLead(f);if(L&&L!==f&&Math.hypot(f.tx-x,f.ty-y)<fw*.6){f.dir=L.dir||f.dir;f.vx*=.97;f.vy*=.97}}
 if(f.look&&simT<f.lookT){f.tx=f.look[0];f.ty=f.look[1];f.tt=.5;busy=true}else f.look=null;
 return busy}
 function curiousTap(x,y){for(const f of state.fish){const TR=TRAIT[f.type];if(TR&&TR.curious&&!isSleepy(f)){f.look=[Math.min(BX1,Math.max(BX0,x)),Math.min(BY1,Math.max(BY0,y))];f.lookT=simT+3.5;f.rest=false}}}
