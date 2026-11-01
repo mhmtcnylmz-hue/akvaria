@@ -416,7 +416,7 @@ let GRANT_W=null;
 function grantWatch(){if(GRANT_W||!chatOK())return;try{GRANT_W=FB.db.collection("grants").where("to","==",FB.auth.currentUser.uid).onSnapshot(sn=>{if(VISIT)return;state.grGot=Array.isArray(state.grGot)?state.grGot:[];let c=0,g=0,notes=[];for(const d of sn.docs){if(state.grGot.includes(d.id)){d.ref.delete().catch(()=>{});continue}const x=d.data()||{};c+=Math.max(0,+x.coins||0);g+=Math.max(0,+x.gems||0);if(x.note)notes.push(cleanText(x.note,80));state.grGot.push(d.id);d.ref.delete().catch(()=>{})}if(c||g){state.coins+=c;state.gems=(state.gems||0)+g;state.grGot=state.grGot.slice(-100);sfx("chest");notify("🎁 Yönetimden hediye: "+(c?c.toLocaleString(LOC)+" 🪙 ":"")+(g?g+" 💎":"")+(notes.length?" · "+notes[0]:""));renderUI();save(true)}},()=>{GRANT_W=null})}catch(e){}}
 // ---------- çevrimiçi durumu (yönetim panelindeki "aktif oyuncular" için)
 function presence(){try{if(!FB||!NET.on||document.hidden)return;const u=FB.auth.currentUser;if(!u)return;FB.db.doc("profiles/"+u.uid).set({seen:FB.fb.firestore.FieldValue.serverTimestamp(),lv:state.level,name:myName(),st:profStats()},{merge:true}).catch(()=>{})}catch(e){}}
-function socStart(){banWatch();dmWatch();tradeWatch();grantWatch();presence();if(!NET.presT)NET.presT=setInterval(presence,120000)}
+function socStart(){liveWatch();banWatch();dmWatch();tradeWatch();grantWatch();presence();if(!NET.presT)NET.presT=setInterval(presence,120000)}
 // ---------- yönetim paneli: oyuncular
 const APL={rows:null,bans:{},f:"all",q:"",open:null,busy:false};
 async function admPlLoad(){if(APL.busy||!chatOK())return;APL.busy=true;try{const [ps,bs]=await Promise.all([FB.db.collection("profiles").limit(1000).get(),FB.db.collection("bans").limit(1000).get().catch(()=>({docs:[]}))]);APL.rows=ps.docs.map(d=>Object.assign({id:d.id},d.data()));APL.bans={};for(const d of bs.docs)APL.bans[d.id]=d.data()}catch(e){APL.rows=[];notify("Oyuncu listesi yüklenemedi: "+(e&&e.code||""))}APL.busy=false;if(ADM.tab==="players")admRender()}
@@ -561,8 +561,19 @@ function deepSeen(){return hasTank("deep")||state.level>=30}
 function riverSeen(){return hasTank("river")||state.level>=20}
 function deepEvK(f){if(WATER[f.type]!=="deep")return 1;return(ev("biolum")?1.2:1)*((f.type==="reefshark"||f.type==="trevally")&&ev("dragonm")?1.25:1)}
 function inEvent(e,d){if(e.weekend)return d.getDay()===0||d.getDay()===6;if(e.dow!=null)return d.getDay()===e.dow;if(e.mday)return d.getDate()>=e.mday[0]&&d.getDate()<=e.mday[1];const md=(d.getMonth()+1)*100+d.getDate(),a=e.from[0]*100+e.from[1],b=e.to[0]*100+e.to[1];return a<=b?md>=a&&md<=b:md>=a||md<=b}
+// sürüm 194: canlı ayarlar — yöneticinin Firestore'daki config/live belgesi; bütün oyunculara anında uygulanır, çevrimdışı için son hâli saklanır
+const LIVE_K=[["mutX","🎰 Mutasyon şansı",.1,100],["growX","🌱 Büyüme hızı",.1,20],["hungerX","🍽️ Acıkma hızı",0,10],["dirtX","🧽 Kirlenme hızı",0,10],["sellX","🪙 Satış fiyatı",.1,10],["xpX","⭐ XP",.1,10],["incX","💰 Pasif gelir",.1,10]];
+const LIVE_EV="mutX growX hungerX dirtX sellX xpX incX".split(" ");
+function liveClean(o){o=o&&typeof o==="object"?o:{};const r={evOn:[],evOff:[],custom:[]};for(const [k,,lo,hi] of LIVE_K){const v=+o[k];r[k]=isFinite(v)&&o[k]!==null&&o[k]!==""?Math.min(hi,Math.max(lo,v)):1}
+ const ids=new Set(EVENTS.map(e=>e.id));for(const k of ["evOn","evOff"])r[k]=Array.isArray(o[k])?o[k].filter(x=>ids.has(x)):[];
+ r.custom=(Array.isArray(o.custom)?o.custom:[]).slice(0,30).filter(e=>e&&typeof e.id==="string"&&isFinite(+e.from)&&isFinite(+e.to)).map(e=>{const fx={};for(const [k,,lo,hi] of LIVE_K){const v=+(e.fx||{})[k];if(isFinite(v)&&v>0&&v!==1)fx[k]=Math.min(hi,Math.max(lo,v))}return{id:String(e.id).slice(0,24),n:String(e.n||"Etkinlik").slice(0,40),d:String(e.d||"").slice(0,120),from:+e.from,to:+e.to,fx}});
+ r.at=+o.atMs||0;return r}
+let LIVE=liveClean(null);try{LIVE=liveClean(JSON.parse(localStorage.getItem("akvLive")||"null"))}catch(e){}
+function liveCustomAct(n){n=n||Date.now();return LIVE.custom.filter(e=>n>=e.from&&n<e.to)}
+function LX(k){let v=LIVE[k]||1;for(const e of liveCustomAct())if(e.fx[k])v*=e.fx[k];return v}
+let LIVE_W=null;function liveWatch(){if(LIVE_W||!FB||!FB.db)return;try{LIVE_W=FB.db.doc("config/live").onSnapshot(sn=>{LIVE=liveClean(sn.exists?sn.data():null);try{localStorage.setItem("akvLive",JSON.stringify(Object.assign({},LIVE,{atMs:LIVE.at})))}catch(e){}evC={t:0,l:[]};if(typeof openKey!=="undefined"&&openKey==="adm")admRender()},e=>{LIVE_W=null;NET.liveErr=e&&e.code||"hata"})}catch(e){}}
 let evC={t:0,l:[]};
-function activeEvents(){const n=Date.now();if(n-evC.t>6e4){const d=new Date();evC={t:n,l:EVENTS.filter(e=>(inEvent(e,d)&&(!e.dp||deepSeen()))||(state.admEv||[]).includes(e.id))}}return evC.l}
+function activeEvents(){const n=Date.now();if(n-evC.t>6e4){const d=new Date(),on=LIVE.evOn,off=LIVE.evOff;evC={t:n,l:EVENTS.filter(e=>(state.admEv||[]).includes(e.id)||(!off.includes(e.id)&&(on.includes(e.id)||(inEvent(e,d)&&(!e.dp||deepSeen()))))).concat(liveCustomAct(n).map(e=>({id:"c_"+e.id,n:e.n,d:e.d,custom:1,to:e.to})))}}return evC.l}
 function ev(id){return activeEvents().some(e=>e.id===id)}
 function nextEvent(){const d=new Date();for(let i=1;i<400;i++){const x=new Date(d.getFullYear(),d.getMonth(),d.getDate()+i);const e=EVENTS.find(e=>!e.weekend&&e.dow==null&&!e.mday&&(!e.dp||deepSeen())&&inEvent(e,x)&&!inEvent(e,d));if(e)return{e,days:i}}return null}
 // ---------- günlük görevler, seri, başarımlar
@@ -637,10 +648,10 @@ function xpDayK(n){const d=dayKey();let o=state.xpDay;if(!o||o.d!==d)o=state.xpD
 function lvCoins(l){return 20+5*l}
 function lvSum(a,b){let s=0;for(let l=a+1;l<=b;l++)s+=lvCoins(l);return s}
 function lvGems(l){return l%5===0?5:2}
-function addXP(n,raw){if(state.level>=MAXLV){state.level=MAXLV;state.xp=Math.min(state.xp,xpNeed(MAXLV)-1);return}const g=n*(pk("ruins")?1.1:1)*(1+dkEff(state.tank).xp)*critXPK();state.xp+=Math.round(raw?g:g*xpDayK(g));const l0=state.level;while(state.level<MAXLV&&state.xp>=xpNeed(state.level)){state.xp-=xpNeed(state.level);state.level++;state.coins+=lvCoins(state.level);state.gems+=lvGems(state.level)}if(state.level>=MAXLV)state.xp=Math.min(state.xp,xpNeed(MAXLV)-1);if(state.level>l0){showLevelUp(state.level,lvSum(l0,state.level),gemSum(l0,state.level));checkAch()}renderUI();save(true)}
+function addXP(n,raw){if(state.level>=MAXLV){state.level=MAXLV;state.xp=Math.min(state.xp,xpNeed(MAXLV)-1);return}const g=n*(pk("ruins")?1.1:1)*(1+dkEff(state.tank).xp)*critXPK()*LX("xpX");state.xp+=Math.round(raw?g:g*xpDayK(g));const l0=state.level;while(state.level<MAXLV&&state.xp>=xpNeed(state.level)){state.xp-=xpNeed(state.level);state.level++;state.coins+=lvCoins(state.level);state.gems+=lvGems(state.level)}if(state.level>=MAXLV)state.xp=Math.min(state.xp,xpNeed(MAXLV)-1);if(state.level>l0){showLevelUp(state.level,lvSum(l0,state.level),gemSum(l0,state.level));checkAch()}renderUI();save(true)}
 function ageFactor(f){return Math.min(.92,.31+f.age*.75)}
 function mkt(id){return state.market[id]||1}
-function saleValue(f){return Math.round(getSpecies(f.type).price*ageFactor(f)*mkt(f.type)*(.3+.7*f.health/100)*(f.rarity==="Nadir"?3:1)*(f.gift?1:mutMult(f))*(1+(f.sizeGrowth||0))*SIZES[szOf(f)].v*(ev("harvest")?1.15:1)*deepEvK(f)*(1+dkEff(dkTankOf(f)).sell))}
+function saleValue(f){return Math.round(getSpecies(f.type).price*ageFactor(f)*mkt(f.type)*(.3+.7*f.health/100)*(f.rarity==="Nadir"?3:1)*(f.gift?1:mutMult(f))*(1+(f.sizeGrowth||0))*SIZES[szOf(f)].v*(ev("harvest")?1.15:1)*deepEvK(f)*(1+dkEff(dkTankOf(f)).sell)*LX("sellX"))}
 const MATURE=.95;
 function growHours(s){return s.grow||1+s.price/60}
 function incomeRate(s){return s.price*.045/3600}
@@ -650,17 +661,17 @@ let OFFLINE=false;
 function simTank(st,hz,res){
 if(isColl(state.tank)){state.fish.forEach(f=>f.st="");return 0}
 const fr=state.fish,bettas=fr.filter(f=>f.type==="betta").length,gold=fr.some(f=>f.type==="gold");let earned=0;const DE=dkEff(state.tank);
-if(hz)state.dirt=Math.min(100,state.dirt+st*.0012*fr.length*critShrimpK()*Math.pow(.8,state.snails)*(pk("table")?.92:1)*(1-DE.dirt)*Math.max(.3,1-(state.equipment.filter||0)*.13-Math.min(.25,(state.decor||[]).length*.015)));
+if(hz)state.dirt=Math.min(100,state.dirt+st*.0012*LX("dirtX")*fr.length*critShrimpK()*Math.pow(.8,state.snails)*(pk("table")?.92:1)*(1-DE.dirt)*Math.max(.3,1-(state.equipment.filter||0)*.13-Math.min(.25,(state.decor||[]).length*.015)));
 for(let i=fr.length-1;i>=0;i--){const f=fr[i],s=getSpecies(f.type);
 const wrong=!isColl(state.tank)&&WATER[f.type]!==tw(state.tank),fight=f.type==="betta"&&bettas>1,scared=gold&&SMALL.includes(f.type);
 f.st=wrong?"water":fight?"fight":scared?"scared":"";
-if(hz){f.hunger=Math.max(0,f.hunger-st*.0093*((TRAIT[f.type]||TR0).hungry||1)*(1-(state.equipment.feeder||0)*.18)*(pk("bonsai")?.9:1)*(1-DE.hun));
+if(hz){f.hunger=Math.max(0,f.hunger-st*.0093*LX("hungerX")*((TRAIT[f.type]||TR0).hungry||1)*(1-(state.equipment.feeder||0)*.18)*(pk("bonsai")?.9:1)*(1-DE.hun));
 if(f.hunger<=0)f.health-=st*.0139;
 if(!f.sick&&state.dirt>60&&Math.random()<(1-Math.exp(-st*(state.dirt-60)/144000))*(1-DE.sick)){f.sick=true;res.sick++}
 if(f.sick)f.health-=st*.0093*(pk("cave")?.75:1)*(1-DE.sick);else if(f.hunger>30&&state.dirt<60&&!wrong&&!fight)f.health=Math.min(100,f.health+st*.028);
 if(wrong)f.health-=st*.0035;if(fight)f.health-=st*.0029;
 if(OFFLINE&&f.health<25){f.health=25;res.weak=(res.weak||0)+1}if(f.health<=0){res.dead.push(f.name||s.name);fr.splice(i,1);continue}}
-if(!f.sick&&f.hunger>20&&!wrong){const dg=s.deep&&ev("abyss")?1.3:1,rate=MATURE/(growHours(s)*3600)*(scared?.5:1)*dg*(1+DE.grow);f.lifeHours=(f.lifeHours||0)+st/3600;if(f.age<1)f.age=Math.min(1,f.age+st*rate);else{const G=growHours(s)*3600/MATURE*(scared?2:1)/dg/(1+DE.grow),y=(f.sizeGrowth||0)/YS;if(y<2)f.sizeGrowth=Math.min(.75,YS*(y+st/((y<1?2:3)*G)))}if(f.age>=MATURE)earned+=st*incomeRate(s)*(1+DE.inc)}
+if(!f.sick&&f.hunger>20&&!wrong){const dg=(s.deep&&ev("abyss")?1.3:1)*LX("growX"),rate=MATURE/(growHours(s)*3600)*(scared?.5:1)*dg*(1+DE.grow);f.lifeHours=(f.lifeHours||0)+st/3600;if(f.age<1)f.age=Math.min(1,f.age+st*rate);else{const G=growHours(s)*3600/MATURE*(scared?2:1)/dg/(1+DE.grow),y=(f.sizeGrowth||0)/YS;if(y<2)f.sizeGrowth=Math.min(.75,YS*(y+st/((y<1?2:3)*G)))}if(f.age>=MATURE)earned+=st*incomeRate(s)*(1+DE.inc)*LX("incX")}
 }
 return earned}
 function advance(sec){
@@ -2445,10 +2456,10 @@ const ADM_SEC=[
 // hata ayıklama katmanları, ekran görüntüsü modu, kayıt anlık görüntüleri ve işlem günlüğü
 const ADM=(()=>{let o={};try{o=JSON.parse(localStorage.getItem("akvAdm")||"{}")}catch(e){}return{tab:o.tab||"dash",speed:1,dbg:o.dbg||{},log:[],q:"",fc:0,fps:0,fT:0,on:false}})();
 function admPersist(){try{localStorage.setItem("akvAdm",JSON.stringify({tab:ADM.tab,dbg:ADM.dbg}))}catch(e){}}
-const ADM_TABS=[["players","👥 Oyuncular"],["dash","📊 Durum"],["fish","🐠 Balıklar"],["eco","💰 Ekonomi"],["time","⏩ Zaman"],["luck","🎲 Şans"],["view","🎨 Görüntü"],["tank","🌊 Tank"],["prog","🏆 İlerleme"],["save","💾 Kayıt"],["log","📝 Günlük"]];
+const ADM_TABS=[["players","👥 Oyuncular"],["dash","📊 Durum"],["fish","🐠 Balıklar"],["eco","💰 Ekonomi"],["time","⏩ Zaman"],["luck","🎲 Şans"],["view","🎨 Görüntü"],["tank","🌊 Tank"],["prog","🏆 İlerleme"],["live","🌍 Canlı"],["save","💾 Kayıt"],["log","📝 Günlük"]];
 const ADM_TABSEC={eco:["💰 Ekonomi","📈 Pazar"],time:["⏩ Zaman","👥 Deniz 🤖"],tank:["🌊 Tank","🪸 Dekor"],prog:["🏆 İlerleme"],view:["⚙️ Performans"],fish:["🐟 Balık"],save:["💾 Kayıt"]};
 const _rollMut=rollMutation;
-rollMutation=function(){if(state&&state.admNextMut){const m=state.admNextMut;state.admNextMut=null;setTimeout(()=>{if(openKey==="adm")admRender()},50);return m}const x=state&&state.admMutX||1;if(x===1)return _rollMut();const sv={};for(const k in MUTS){sv[k]=MUTS[k].p;if(k!=="normal")MUTS[k].p=Math.min(.45,MUTS[k].p*x)}try{return _rollMut()}finally{for(const k in sv)MUTS[k].p=sv[k]}};
+rollMutation=function(){if(state&&state.admNextMut){const m=state.admNextMut;state.admNextMut=null;setTimeout(()=>{if(openKey==="adm")admRender()},50);return m}const x=(state&&state.admMutX||1)*LX("mutX");if(x===1)return _rollMut();const sv={};for(const k in MUTS){sv[k]=MUTS[k].p;if(k!=="normal")MUTS[k].p=Math.min(.45,MUTS[k].p*x)}try{return _rollMut()}finally{for(const k in sv)MUTS[k].p=sv[k]}};
 const aEsc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const aNum=n=>Math.round(n).toLocaleString(LOC);
 function admBtn(lbl,a,v,cls){return '<button class="sm'+(cls?" "+cls:"")+'" data-a="'+a+'"'+(v!==undefined?' data-v="'+aEsc(v)+'"':"")+">"+lbl+"</button>"}
@@ -2492,10 +2503,25 @@ function admTankHTML(){const tb=TKEYS.map(k=>admBtn(TANKS[k].icon+" "+TANKS[k].n
   admCard("💧 Kirlilik",'<input type="range" min="0" max="100" id="admDirt" value="'+Math.round(state.dirt)+'" style="width:100%"><p class="note">%'+Math.round(state.dirt)+"</p>")+
   admCard("🦐 Omurgasızlar",'<div class="admbtns">'+(cr||'<span class="note">Bu tank için yok</span>')+admBtn("Hepsini kaldır","critClear")+"</div>")+
   admCard("🍤 Yem ve sandık",'<div class="admbtns">'+admBtn("Yem yağmuru","foodRain")+admBtn("Sandık çıkar","chest")+admBtn("Yerdeki yemleri temizle","foodClear")+admBtn("Para yağmuru","coinRain")+"</div>")+admSecBtns("🌊 Tank")+admSecBtns("🪸 Dekor")}
+function admLiveDT(ms){const d=new Date(ms),z=n=>String(n).padStart(2,"0");return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate())+"T"+z(d.getHours())+":"+z(d.getMinutes())}
+function admLiveHTML(){const L=LIVE,n=Date.now(),ok=chatOK()&&fbIsGoogle();
+ const st='<p class="note">'+(ok?"☁️ Bağlı":"⚠️ Yayınlamak için Google hesabınla giriş yapmış ve buluta bağlı olmalısın")+(NET.liveErr?" · okuma hatası: "+aEsc(NET.liveErr)+" (Firestore kurallarını güncelledin mi?)":"")+(L.at?" · son yayın "+new Date(L.at).toLocaleString(LOC):" · henüz yayınlanmış ayar yok")+"</p>";
+ const nums=LIVE_K.map(([k,lbl,lo,hi])=>'<label class="admrow"><span>'+lbl+' <small>('+lo+"–"+hi+'×)</small></span><input type="number" step="0.05" min="'+lo+'" max="'+hi+'" data-lk="'+k+'" value="'+L[k]+'" style="width:90px"></label>').join("");
+ const evs=EVENTS.map(e=>{const m=L.evOn.includes(e.id)?"on":L.evOff.includes(e.id)?"off":"auto";return'<label class="admrow"><span>'+e.n+' <small>'+aEsc(e.d||"")+'</small></span><select data-le="'+e.id+'"><option value="auto"'+(m==="auto"?" selected":"")+'>Takvime göre</option><option value="on"'+(m==="on"?" selected":"")+'>Hep açık</option><option value="off"'+(m==="off"?" selected":"")+">Kapalı</option></select></label>"}).join("");
+ const cus=L.custom.map(e=>{const s2=n<e.from?"⏳ bekliyor":n<e.to?"🟢 aktif":"⚪ bitti",fx=Object.entries(e.fx).map(([k,v])=>((LIVE_K.find(x=>x[0]===k)||[k,k])[1])+" "+v+"×").join(" · ");return'<div class="admsnap"><div><b>'+aEsc(e.n)+"</b><small>"+s2+" · "+new Date(e.from).toLocaleString(LOC)+" → "+new Date(e.to).toLocaleString(LOC)+(fx?" · "+aEsc(fx):"")+(e.d?"<br>"+aEsc(e.d):"")+'</small></div><div class="admbtns">'+admBtn("Sil","liveEvDel",e.id,"admdanger")+"</div></div>"}).join("");
+ const fxIn=LIVE_K.map(([k,lbl])=>'<label class="admrow"><span>'+lbl+'</span><input type="number" step="0.05" min="0" data-lf="'+k+'" placeholder="1" style="width:90px"></label>').join("");
+ return st+admCard("⚙️ Oyun ayarları · bütün oyuncular",'<p class="note">1 = normal. Örnek: Mutasyon 2 = iki kat şans, Acıkma 0,5 = balıklar yarı hızda acıkır (kolaylaşır). Yayınla\'ya basınca açık olan bütün oyunlarda birkaç saniye içinde geçerli olur.</p>'+nums+'<div class="admbtns">'+admBtn("Yayınla","livePub")+admBtn("Hepsini 1× yap","liveReset",undefined,"admdanger")+"</div>")+
+  admCard("🎉 Etkinlikler · bütün oyuncular",'<p class="note">Seçimi değiştirip Yayınla\'ya bas</p>'+evs+'<div class="admbtns">'+admBtn("Yayınla","livePub")+"</div>",false)+
+  admCard("➕ Yeni etkinlik",'<div class="pair"><input id="admLN" maxlength="40" placeholder="Ad (ör. 🐠 Mercan Haftası)"></div><div class="pair"><input id="admLD" maxlength="120" placeholder="Açıklama (oyuncular görür)"></div><label class="admrow"><span>Başlangıç</span><input type="datetime-local" id="admLF" value="'+admLiveDT(n)+'"></label><label class="admrow"><span>Bitiş</span><input type="datetime-local" id="admLT" value="'+admLiveDT(n+7*864e5)+'"></label><p class="note">Etkiler (boş = değişmez, 2 = iki kat)</p>'+fxIn+'<div class="admbtns">'+admBtn("Etkinliği ekle ve yayınla","liveEvAdd")+"</div>")+
+  admCard("📅 Eklenen etkinlikler",cus||'<p class="note">Henüz yok</p>')}
+async function livePublish(L,msg){if(!(chatOK()&&fbIsGoogle())){notify("⚠️ Önce Google hesabınla giriş yap");return false}const o={};for(const [k] of LIVE_K)o[k]=L[k];o.evOn=L.evOn;o.evOff=L.evOff;o.custom=L.custom;o.atMs=Date.now();o.by=FB.auth.currentUser.uid;
+ try{await FB.db.doc("config/live").set(o);LIVE=liveClean(o);try{localStorage.setItem("akvLive",JSON.stringify(o))}catch(e){}evC={t:0,l:[]};notify("🌍 "+(msg||"Ayarlar bütün oyunculara yayınlandı"));admLogA("Canlı: "+(msg||"ayarlar"));return true}catch(e){notify(e&&e.code==="permission-denied"?"⛔ İzin yok: Firestore kurallarına config bölümünü ekle":"Yayınlanamadı: "+(e&&e.code||e));return false}}
+function admLiveForm(){const L=JSON.parse(JSON.stringify(LIVE)),b=$("admBox");if(!b)return L;b.querySelectorAll("[data-lk]").forEach(i=>{const v=parseFloat(String(i.value).replace(",","."));if(isFinite(v))L[i.dataset.lk]=v});L.evOn=[];L.evOff=[];b.querySelectorAll("[data-le]").forEach(sl=>{if(sl.value==="on")L.evOn.push(sl.dataset.le);else if(sl.value==="off")L.evOff.push(sl.dataset.le)});return liveClean(Object.assign(L,{atMs:L.at}))}
 function admSaveHTML(){let snaps=[];try{snaps=JSON.parse(localStorage.getItem("akvSnap")||"[]")}catch(e){}
  const rows=snaps.map((s,i)=>'<div class="admsnap"><div><b>'+aEsc(s.n)+"</b><small>"+new Date(s.t).toLocaleString(LOC)+" · Sv "+s.lv+" · "+aNum(s.c)+' 🪙</small></div><div class="admbtns">'+admBtn("Geri yükle","snapLoad",i)+admBtn("Sil","snapDel",i,"admdanger")+"</div></div>").join("");
  return admCard("📌 Anlık görüntüler",'<p class="note">Oyunun şu anki hâlini kaydet, istediğin zaman geri dön (en fazla 6)</p><div class="pair"><input id="admSnapN" placeholder="Ad (isteğe bağlı)"><div class="admbtns">'+admBtn("Kaydet","snapSave")+"</div></div>"+(rows||'<p class="note">Henüz yok</p>'))+
   admCard("☁️ Bulut",'<p class="note">'+(NET.on?"Bağlı":"Kapalı")+(NET.uid?" · kimlik "+aEsc(String(NET.uid).slice(0,8))+"…":"")+(NET.saveErr?" · hata: "+aEsc(NET.saveErr):"")+'</p><div class="admbtns">'+admBtn("Şimdi buluta kaydet","cloudNow")+admBtn("Yerel kaydet","saveNow")+"</div>")+
+  admCard("🔄 Oturumu sıfırla",'<p class="note">Google hesabından çıkar ve bu cihazdaki kaydı siler; oyun yeni bir oyuncu gibi baştan açılır. Hesaptaki ilerleme bulutta kalır: Ayarlar\'dan Google ile tekrar girince \"yüklensin mi?\" sorusuna <b>Tamam</b> de. Çıkınca yönetim paneli de kapanır.</p><div class="admbtns">'+admBtn("Oturumu sıfırla","sessReset",undefined,"admdanger")+"</div>")+
   admSecBtns("💾 Kayıt")+'<textarea id="admTxt" class="admta" placeholder="İçe aktarma için kayıt JSON\'u buraya"></textarea>'}
 function admLogHTML(){let er=null;try{er=JSON.parse(localStorage.getItem("fvErr")||"null")}catch(e){}
  return admCard("⚠️ Son hata",er?'<p class="note">'+aEsc(er.m)+"<br>"+new Date(er.t).toLocaleString(LOC)+" · "+aEsc(er.v||"")+" · "+er.n+' kez</p><div class="admbtns">'+admBtn("Temizle","errClear")+"</div>":'<p class="note">Kayıtlı hata yok ✅</p>')+
@@ -2504,13 +2530,20 @@ function admSearchHTML(q){q=q.toLocaleLowerCase("tr-TR");const hits=[];for(const
 function admRender(){const b=$("admBox");if(!b)return;if(!isAdmin()){b.innerHTML="";return}ADM.on=true;
  const st=b.querySelector(".admbody"),sc=st?st.scrollTop:0,open=[...b.querySelectorAll("details.admd")].map(d=>d.open);
  let h='<div class="admtop"><input id="admQ" placeholder="🔎 İşlem ara…" value="'+aEsc(ADM.q)+'"><div class="admtabs">'+ADM_TABS.map(t=>'<button data-at="'+t[0]+'" class="'+(ADM.tab===t[0]?"on":"")+'">'+t[1]+"</button>").join("")+"</div></div>";
- const T=ADM.tab;let body=ADM.q?admSearchHTML(ADM.q):T==="players"?admPlayersHTML():T==="dash"?'<div id="admDash">'+admDashHTML()+"</div>":T==="fish"?admFishHTML():T==="eco"?admEcoHTML():T==="time"?admTimeHTML():T==="luck"?admLuckHTML():T==="view"?admViewHTML():T==="tank"?admTankHTML():T==="prog"?admSecBtns("🏆 İlerleme"):T==="save"?admSaveHTML():admLogHTML();
+ const T=ADM.tab;let body=ADM.q?admSearchHTML(ADM.q):T==="players"?admPlayersHTML():T==="dash"?'<div id="admDash">'+admDashHTML()+"</div>":T==="fish"?admFishHTML():T==="eco"?admEcoHTML():T==="time"?admTimeHTML():T==="luck"?admLuckHTML():T==="view"?admViewHTML():T==="tank"?admTankHTML():T==="prog"?admSecBtns("🏆 İlerleme"):T==="save"?admSaveHTML():T==="live"?admLiveHTML():admLogHTML();
  h+='<div class="admbody">'+body+'</div><p class="note">Sadece sana görünür · '+ADMIN_ID.slice(0,6)+"…</p>";const tsl=(b.querySelector(".admtabs")||{}).scrollLeft||0;b.innerHTML=h;admTabsKeep(b,tsl);
  const ds=b.querySelectorAll("details.admd");if(open.length===ds.length)ds.forEach((d,i)=>d.open=open[i]);const nb=b.querySelector(".admbody");if(nb)nb.scrollTop=sc}
 function admLogA(a){const d=new Date();ADM.log.push({t:d.toLocaleTimeString(LOC),a});if(ADM.log.length>60)ADM.log.shift()}
 function admFindF(id){id=+id;return state.fish.find(f=>f.id===id)}
 function admAct2(a,v,btn){const lbl=btn?btn.textContent.trim():a;admLogA(lbl);
  switch(a){
+ case"livePub":livePublish(admLiveForm()).then(()=>admRender());return;
+ case"liveReset":if(confirm("Bütün oyun ayarları 1× yapılsın ve etkinlikler takvime dönsün mü? (Eklenen etkinlikler kalır)")){const L=liveClean({custom:LIVE.custom});livePublish(L,"Ayarlar normale döndü").then(()=>admRender())}return;
+ case"liveEvAdd":{const g=id=>($(id)||{}).value||"",nm=g("admLN").trim(),f=new Date(g("admLF")).getTime(),to=new Date(g("admLT")).getTime();if(!nm){notify("Etkinliğe bir ad ver");return}if(!(isFinite(f)&&isFinite(to)&&to>f)){notify("Bitiş, başlangıçtan sonra olmalı");return}const fx={};$("admBox").querySelectorAll("[data-lf]").forEach(i=>{const v=parseFloat(String(i.value).replace(",","."));if(isFinite(v)&&v>0&&v!==1)fx[i.dataset.lf]=v});
+  const L=admLiveForm();L.custom=LIVE.custom.concat([{id:Date.now().toString(36),n:nm,d:g("admLD").trim(),from:f,to,fx}]);livePublish(liveClean(Object.assign(L,{atMs:L.at})),"Etkinlik eklendi: "+nm).then(()=>admRender());return}
+ case"liveEvDel":{const e=LIVE.custom.find(x=>x.id===v);if(!e||!confirm("\""+e.n+"\" etkinliği silinsin mi?"))return;const L=JSON.parse(JSON.stringify(LIVE));L.custom=L.custom.filter(x=>x.id!==v);livePublish(liveClean(Object.assign(L,{atMs:L.at})),"Etkinlik silindi").then(()=>admRender());return}
+ case"sessReset":if(!confirm("Oturum sıfırlansın mı?\n\nGoogle hesabından çıkılır ve bu cihazdaki kayıt silinir; oyun yeni bir oyuncu gibi başlar. Hesaptaki ilerleme bulutta kalır.\n\nGeri dönmek için: Ayarlar → Google ile giriş → \"yüklensin mi?\" sorusuna TAMAM de. İptal dersen yeni boş oyun hesaptaki kaydın üstüne yazılır!"))return;
+  window.__nosave=true;removeEventListener("pagehide",flush);removeEventListener("beforeunload",flush);(async()=>{try{if(FB&&FB.auth)await FB.auth.signOut()}catch(e){}for(const k of ["fishvilleClassicSave3","akvHyb","akvChatSeen","akvDmSeen","akvAudOwn","fvErr","akvAdm"])try{localStorage.removeItem(k)}catch(e){}try{sessionStorage.clear()}catch(e){}location.reload()})();return;
  case"speed":ADM.speed=+v;notify("🛠️ Hareket hızı: "+(+v===0?"durdu":v+"×"));admRender();return;
  case"tskip":{const hh=+($("admTH")||{}).value||0;if(hh>0){admShift(hh*3600);admDone(hh+" saat ileri alındı")}admRender();return}
  case"setv":{const g=id=>{const e=$(id);return e&&e.value!==""?+e.value:null};const c=g("admVC"),gm=g("admVG"),l=g("admVL"),x=g("admVX");if(c!=null)state.coins=Math.max(0,c);if(gm!=null)state.gems=Math.max(0,gm);if(l!=null)state.level=Math.max(1,l|0);if(x!=null)state.xp=Math.max(0,x);admDone("Değerler ayarlandı");admRender();return}

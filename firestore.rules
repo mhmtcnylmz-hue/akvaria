@@ -1,5 +1,5 @@
 rules_version = '2';
-// Akvaria bulut kuralları (sürüm 140).
+// Akvaria bulut kuralları (sürüm 194).
 // Firebase konsolu > Firestore Database > Kurallar sekmesine yapıştırılıp "Yayınla"ya basılır.
 // Oyunun kullandığı her alan burada: kayıt, tank, profil, yardım, sohbet, sohbet yasağı, özel mesaj, hediye, takas, yönetici hediyesi.
 service cloud.firestore {
@@ -107,6 +107,12 @@ service cloud.firestore {
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['st'])));
       allow delete: if admin() || (signed() && resource.data.st != 'open'
         && (resource.data.from == request.auth.uid || resource.data.to == request.auth.uid));
+    }
+
+    // Canlı oyun ayarları ve etkinlikler (sürüm 194): herkes okur, sadece yönetici yazar
+    match /config/{id} {
+      allow read: if signed();
+      allow write: if admin();
     }
 
     // Yönetici hediyesi (altın/zümrüt): sadece yönetici gönderir, alıcı okuyup siler
