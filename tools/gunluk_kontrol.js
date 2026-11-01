@@ -34,7 +34,7 @@ const SORUN = [], BILGI = [];
       deep: { fish: ["banggai", "fusilier", "squirrel", "puffer", "sweetlips", "parrot", "trevally", "reefshark"].map(t => mk(t)).concat([mk("puffer", "melanistic"), mk("parrot", "transparent"), mk("reefshark", "gold"), mk("trevally", "glitch"), mk("banggai", "albino")]), dirt: 30 },
       river: { fish: ["piranha", "piranha", "peacock", "bichir", "eel", "mahseer", "gar", "goliath", "mekong", "sturgeon", "arapaima"].map(t => mk(t)).concat([mk("eel", "glitch"), mk("arapaima", "gold")]), dirt: 30 },
       cfresh: { fish: [mk("koi"), mk("clown")], dirt: 0 }, coll2: { fish: [mk("arapaima"), mk("discus")], dirt: 0 } };
-    s.crit = { deep: [{ id: 900, k: "jdeep" }, { id: 901, k: "iso" }, { id: 907, k: "comb" }, { id: 908, k: "atolla" }, { id: 909, k: "gsquid" }], salt: [{ id: 902, k: "jpink" }, { id: 904, k: "cleaner" }], fresh: [{ id: 906, k: "blue" }] };
+    s.crit = { deep: [{ id: 900, k: "lcleaner" }, { id: 901, k: "lcleaner" }, { id: 907, k: "lmoon" }, { id: 908, k: "lmoon" }], salt: [{ id: 902, k: "jpink" }, { id: 904, k: "cleaner" }], fresh: [{ id: 906, k: "blue" }] };
     s.decor = [{ k: "🦀", x: .25 }, { k: "sf", x: .4 }, { k: "🐚", x: .7 }]; s.snails = 2; s.props = ["moai", "table"]; s.dirt = 40;
     return JSON.stringify(s);
   });
