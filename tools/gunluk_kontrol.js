@@ -32,6 +32,7 @@ const SORUN = [], BILGI = [];
     s.fish = ["koi", "neon", "guppy", "betta", "gold", "cichlid", "discus", "arowana"].map(t => mk(t)).concat([mk("neon", "gold"), mk("guppy", "glitch"), mk("koi", "albino")]);
     s.stash = { salt: { fish: ["clown", "napo", "ytang", "btang", "angel", "lion", "trigger", "mandarin"].map(t => mk(t)).concat([mk("clown", "melanistic")]), dirt: 30 },
       deep: { fish: ["banggai", "fusilier", "squirrel", "puffer", "sweetlips", "parrot", "trevally", "reefshark"].map(t => mk(t)).concat([mk("puffer", "melanistic"), mk("parrot", "transparent"), mk("trevally", "gold"), mk("trevally", "glitch"), mk("banggai", "albino")]), dirt: 30 },
+      abyss: { fish: ["abhatch", "ablantern", "barreleye", "blobfish", "fangtooth", "football", "opah", "warsaw"].map(t => mk(t)).concat([mk("opah", "gold"), mk("fangtooth", "glitch"), mk("blobfish", "albino")]), dirt: 30 },
       river: { fish: ["piranha", "piranha", "peacock", "bichir", "eel", "mahseer", "gar", "goliath", "mekong", "sturgeon", "arapaima"].map(t => mk(t)).concat([mk("eel", "glitch"), mk("arapaima", "gold")]), dirt: 30 },
       cfresh: { fish: [mk("koi"), mk("clown")], dirt: 0 }, coll2: { fish: [mk("arapaima"), mk("discus")], dirt: 0 } };
     s.crit = { deep: [{ id: 900, k: "lcleaner" }, { id: 901, k: "lcleaner" }, { id: 907, k: "lmoon" }, { id: 908, k: "lmoon" }], salt: [{ id: 902, k: "jpink" }, { id: 904, k: "cleaner" }], fresh: [{ id: 906, k: "blue" }] };
@@ -41,7 +42,7 @@ const SORUN = [], BILGI = [];
   await p.addInitScript(S => { if (!sessionStorage.getItem("x")) { sessionStorage.setItem("x", 1); localStorage.setItem("fishvilleClassicSave3", S); } }, SAVE);
   await p.reload(); await p.waitForTimeout(3000);
   const kare = {};
-  for (const tk of ["fresh", "salt", "river", "deep", "cfresh", "coll2"]) {
+  for (const tk of ["fresh", "salt", "river", "deep", "abyss", "cfresh", "coll2"]) {
     await p.evaluate(tk => { const s = window.__G.state; if (s.tank !== tk && s.stash[tk]) { const o = s.stash[tk]; s.stash[s.tank] = { fish: s.fish, dirt: s.dirt }; s.fish = o.fish; s.dirt = o.dirt; delete s.stash[tk]; s.tank = tk; } }, tk);
     await p.waitForTimeout(1500);
     kare[tk] = await p.evaluate(() => new Promise(res => { const d = []; let l = performance.now(), st = l; const f = n => { d.push(n - l); l = n; if (n - st < 3000) requestAnimationFrame(f); else { d.sort((a, b) => a - b); res(Math.round(d[d.length >> 1])); } }; requestAnimationFrame(f); }));
