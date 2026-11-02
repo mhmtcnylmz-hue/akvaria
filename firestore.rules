@@ -1,5 +1,5 @@
 rules_version = '2';
-// Akvaria bulut kuralları (sürüm 194).
+// Akvaria bulut kuralları (sürüm 200).
 // Firebase konsolu > Firestore Database > Kurallar sekmesine yapıştırılıp "Yayınla"ya basılır.
 // Oyunun kullandığı her alan burada: kayıt, tank, profil, yardım, sohbet, sohbet yasağı, özel mesaj, hediye, takas, yönetici hediyesi.
 service cloud.firestore {
@@ -113,6 +113,28 @@ service cloud.firestore {
     match /config/{id} {
       allow read: if signed();
       allow write: if admin();
+    }
+
+    // Biyolüminesan dünya sayacı (sürüm 200): herkes okur, sadece birer birer artırılır
+    match /counters/{id} {
+      allow read: if signed();
+      allow create: if signed() && request.resource.data.keys().hasOnly(['n']) && request.resource.data.n == 1;
+      allow update: if signed() && request.resource.data.keys().hasOnly(['n']) && request.resource.data.n == resource.data.n + 1;
+      allow delete: if admin();
+    }
+
+    // Biyolüminesan duyuruları (sürüm 200): herkes okur, oyuncu kendi adına kısa bir duyuru yazar, sadece yönetici siler
+    match /announce/{id} {
+      allow read: if signed();
+      allow create: if signed()
+        && request.resource.data.keys().hasOnly(['u', 'n', 'sp', 'no', 'at'])
+        && request.resource.data.u == request.auth.uid
+        && request.resource.data.n is string && request.resource.data.n.size() <= 32
+        && request.resource.data.sp is string && request.resource.data.sp.size() <= 40
+        && request.resource.data.no is int
+        && request.resource.data.at == request.time;
+      allow delete: if admin();
+      allow update: if false;
     }
 
     // Yönetici hediyesi (altın/zümrüt): sadece yönetici gönderir, alıcı okuyup siler
