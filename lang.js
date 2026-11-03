@@ -2,7 +2,7 @@
 // (HTML, textContent, tuval yazıları, açılır pencereler) buradaki sözlükten geçirilir. Kullanıcı metinleri (sohbet, isimler)
 // translate="no" işaretli kapların içinde olduğu için çevrilmez.
 (function(){"use strict";
-var L="tr";try{var v=localStorage.getItem("akvLang");L=v==="en"||v==="tr"?v:(localStorage.getItem("fishvilleClassicSave3")||/^tr\b/i.test(navigator.language||""))?"tr":"en"}catch(e){L=/^tr\b/i.test(navigator.language||"")?"tr":"en"}
+var L="tr";try{var v=localStorage.getItem("akvLang");L=v==="en"||v==="tr"?v:(localStorage.getItem("akvariaSave")||/^tr\b/i.test(navigator.language||""))?"tr":"en"}catch(e){L=/^tr\b/i.test(navigator.language||"")?"tr":"en"}
 window.AKV_LANG=L;window.AKV_SETLANG=function(x){try{localStorage.setItem("akvLang",x)}catch(e){}location.reload()};
 try{document.documentElement.lang=L}catch(e){}
 if(L!=="en"){window.AKV_T=function(s){return s};return}

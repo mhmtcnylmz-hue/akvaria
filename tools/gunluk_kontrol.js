@@ -39,7 +39,7 @@ const SORUN = [], BILGI = [];
     s.decor = [{ k: "🦀", x: .25 }, { k: "sf", x: .4 }, { k: "🐚", x: .7 }]; s.snails = 2; s.props = ["moai", "table"]; s.dirt = 40;
     return JSON.stringify(s);
   });
-  await p.addInitScript(S => { if (!sessionStorage.getItem("x")) { sessionStorage.setItem("x", 1); localStorage.setItem("fishvilleClassicSave3", S); } }, SAVE);
+  await p.addInitScript(S => { if (!sessionStorage.getItem("x")) { sessionStorage.setItem("x", 1); localStorage.setItem("akvariaSave", S); } }, SAVE);
   await p.reload(); await p.waitForTimeout(3000);
   const kare = {};
   for (const tk of ["fresh", "salt", "river", "deep", "abyss", "cfresh", "coll2"]) {
