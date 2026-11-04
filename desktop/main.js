@@ -13,6 +13,7 @@ const TYPES = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; ch
 app.commandLine.appendSwitch("ignore-gpu-blocklist");
 app.commandLine.appendSwitch("enable-gpu-rasterization");
 app.commandLine.appendSwitch("enable-zero-copy");
+app.commandLine.appendSwitch("enable-features", "CanvasOopRasterization");
 app.commandLine.appendSwitch("force_high_performance_gpu");
 app.commandLine.appendSwitch("disable-renderer-backgrounding");
 app.commandLine.appendSwitch("disable-background-timer-throttling");
