@@ -28,12 +28,20 @@ html.ui3 #game .side .tl.sq,html.ui3 #game .rside .tl.sq{width:44px!important;he
 html.ui3 #game .side .tl.sq::before,html.ui3 #game .rside .tl.sq::before,html.ui3 #game .side .tl.sq::after,html.ui3 #game .rside .tl.sq::after{display:none!important}
 html.ui3 #game .side .tl.sq img,html.ui3 #game .rside .tl.sq img{width:36px!important;height:36px!important;max-width:none!important;padding:0!important;margin:0!important}
 html.ui3 #game .side .tl.sq .tll,html.ui3 #game .rside .tl.sq .tll{display:none!important}
-html.ui3 #game .side .tl.sq .emo,html.ui3 #game .rside .tl.sq .emo{font-size:22px!important}
+html.ui3 #stage #game .side .tl.sq .emo,html.ui3 #stage #game .rside .tl.sq .emo{font-size:22px!important;background:none!important;box-shadow:none!important;border:0!important;width:auto!important;aspect-ratio:auto!important}
 html.ui3 #game .side{gap:8px!important;width:44px!important}
-html.ui3 #game .rside{gap:8px!important;width:60px!important;align-items:center!important;top:calc(var(--sT,0px) + 64px)!important;bottom:calc(var(--sB,0px) + 92px)!important;height:auto!important;justify-content:flex-start!important}
+html.ui3 #game .rside{gap:8px!important;width:60px!important;align-items:center!important;top:calc(var(--sT,0px) + 64px)!important;bottom:calc(25% + 66px + var(--sB,0px))!important;height:auto!important;justify-content:flex-start!important}
 html.ui3 #game .rside::before{content:"";order:4;flex:1 1 0}
 html.ui3 #game #cureBtn{order:5}html.ui3 #game #sellBtn{order:6}html.ui3 #game #clean{order:7}html.ui3 #game #feed{order:8}
-html.land.ui3 #game .rside{bottom:calc(var(--sB,0px) + 8px)!important;top:calc(var(--sT,0px) + 54px)!important}
+html.land.ui3 #game .rside{bottom:auto!important;top:calc(var(--sT,0px) + 50px)!important;gap:5px!important}
+html.land.ui3 #game .rside::before{display:none}
+html.land.ui3 #game #u3more{width:30px!important;height:30px!important}
+html.land.ui3 #game .rside .tl.bub img,html.land.ui3 #game .rside .tl.bub .emo{width:38px!important;height:38px!important;padding:6px}
+html.land.ui3 #game .rside #feed img{width:44px!important;height:44px!important;padding:7px}
+html.land.ui3 #game .rside .tl.bub{width:46px!important}html.land.ui3 #game .rside #feed{width:48px!important}
+html.land.ui3 #game .rside .tl.bub .tll{font-size:9px!important}
+html.land.ui3 body.u3x #game #zenBtn,html.land.ui3 body.u3x #game #nightBtn,html.land.ui3 body.u3x #game #camBtn{position:absolute!important;top:-4px}
+html.land.ui3 body.u3x #game #nightBtn{right:56px}html.land.ui3 body.u3x #game #zenBtn{right:106px}html.land.ui3 body.u3x #game #camBtn{right:156px}
 html.ui3 body:not(.u3x) #game #zenBtn,html.ui3 body:not(.u3x) #game #nightBtn,html.ui3 body:not(.u3x) #game #camBtn{display:none!important}
 html.ui3 #game #u3more{width:36px!important;height:36px!important;display:grid!important;place-items:center}
 html.ui3 #game #u3more[hidden]{display:none!important}
