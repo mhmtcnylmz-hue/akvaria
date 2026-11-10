@@ -2914,7 +2914,7 @@ function protoInit(){if(!window.__proto)return;document.body.classList.add("prot
  document.body.appendChild(el);
  let veSt="yükleniyor…";const veLbl=()=>{const v=window.AkvVE;veSt=!v?veSt:v.err&&!v.ok?"bu cihaz desteklemiyor":PXON?"açık":"kapalı"};
  const info=()=>{veLbl();const s=$("ptInfo");if(s)s.textContent=state.fish.length+" balık · motor "+veSt+" · hibrit yüzme "+(HSW.on?"açık":"kapalı");$("ptUi").textContent="🎨 "+UIN[UIM];$("ptVe").textContent="🧪 Motor: "+veSt;$("ptVe").classList.toggle("on",veSt==="açık");$("ptPl").textContent="🖼️ Arka plan: "+(PPL?"sade":"tam")};info();
- loadJS("px/akv-visual.js?v=213").then(()=>{if(!veStart())PXON=false;info()}).catch(()=>{veSt="yüklenemedi";PXON=false;info()});
+ loadJS("px/akv-visual.js?v=214").then(()=>{if(!veStart())PXON=false;info()}).catch(()=>{veSt="yüklenemedi";PXON=false;info()});
  el.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;audio();const d=b.dataset;
   if(d.ts){window.__ts=+d.ts;el.querySelectorAll("[data-ts]").forEach(x=>x.classList.toggle("on",x===b))}
   else if(d.p==="tg")el.classList.toggle("open");
