@@ -1,0 +1,243 @@
+/* Akvaria — yeni görünüm (ui3). Yalnızca html.ui3 altında çalışır; ?ui=3 ile açılır.
+   1) Tasarım değişkenleri  2) Ana ekran  3) Paneller ve ortak parçalar  4) Mağaza  5) Balıklarım
+   6) Koleksiyon kartları  7) Balık defteri  8) Üretim  9) Diğer ekranlar  10) Hareket */
+
+/* ---------- 1) Tasarım değişkenleri ---------- */
+html.ui3{
+ --u-navy:#071D32;--u-deep:#0B2945;--u-panel:#123B60;--u-panel2:#194B72;--u-blue:#2588EF;--u-turq:#36B9D0;--u-cyan:#8ADCE8;
+ --u-gold:#F4BB50;--u-coral:#F47770;--u-green:#55C994;--u-lav:#A9A0E8;
+ --u-t1:#F2F8FB;--u-t2:#9CCBD6;--u-t3:#7C97AD;
+ --u-line:rgba(138,220,232,.16);--u-line2:rgba(138,220,232,.3);
+ --u-s1:rgba(11,41,69,.78);--u-s2:rgba(18,59,96,.72);--u-s3:rgba(25,75,114,.6);
+ --u-r1:10px;--u-r2:14px;--u-r3:20px;--u-r4:26px;
+ --u-sh1:0 2px 8px rgba(3,14,26,.28);--u-sh2:0 10px 30px rgba(3,14,26,.42);
+ --u-hi:inset 0 1px 0 rgba(255,255,255,.1);
+ --u-fh:"Baloo 2","Trebuchet MS",system-ui,sans-serif;--u-fb:"Nunito",system-ui,-apple-system,sans-serif;
+ --u-fast:.14s;--u-med:.24s;--u-ease:cubic-bezier(.2,.8,.2,1)}
+
+/* ---------- 2) Ana ekran ---------- */
+/* Üst çubuk: iki ince kapsül, tek çizgi kalınlığında kenar */
+html.ui3 #game .lvbox,html.ui3 #game .tbr,html.ui3 #game #tankStrip>*{background:linear-gradient(180deg,rgba(25,75,114,.5),rgba(7,29,50,.7))!important;border:1px solid var(--u-line2)!important;box-shadow:var(--u-sh1),var(--u-hi)!important}
+html.ui3 #game .lvbox::before,html.ui3 #game .tbr::before,html.ui3 #game .lvbox::after,html.ui3 #game .tbr::after{display:none!important}
+html.ui3 #game .cpill{background:transparent!important;border:0!important;box-shadow:none!important}
+html.ui3 #game .cpill b{font-family:var(--u-fh);color:var(--u-t1)}
+html.ui3 #game .cpill+.cpill{border-left:1px solid var(--u-line)!important;border-radius:0!important}
+html.ui3 #game #xptxt{color:var(--u-t2)}
+/* Yan düğmeler: kutu yok, yuvarlak ve küçük; fazlası "•••" arkasında */
+html.ui3 #game .side .tl.sq,html.ui3 #game .rside .tl.sq{width:44px!important;height:44px!important;min-height:0!important;border-radius:50%!important;background:linear-gradient(180deg,rgba(25,75,114,.55),rgba(7,29,50,.72))!important;border:1px solid var(--u-line2)!important;box-shadow:var(--u-sh1),var(--u-hi)!important;padding:0!important}
+html.ui3 #game .side .tl.sq::before,html.ui3 #game .rside .tl.sq::before,html.ui3 #game .side .tl.sq::after,html.ui3 #game .rside .tl.sq::after{display:none!important}
+html.ui3 #game .side .tl.sq img,html.ui3 #game .rside .tl.sq img{width:36px!important;height:36px!important;max-width:none!important;padding:0!important;margin:0!important}
+html.ui3 #game .side .tl.sq .tll,html.ui3 #game .rside .tl.sq .tll{display:none!important}
+html.ui3 #game .side .tl.sq .emo,html.ui3 #game .rside .tl.sq .emo{font-size:22px!important}
+html.ui3 #game .side{gap:8px!important;width:44px!important}
+html.ui3 #game .rside{gap:8px!important;width:60px!important;align-items:center!important;top:calc(var(--sT,0px) + 64px)!important;bottom:calc(var(--sB,0px) + 92px)!important;height:auto!important;justify-content:flex-start!important}
+html.ui3 #game .rside::before{content:"";order:4;flex:1 1 0}
+html.ui3 #game #cureBtn{order:5}html.ui3 #game #sellBtn{order:6}html.ui3 #game #clean{order:7}html.ui3 #game #feed{order:8}
+html.land.ui3 #game .rside{bottom:calc(var(--sB,0px) + 8px)!important;top:calc(var(--sT,0px) + 54px)!important}
+html.ui3 body:not(.u3x) #game #zenBtn,html.ui3 body:not(.u3x) #game #nightBtn,html.ui3 body:not(.u3x) #game #camBtn{display:none!important}
+html.ui3 #game #u3more{width:36px!important;height:36px!important;display:grid!important;place-items:center}
+html.ui3 #game #u3more[hidden]{display:none!important}
+html.ui3 .u3dots{display:flex;gap:3px}html.ui3 .u3dots i{width:4px;height:4px;border-radius:50%;background:var(--u-cyan)}
+html.ui3 body.u3x #game #u3more{background:var(--u-panel2)!important}
+html.ui3 body.u3x #game #zenBtn,html.ui3 body.u3x #game #nightBtn,html.ui3 body.u3x #game #camBtn{animation:u3pop var(--u-med) var(--u-ease) both}
+/* Yemle birincil eylem; Temizle ve Sat ikincil */
+html.ui3 #game .rside .tl.bub{width:52px!important;min-height:0!important;background:none!important;border:0!important;box-shadow:none!important;padding:0!important;gap:2px!important}
+html.ui3 #game .rside .tl.bub img,html.ui3 #game .rside .tl.bub .emo{width:46px!important;height:46px!important;padding:8px;border-radius:50%!important;background:linear-gradient(180deg,rgba(25,75,114,.6),rgba(7,29,50,.78))!important;border:1px solid var(--u-line2)!important;box-shadow:var(--u-sh1),var(--u-hi)!important;display:grid;place-items:center}
+html.ui3 #game .rside #feed img{width:58px!important;height:58px!important;padding:9px;border:1.5px solid var(--u-gold)!important;box-shadow:var(--u-sh1),0 0 14px rgba(244,187,80,.28),var(--u-hi)!important}
+html.ui3 #game .rside #feed{width:60px!important}
+html.ui3 #game .rside .tl.bub .tll{font:700 10px/1 var(--u-fh)!important;color:var(--u-t1)!important;text-shadow:0 1px 3px rgba(3,14,26,.9)!important;letter-spacing:.2px}
+html.ui3 #game .rside .tl.bub .chip{background:var(--u-gold)!important;color:#3a2400!important;border:0!important;font:800 9.5px/1 var(--u-fh)!important;padding:3px 6px!important;border-radius:99px!important;box-shadow:var(--u-sh1)!important}
+html.ui3 #game .rside .tl.bub.on img{border-color:var(--u-gold)!important;background:linear-gradient(180deg,rgba(244,187,80,.5),rgba(120,80,20,.6))!important}
+/* Alt menü: ince, kutusuz; seçili olan turkuaz çizgiyle belli */
+html.ui3 #game .dock{background:linear-gradient(180deg,rgba(18,59,96,.82),rgba(7,29,50,.92))!important;border:1px solid var(--u-line2)!important;border-radius:var(--u-r3)!important;box-shadow:var(--u-sh2),var(--u-hi)!important;padding:5px 6px!important;gap:2px!important}
+html.ui3 #game .dock .nv{background:none!important;border:0!important;box-shadow:none!important;border-radius:var(--u-r2)!important;padding:4px 2px 5px!important;min-height:0!important;gap:1px!important;position:relative}
+html.ui3 #game .dock .nv::before,html.ui3 #game .dock .nv::after{display:none!important}
+html.ui3 #game .dock .nv img{width:28px!important;height:28px!important;transition:transform var(--u-med) var(--u-ease)}
+html.ui3 #game .dock .nv .tll{font:700 10px/1.05 var(--u-fh)!important;color:var(--u-t3)!important;letter-spacing:.1px}
+html.ui3 #game .dock .nv.on{background:linear-gradient(180deg,rgba(54,185,208,.2),rgba(54,185,208,.04))!important}
+html.ui3 #game .dock .nv.on::after{display:block!important;content:"";position:absolute;left:30%;right:30%;bottom:1px;height:2.5px;border-radius:9px;background:var(--u-turq);box-shadow:0 0 8px var(--u-turq)}
+html.ui3 #game .dock .nv.on .tll{color:var(--u-t1)!important}
+html.ui3 #game .dock .nv.on img{transform:translateY(-1px) scale(1.08)}
+html.ui3 #game .badge{background:var(--u-coral)!important;border:1.5px solid var(--u-navy)!important;box-shadow:none!important}
+
+/* ---------- 3) Paneller ve ortak parçalar ---------- */
+html.ui3 #game #sheet{background:linear-gradient(180deg,rgba(7,29,50,.35),rgba(7,29,50,.72))!important}
+html.ui3 #game #sheet .card{background:linear-gradient(180deg,#0E3152 0%,var(--u-deep) 22%,var(--u-navy) 100%)!important;border:1px solid var(--u-line2)!important;border-radius:var(--u-r4)!important;box-shadow:var(--u-sh2),var(--u-hi)!important}
+html.ui3 #game #sheet.show .card{animation:u3rise var(--u-med) var(--u-ease) both}
+html.ui3 #game #sheet .ch strong{font:800 19px/1.1 var(--u-fh)!important;color:var(--u-t1)!important;letter-spacing:.2px}
+html.ui3 #game #sclose{width:34px!important;height:34px!important;border-radius:50%!important;background:var(--u-s3)!important;border:1px solid var(--u-line)!important;color:var(--u-t2)!important;padding:0!important;box-shadow:none!important}
+html.ui3 #game .note{color:var(--u-t3)!important;font:600 12px/1.45 var(--u-fb)!important}
+html.ui3 #game h4.sh,html.ui3 #game .sg-h{font:800 15px/1.2 var(--u-fh)!important;color:var(--u-t1)!important}
+html.ui3 #game .sg-h small{color:var(--u-t3)!important;font:600 11.5px var(--u-fb)!important}
+/* Sekmeler: tek parça seçici */
+html.ui3 #game #stabs,html.ui3 #game .stabs2{background:rgba(7,29,50,.7)!important;border:1px solid var(--u-line)!important;border-radius:var(--u-r2)!important;padding:3px!important;gap:2px!important;box-shadow:none!important}
+html.ui3 #game .stab{background:none!important;border:0!important;box-shadow:none!important;border-radius:11px!important;color:var(--u-t2)!important;font:700 12.5px/1.1 var(--u-fh)!important;padding:9px 6px!important;min-height:0!important;transition:background var(--u-fast),color var(--u-fast)}
+html.ui3 #game .stab.on{background:linear-gradient(180deg,#3396F5,var(--u-blue))!important;color:#fff!important;box-shadow:0 2px 8px rgba(37,136,239,.35),var(--u-hi)!important}
+/* Düğmeler */
+html.ui3 #game :where(#sheet) button:where(:not(.tl):not(.stab):not(.ccard):not(.u3-slot):not(.u3-c):not(.fpick):not(.fren):not(.flock):not(.sndsw)){background:var(--u-s3)!important;border:1px solid var(--u-line)!important;border-radius:var(--u-r2)!important;color:var(--u-t1)!important;font:700 13px/1.15 var(--u-fh)!important;box-shadow:var(--u-hi)!important;transition:transform var(--u-fast),filter var(--u-fast)}
+html.ui3 #game #sheet button:not(.tl):active{transform:scale(.97)}
+/* birincil (altın) düğme: satın alma, açma, onay */
+html.ui3 #game #sheet button[data-unlock]:not(:disabled),html.ui3 #game #sheet #sndTest,html.ui3 #game #lvOk,html.ui3 #upn .upb{background:linear-gradient(180deg,#F8CB6C,var(--u-gold))!important;color:#3A2400!important;border:0!important;box-shadow:0 2px 0 #B98524,var(--u-sh1)!important;font-weight:800!important}
+html.ui3 #game #sheet button:disabled{opacity:.45!important}
+html.ui3 #game #sheet button.danger:not(.lockd){background:rgba(244,119,112,.16)!important;border-color:rgba(244,119,112,.5)!important;color:#FFC9C5!important}
+html.ui3 #game .chip2{border-radius:99px!important;padding:7px 12px!important;font-size:12px!important;background:rgba(25,75,114,.45)!important}
+html.ui3 #game .chip2.on{background:var(--u-turq)!important;border-color:transparent!important;color:#04222b!important}
+/* Ortak satır kartı */
+html.ui3 #game .fish-card,html.ui3 #game .mini,html.ui3 #game .fc{background:var(--u-s2)!important;border:1px solid var(--u-line)!important;border-radius:var(--u-r3)!important;box-shadow:var(--u-hi)!important}
+html.ui3 #game .fish-card strong{font:800 14.5px/1.2 var(--u-fh)!important;color:var(--u-t1)!important}
+html.ui3 #game .fish-card small{color:var(--u-t2)!important;font:600 12px/1.4 var(--u-fb)!important}
+html.ui3 #game .fish-card.locked{opacity:1!important;background:rgba(11,41,69,.6)!important}
+html.ui3 #game .fish-card.locked>*{opacity:1!important}
+html.ui3 #game .fish-card.locked strong{color:var(--u-t2)!important}
+html.ui3 #game .fish-card.locked small{color:var(--u-t3)!important}
+html.ui3 #game .fish-card.cur{border-color:var(--u-gold)!important;background:linear-gradient(180deg,rgba(244,187,80,.12),rgba(18,59,96,.72))!important}
+html.ui3 #game .qicon{background:rgba(7,29,50,.55)!important;border:1px solid var(--u-line)!important;border-radius:var(--u-r2)!important}
+html.ui3 #game select,html.ui3 #game input[type=text],html.ui3 #game #nickIn,html.ui3 #game #chatIn,html.ui3 #game textarea{background:rgba(7,29,50,.7)!important;border:1px solid var(--u-line)!important;border-radius:var(--u-r2)!important;color:var(--u-t1)!important;font:700 13px var(--u-fb)!important}
+
+/* ---------- 4) Mağaza ---------- */
+html.ui3 #game .stabs2 .stab,html.ui3 #game #stabs .stab{flex:1 1 0!important;white-space:nowrap!important;display:flex!important;align-items:center;justify-content:center;gap:4px}
+html.ui3 #game .sg{gap:8px!important}
+html.ui3 #game .sg-c{background:linear-gradient(180deg,rgba(25,75,114,.5),rgba(11,41,69,.75))!important;border:1px solid var(--u-line)!important;border-radius:var(--u-r3)!important;box-shadow:var(--u-hi)!important;padding:8px 6px 7px!important;transition:transform var(--u-fast) var(--u-ease)}
+html.ui3 #game .sg-c:active{transform:scale(.97)}
+html.ui3 #game .sg-im{height:74px!important;background:radial-gradient(60% 55% at 50% 55%,rgba(138,220,232,.2),transparent 70%)!important;border:0!important}
+html.ui3 #game .sg-c>b{font:700 12px/1.15 var(--u-fh)!important;color:var(--u-t1)!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;display:flex!important;align-items:center;justify-content:center;min-height:28px;text-align:center}
+html.ui3 #game #sheet .sg-c button.sg-p{background:linear-gradient(180deg,#F8CB6C,var(--u-gold))!important;border:0!important;color:#3A2400!important;font:800 12.5px/1 var(--u-fh)!important;border-radius:99px!important;padding:5px 10px!important;min-height:0!important;width:auto!important;margin:0 auto!important;display:inline-flex!important;align-items:center;gap:4px;box-shadow:0 2px 0 #B98524,var(--u-sh1)!important}
+html.ui3 #game .sg-c .sg-p img{width:14px!important;height:14px!important}
+html.ui3 #game .sg-c{text-align:center}
+html.ui3 #game .sg-new{background:var(--u-turq)!important;color:#04222b!important;font:800 8.5px/1 var(--u-fh)!important;border-radius:99px!important;padding:3px 6px!important;box-shadow:none!important;letter-spacing:.4px}
+
+/* ---------- 5) Balıklarım ---------- */
+html.ui3 #game .ib{gap:6px!important}
+html.ui3 #game .ib-s b{font:800 14px var(--u-fh);color:var(--u-t1)}html.ui3 #game .ib-s small{color:var(--u-t2)!important}
+html.ui3 #game .fc{padding:8px 10px!important;margin-bottom:7px!important;transition:background var(--u-fast)}
+html.ui3 #game .fc.cmp{display:grid!important;grid-template-columns:auto 58px minmax(0,1fr) auto!important;align-items:center!important;gap:10px!important;min-height:0!important}
+html.ui3 #game .fc.cmp .fpick:not(:empty),html.ui3 #game .fc .fpick{grid-column:1}
+html.ui3 #game .fc.cmp .fc-ico{grid-column:2;width:58px!important;height:58px!important;border-radius:var(--u-r2)!important;background:radial-gradient(60% 60% at 50% 50%,rgba(138,220,232,.22),rgba(7,29,50,.5))!important;border:1px solid var(--u-line)!important}
+html.ui3 #game .fc.cmp .fc-main{grid-column:3;min-width:0}
+html.ui3 #game .fc.cmp .fc-act{grid-column:4;display:block!important;width:auto!important;min-width:0!important}
+html.ui3 #game .fc-name b{font:800 14.5px/1.2 var(--u-fh)!important;color:var(--u-t1)!important}
+html.ui3 #game .fc.cmp .fren,html.ui3 #game .fc.cmp .fc-name .pill,html.ui3 #game .fc.cmp [data-gift]{display:none!important}
+html.ui3 #game .fc-sum{color:var(--u-t2)!important;font:700 11.5px var(--u-fb)!important}
+/* kapalı kartta satış düğmesi yok: sadece değer görünür; satmak için karta dokunup açmak gerekir */
+html.ui3 #game #sheet .fc.cmp .fc-act button[data-sell]{pointer-events:none!important;background:none!important;border:0!important;box-shadow:none!important;padding:0!important;min-height:0!important;font-size:0!important;width:auto!important;height:auto!important}
+html.ui3 #game #sheet .fc.cmp .fc-act button[data-sell] small{font:800 13px/1 var(--u-fh)!important;color:var(--u-gold)!important;display:inline-flex;align-items:center;gap:3px;opacity:1!important}
+html.ui3 #game #sheet .fc.cmp .fc-act button[data-sell]>.ei{display:none!important}
+html.ui3 #game #sheet .fc.cmp .fc-act button[data-sell] small .ei{width:14px;height:14px}
+html.ui3 #game #sheet .fc:not(.cmp){display:grid!important;grid-template-columns:auto 76px minmax(0,1fr)!important;gap:10px!important;align-items:start!important}
+html.ui3 #game #sheet .fc:not(.cmp) .fc-ico{grid-column:2;width:76px!important;height:76px!important;border-radius:var(--u-r2)!important;background:radial-gradient(60% 60% at 50% 50%,rgba(138,220,232,.24),rgba(7,29,50,.5))!important;border:1px solid var(--u-line)!important}
+html.ui3 #game #sheet .fc:not(.cmp) .fc-main{grid-column:3;min-width:0}
+html.ui3 #game #sheet .fc:not(.cmp) .fc-act{grid-column:1/-1;display:flex!important;flex-direction:row!important;gap:8px;margin-top:2px;width:auto!important}
+html.ui3 #game #sheet .fc:not(.cmp) .fc-act button{min-height:40px!important;display:flex!important;flex-direction:row!important;align-items:center;justify-content:center;gap:6px}
+html.ui3 #game #sheet .fc:not(.cmp) .fc-act button[data-gift]{flex:0 0 48px}
+html.ui3 #game #sheet .fc:not(.cmp) .fc-act button[data-sell]:not(.lockd){background:rgba(244,119,112,.14)!important;border-color:rgba(244,119,112,.5)!important;color:#FFC9C5!important;flex:1}
+html.ui3 #game #sheet .fc:not(.cmp) .fc-act button.lockd{flex:1;color:var(--u-t3)!important}
+html.ui3 #game .fc:not(.cmp){border-color:var(--u-line2)!important;background:linear-gradient(180deg,rgba(25,75,114,.7),rgba(18,59,96,.72))!important}
+html.ui3 #game .pill{border-radius:99px!important;font:700 10.5px/1 var(--u-fh)!important;padding:4px 8px!important;background:rgba(7,29,50,.6)!important;border:1px solid var(--u-line)!important;color:var(--u-t2)!important}
+html.ui3 #game .pill.mut-albino{color:#FFD9E6!important;border-color:rgba(255,205,225,.5)!important}
+html.ui3 #game .pill.mut-transparent{color:var(--u-cyan)!important;border-color:rgba(138,220,232,.55)!important}
+html.ui3 #game .pill.mut-melanistic{color:#C9C1F5!important;border-color:rgba(169,160,232,.55)!important}
+html.ui3 #game .pill.mut-gold{color:var(--u-gold)!important;border-color:rgba(244,187,80,.6)!important}
+html.ui3 #game .pill.mut-glitch{color:#9BF3D0!important;border-color:rgba(85,201,148,.6)!important}
+html.ui3 #game .flock{background:none!important;border:0!important;box-shadow:none!important;padding:2px!important;min-height:0!important;opacity:.45}
+html.ui3 #game .flock.on{opacity:1}
+
+/* ---------- 6) Koleksiyon kartları ---------- */
+html.ui3 #game .csum{font:800 14px var(--u-fh)!important;color:var(--u-t1)!important}
+html.ui3 #game .cbar .invrow,html.ui3 #game .csets{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;gap:6px!important;padding-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+html.ui3 #game .cbar .invrow::-webkit-scrollbar,html.ui3 #game .csets::-webkit-scrollbar{display:none}
+html.ui3 #game .cbar .invrow>*{flex:0 0 auto!important;white-space:nowrap}
+html.ui3 #game .cset{flex:0 0 128px!important;background:var(--u-s2)!important;border:1px solid var(--u-line)!important;border-radius:var(--u-r2)!important;padding:8px 10px 11px!important;position:relative;overflow:hidden}
+html.ui3 #game .cset b{font:800 12.5px var(--u-fh)!important;color:var(--u-t1)!important;white-space:nowrap}html.ui3 #game .cset small{color:var(--u-t2)!important;font:600 11px var(--u-fb)!important}
+html.ui3 #game .cset>i{position:absolute!important;left:0;bottom:0;height:4px!important;background:linear-gradient(90deg,var(--u-turq),var(--u-green))!important;border-radius:0 4px 4px 0!important}
+html.ui3 #game .cgrid{gap:9px!important}
+html.ui3 #stage #game .ccard{--c1:#1B4F7C!important;--c2:#0B2945!important;--cb:rgba(138,220,232,.4)!important;--ct:var(--u-t1)!important;position:relative;overflow:hidden;aspect-ratio:5/7;padding:6px 6px 8px!important;border-radius:14px!important;border:1.5px solid var(--cb)!important;background:linear-gradient(165deg,var(--c1),var(--c2))!important;box-shadow:var(--u-sh1),inset 0 1px 0 rgba(255,255,255,.14)!important;display:flex!important;flex-direction:column;align-items:center;transition:transform var(--u-fast) var(--u-ease)}
+html.ui3 #stage #game .ccard:active{transform:scale(.96)}
+html.ui3 #stage #game .ccard .cimg{flex:1 1 auto;width:100%!important;height:auto!important;min-height:0;background-size:86%!important;background-position:center!important;background-repeat:no-repeat!important;border-radius:9px;background-color:rgba(3,14,26,.28)}
+html.ui3 #stage #game .ccard .cnm{font:800 11.5px/1.15 var(--u-fh)!important;color:var(--ct)!important;margin-top:5px;text-align:center;white-space:normal!important}
+html.ui3 #stage #game .ccard .cfm{font:700 9.5px/1.2 var(--u-fh)!important;color:var(--ct)!important;opacity:.75;letter-spacing:.3px}
+html.ui3 #stage #game .ccard .cst{font-size:8.5px!important;color:var(--u-gold)!important;letter-spacing:1px;line-height:1.2}
+html.ui3 #stage #game .ccard .cno{font:800 9px var(--u-fh)!important;color:var(--ct)!important;opacity:.7;position:absolute;left:8px;top:7px;z-index:2}
+html.ui3 #stage #game .ccard .cnew{background:var(--u-coral)!important;color:#fff!important;font:800 8px var(--u-fh)!important}
+html.ui3 #stage #game .ccard.lock{background:linear-gradient(165deg,var(--c1),var(--c2))!important;filter:saturate(.6) brightness(.78)}
+html.ui3 #stage #game .ccard.lock .cimg{opacity:.55}
+html.ui3 #stage #game .ccard.r-albino{--c1:#E9EDF3!important;--c2:#F3C9D6!important;--cb:#fff!important;--ct:#4A3A4A!important}
+html.ui3 #stage #game .ccard.r-albino .cimg{background-color:rgba(255,255,255,.45)}
+html.ui3 #stage #game .ccard.r-albino .cst{color:#C2607F!important}
+html.ui3 #stage #game .ccard.r-transparent{--c1:rgba(138,220,232,.42)!important;--c2:rgba(54,185,208,.14)!important;--cb:rgba(190,240,255,.85)!important;background:linear-gradient(125deg,rgba(255,255,255,.28) 0 12%,transparent 12% 38%,rgba(255,255,255,.14) 38% 44%,transparent 44%),linear-gradient(165deg,var(--c1),var(--c2))!important}
+html.ui3 #stage #game .ccard.r-transparent .cimg{background-color:rgba(255,255,255,.08)}
+html.ui3 #stage #game .ccard.r-melanistic{--c1:#2A2833!important;--c2:#0E0D14!important;--cb:rgba(169,160,232,.7)!important;--ct:#DCD8F7!important;box-shadow:var(--u-sh1),inset 0 0 22px rgba(169,160,232,.25)!important}
+html.ui3 #stage #game .ccard.r-melanistic .cst{color:var(--u-lav)!important}
+html.ui3 #stage #game .ccard.r-gold{--c1:#7A5412!important;--c2:#2E1F06!important;--cb:#F8D27A!important;--ct:#FFE9B5!important;background:linear-gradient(120deg,transparent 30%,rgba(255,236,170,.35) 45%,transparent 60%),linear-gradient(165deg,#B8862A,#5A3D0C 55%,#2E1F06)!important;box-shadow:var(--u-sh1),0 0 0 1px #8A6418,inset 0 1px 0 rgba(255,244,200,.5)!important}
+html.ui3 #stage #game .ccard.r-gold .cimg{background-color:rgba(20,12,0,.35)}
+html.ui3 #stage #game .ccard.r-glitch{--c1:#101726!important;--c2:#05080F!important;--cb:#55C994!important;--ct:#BDF7DD!important;background:repeating-linear-gradient(0deg,rgba(85,201,148,.09) 0 1px,transparent 1px 4px),linear-gradient(165deg,var(--c1),var(--c2))!important;box-shadow:-2px 0 0 rgba(244,119,112,.75),2px 0 0 rgba(54,185,208,.85),var(--u-sh1)!important;border-radius:6px 14px 6px 14px!important}
+html.ui3 #stage #game .ccard.r-glitch .cnm{text-shadow:-1px 0 rgba(244,119,112,.9),1px 0 rgba(54,185,208,.9)}
+html.ui3 #stage #game .ccard.r-glitch .cst{color:var(--u-green)!important}
+html.ui3 #stage #game .ccard.lock .cnm{opacity:.7}
+html.ui3 #stage #game .ccard.r-hyb{--c1:#3B2F6B!important;--c2:#1A1436!important;--cb:#F4BB50!important;--ct:#EFE7FF!important;background:linear-gradient(165deg,rgba(169,160,232,.5),rgba(244,187,80,.18) 60%,#1A1436)!important}
+html.ui3 #stage #game #sheet .ccard:not(.lock){animation:u3card .4s var(--u-ease) both}
+html.ui3 #stage #game #cardBig .ccard.big{aspect-ratio:5/7;border-width:2px!important}
+
+/* ---------- 7) Balık defteri ---------- */
+html.ui3 #game #bookList .fish-card{display:grid!important;grid-template-columns:92px minmax(0,1fr)!important;gap:12px!important;align-items:center;padding:10px 12px!important}
+html.ui3 #game #bookList .fish-icon{width:92px!important;height:92px!important;border-radius:var(--u-r3)!important;background:radial-gradient(62% 62% at 50% 50%,rgba(138,220,232,.24),rgba(7,29,50,.55))!important;border:1px solid var(--u-line)!important}
+html.ui3 #game #bookList .fish-card strong{font-size:16px!important}
+html.ui3 #game #bookList .mutrow{display:flex!important;align-items:center;gap:5px;margin-top:8px;flex-wrap:nowrap}
+html.ui3 #game #bookList .mutrow .mb{width:34px!important;height:34px!important;flex:0 0 34px;border-radius:10px;background-color:rgba(7,29,50,.6);border:1px solid var(--u-line);background-size:82%!important}
+html.ui3 #game #bookList .bkn{margin-left:auto;font:800 11px var(--u-fh);color:var(--u-t2);background:rgba(7,29,50,.6);border-radius:99px;padding:4px 8px}
+
+/* ---------- 8) Üretim ---------- */
+html.ui3 #game .breedbox{background:radial-gradient(90% 70% at 50% 30%,rgba(54,185,208,.16),transparent 70%),var(--u-s2)!important;padding:14px 12px!important}
+html.ui3 #game .breedbox>strong{font:800 15px var(--u-fh)!important;display:block;text-align:center;margin-bottom:10px}
+html.ui3 #game .breedbox .pair{position:absolute!important;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none}
+html.ui3 .u3-pairrow{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(0,1fr);align-items:center;gap:6px}
+html.ui3 #game #sheet .u3-slot,html.ui3 #game #sheet .u3-c{display:flex!important;flex-direction:column;align-items:center;gap:3px;padding:10px 6px!important;border-radius:var(--u-r3)!important;background:rgba(7,29,50,.55)!important;border:1.5px dashed var(--u-line2)!important;color:var(--u-t1)!important;min-height:0!important;box-shadow:none!important;transition:transform var(--u-fast),border-color var(--u-fast)}
+html.ui3 #game #sheet .u3-slot.has{border-style:solid!important;background:linear-gradient(180deg,rgba(25,75,114,.7),rgba(7,29,50,.7))!important}
+html.ui3 #game #sheet .u3-slot.on,html.ui3 #game #sheet .u3-c.on{border-color:var(--u-turq)!important;box-shadow:0 0 0 3px rgba(54,185,208,.18)!important}
+html.ui3 .u3-art{width:76px;height:64px;display:grid;place-items:center}
+html.ui3 .u3-art .fi{width:100%!important;height:100%!important;filter:none!important}
+html.ui3 .u3-art em{font:800 30px/1 var(--u-fh);font-style:normal;color:var(--u-turq);width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:rgba(54,185,208,.14)}
+html.ui3 .u3-slot b,html.ui3 .u3-c b{font:800 12.5px/1.15 var(--u-fh);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html.ui3 .u3-slot small,html.ui3 .u3-c small{font:700 10.5px var(--u-fb);color:var(--u-t2)}
+html.ui3 .u3-core{position:relative;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle,rgba(54,185,208,.3),rgba(7,29,50,.6) 70%);border:1px solid var(--u-line2)}
+html.ui3 .u3-core i{position:absolute;width:7px;height:7px;border-radius:50%;background:var(--u-cyan);opacity:.55}
+html.ui3 .u3-core i:nth-child(1){transform:translate(-11px,-9px)}html.ui3 .u3-core i:nth-child(2){transform:translate(11px,-9px);background:var(--u-coral)}html.ui3 .u3-core i:nth-child(3){transform:translate(0,10px);background:var(--u-gold)}
+html.ui3 .u3-pairrow.ready .u3-core{border-color:var(--u-gold);box-shadow:0 0 18px rgba(244,187,80,.35)}
+html.ui3 .u3-pairrow.ready .u3-core i{opacity:1;animation:u3orbit 2.4s linear infinite}
+html.ui3 .u3-pairrow.ready .u3-core i:nth-child(2){animation-delay:-.8s}html.ui3 .u3-pairrow.ready .u3-core i:nth-child(3){animation-delay:-1.6s}
+html.ui3 .u3-pick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px;max-height:230px;overflow-y:auto;animation:u3rise var(--u-med) var(--u-ease) both}
+html.ui3 .u3-pick .note{grid-column:1/-1;text-align:center;margin:6px 0}
+html.ui3 #game #sheet .u3-c{border-style:solid!important;padding:6px 4px!important}
+html.ui3 .u3-c .u3-art{width:60px;height:46px}
+html.ui3 #game .breedbox #odds{display:block;text-align:center;margin:10px 4px;color:var(--u-t2)!important;font:600 12px/1.45 var(--u-fb)!important}
+html.ui3 #game #sheet #breed{width:100%;background:linear-gradient(180deg,#F8CB6C,var(--u-gold))!important;color:#3A2400!important;border:0!important;font:800 14.5px var(--u-fh)!important;padding:12px!important;box-shadow:0 3px 0 #B98524,var(--u-sh1)!important}
+html.ui3 #game #sheet #breed:disabled{background:var(--u-s3)!important;color:var(--u-t3)!important;box-shadow:none!important;opacity:1!important}
+html.ui3 #u3eggs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0}
+html.ui3 .u3-egg{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 6px;border-radius:var(--u-r3);background:var(--u-s2);border:1px solid var(--u-line)}
+html.ui3 .u3-shell{width:44px;height:56px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(60% 45% at 38% 30%,#fff,#F6EAD2 55%,#D9C29A);display:grid;place-items:center;box-shadow:inset -4px -6px 10px rgba(120,90,40,.3),var(--u-sh1)}
+html.ui3 .u3-shell .fi{width:70%!important;height:70%!important;filter:brightness(0) opacity(.16)!important}
+html.ui3 .u3-egg b{font:800 11.5px var(--u-fh);color:var(--u-t1);text-align:center}
+html.ui3 .u3-egg small{font:700 10.5px var(--u-fb);color:var(--u-t2)}
+html.ui3 .u3-eb{width:100%;height:4px;border-radius:9px;background:rgba(7,29,50,.7);overflow:hidden}
+html.ui3 .u3-eb s{display:block;height:100%;background:linear-gradient(90deg,var(--u-turq),var(--u-green));border-radius:9px;transition:width 1s linear}
+html.ui3 .u3-egg.empty{opacity:.5}html.ui3 .u3-egg.empty .u3-shell{background:none;border:1.5px dashed var(--u-line2);box-shadow:none}
+html.ui3 .u3-egg.ready{border-color:var(--u-gold)}html.ui3 .u3-egg.ready .u3-shell{animation:u3wob 1.2s ease-in-out infinite}html.ui3 .u3-egg.ready small{color:var(--u-gold)}
+
+/* ---------- 9) Diğer ekranlar ---------- */
+html.ui3 #game .sndrow{background:var(--u-s2)!important;border:1px solid var(--u-line)!important;border-radius:var(--u-r3)!important}
+html.ui3 #game .message{background:rgba(7,29,50,.9)!important;border:1px solid var(--u-line2)!important;border-radius:18px!important;color:var(--u-t1)!important;font:700 13px var(--u-fh)!important;box-shadow:var(--u-sh2)!important}
+html.ui3 #game .lvcard,html.ui3 #upn .upc{background:linear-gradient(180deg,#0E3152,var(--u-navy))!important;border:1px solid var(--u-line2)!important;border-radius:var(--u-r4)!important}
+
+/* ---------- 10) Hareket ---------- */
+@keyframes u3rise{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes u3card{from{opacity:0;transform:translateY(8px) rotateX(18deg)}to{opacity:1;transform:none}}
+@keyframes u3orbit{from{transform:rotate(0) translate(13px) rotate(0)}to{transform:rotate(360deg) translate(13px) rotate(-360deg)}}
+@keyframes u3wob{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+@keyframes u3pop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){html.ui3 *{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* ---------- Yatay ve geniş ekran ---------- */
+html.land.ui3 #stage #game .cgrid{grid-template-columns:repeat(auto-fill,minmax(104px,1fr))!important}
+html.land.ui3 #game .sg{grid-template-columns:repeat(auto-fill,minmax(112px,1fr))!important}
+html.land.ui3 .u3-pick{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}
+html.land.ui3 .u3-pairrow{max-width:460px;margin:0 auto}
+html.land.ui3 #u3eggs{max-width:460px;margin:10px auto}
