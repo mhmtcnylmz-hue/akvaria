@@ -1590,7 +1590,7 @@ const M=mu?MUTS[mu]:null,hc=state.lowGfx||mu==="glitch"?null:M?(hybOf(f)?{c:MUTS
 if(hc&&tpk<.5&&LQ<2){const hs=lodImg(im,w*K*.6),hw=hs.naturalWidth||hs.width,H0=halo(hs,hc.k+"_"+s.id+"_"+hw,hc.c,hc.b*1.6*hw/190);if(H0){const k=w/hw,pu=(.75+.25*Math.sin(t*2+f.phase))*(mu==="transparent"?.45:1);ctx.globalAlpha=pu;const hz=hswUse(f);if(hz){ctx.save();ctx.scale(Math.max(.4,Math.abs(fs)),1)}ctx.drawImage(H0.cv,-w/2-H0.pad*k,-h/2-H0.pad*k,H0.cv.width*k,H0.cv.height*k);if(hz)ctx.restore();ctx.globalAlpha=1}}
 const GL=mu==="glitch",src0=lodImg(im,w*K*(1-.5*(f.zd||0))),LT=litOn(),src=GL?src0:eyeTex(f,im,DFX?deepTex(src0):LT?litTex(src0):src0,w),N=s.sl?(state.lowGfx?10:s.sl):state.lowGfx?(w<90?4:5):(w<70?6:w<110?8:10),iw=src.naturalWidth||src.width,ih=src.naturalHeight||src.height,sw=iw/N,dw=w/N,P=SWP[f.type]||SWP.clown,amp=Math.min(w*(SWIM.rest+SWIM.amp*sn)*P[0]*Math.pow(90/w,.15),h*(.34+.1*sn)),ov=1.2;
 const Ycf=fx=>{const u=1-fx;return Math.sin(tp-u*SWIM.wave*P[4])*amp*Math.pow(u,P[2])};
-const HSW1=hswUse(f),drawS=(img,ox,oy,ww,live)=>HSW1?hswDraw(f,img,ox,oy,ww||w,h,src):bendDraw(f,img,ox,oy,ww||w,h,N,tp,amp,P,live),Yc2=HSW1?fx=>hswLocal(f,fx,.5,w,h)[1]:Ycf,fpt=(fx,fy)=>HSW1?hswLocal(f,fx,fy,w,h):[-w/2+fx*w,-h/2+fy*h+Ycf(fx)];
+const HSW1=hswUse(f),VEF=HSW1&&!GX&&mu!=="glitch"&&veOn()&&VE().handles(f.type),drawS=(img,ox,oy,ww,live)=>HSW1?((VEF&&veFish(f,img,ox,oy,ww||w,h,src))||hswDraw(f,img,ox,oy,ww||w,h,src)):bendDraw(f,img,ox,oy,ww||w,h,N,tp,amp,P,live),Yc2=HSW1?fx=>hswLocal(f,fx,.5,w,h)[1]:Ycf,fpt=(fx,fy)=>HSW1?hswLocal(f,fx,fy,w,h):[-w/2+fx*w,-h/2+fy*h+Ycf(fx)];
 if(GX){const T2=state.lowGfx?null:glTint(src),R=T2&&!GX.b?glRest(T2,src):null;if(T2&&GX.b){ctx.globalAlpha=.95;ctx.drawImage(T2.c,-w/2-GX.sp,-h/2+rand(-2,2),w,h);ctx.drawImage(T2.m,-w/2+GX.sp,-h/2+rand(-2,2),w,h);ctx.globalAlpha=1}
 if(GX.bands){const n=GX.bands.length,bh=h/n;for(let i=0;i<n;i++){const off=GX.bands[i];if(GX.bands.cut&&i%3===1&&off)continue;ctx.drawImage(src,0,ih*i/n,iw,ih/n,-w/2+off,-h/2+bh*i,w,bh+.6)}if(!state.lowGfx){ctx.save();ctx.globalCompositeOperation="lighter";for(let i=0;i<3;i++){ctx.globalAlpha=rand(.15,.45);ctx.fillStyle=["#00f6ff","#ff2bd6","#7dff4f"][i];ctx.fillRect(rand(-w*.6,w*.3),rand(-h*.5,h*.45),rand(w*.15,w*.6),rand(1.5,4))}ctx.restore()}}
 else if(R)drawS(R,0,0,w*R.width/iw);else drawS(src,0,0);
@@ -2168,13 +2168,13 @@ if(now-lastAdv>1000&&!VISIT){lastAdv=now;if(state.daily&&state.daily.date!==dayK
 musicTick();musUpdate();if(AU&&!state.muted&&!(ambience&&ambience.file)&&Math.random()<dt*.3)sfx("amb");
 const P0=performance.now();acc+=dt*ADM.speed;let ns=0;const NSM=Math.max(4,Math.ceil(4*ADM.speed));while(acc>=STEP&&ns<NSM){physics(STEP);acc-=STEP;ns++}if(ns>=NSM)acc=0;admTick(now);const P1=performance.now();
 bubbles.forEach(b=>{b.y-=b.speed*dt;b.x+=Math.sin(t+b.phase)*b.drift*dt;if(b.y<-10){b.y=H+10;b.x=rand(0,W)}});
-BNDB=state.lowGfx?3:DESK?(state.fish.length>12?3:5):(state.fish.length>12?5:8);BNDT=LQ?60:DESK?(state.fish.length>12?70:55):state.fish.length>12?45:30;const OFF=state.admOff||{};ctx.setTransform(K,0,0,K,0,0);drawBackground(t);if(!window.__proto)drawFloor(t);if(!OFF.crit)try{critDraw(dt)}catch(e){reportErr(e,"omurgasız")}else CPOST.length=0;const P2=performance.now();if(curWater()==="river")try{drawRiverBack(t,dt)}catch(e){reportErr(e,"nehir")}if(DFX&&!OFF.dark)try{drawDeepBack(t,dt);drawDeepPre(t,dt)}catch(e){reportErr(e,"derin")}try{bioPre(t)}catch(e){reportErr(e,"bio")}if(!OFF.fish)for(const f of depthSort(state.fish)){try{drawFish(f,t)}catch(e){try{ctx.restore()}catch(_){}reportErr(e,"balık "+f.type)}}try{bioPost(t)}catch(e){reportErr(e,"bio")}const P3=performance.now();if(!OFF.plants)drawPlants2(t,1);if(curWater()==="river")try{riverFx(t,dt)}catch(e){reportErr(e,"nehir")}if(DFX)try{if(OFF.lights){EM=[];ENV=[];EMI=[];EMPI=0;LUREW=[];ISO_EYES=[]}else drawDeepLight(t)}catch(e){reportErr(e,"ışık")}else if(!window.__proto)try{drawAtmo(t,dt)}catch(e){reportErr(e,"atmosfer")}const P4=performance.now();drawCoins(t);if(!window.__proto)drawStatus(t);const fo=feedModeOn()&&!VISIT;if(fo!==feedOnC){feedOnC=fo;$("feed").classList.toggle("on",fo)}if(SELLM)try{drawSellTags()}catch(e){}drawParticles(dt);drawTapInfo();if(ADM.on)try{admDebug(t)}catch(e){}drawDN();
+if(window.__proto){try{const v=window.AkvVE;if(v&&v.frameStart)v.frameStart()}catch(e){}VEENV=veEnvWant()}BNDB=state.lowGfx?3:DESK?(state.fish.length>12?3:5):(state.fish.length>12?5:8);BNDT=LQ?60:DESK?(state.fish.length>12?70:55):state.fish.length>12?45:30;const OFF=state.admOff||{};ctx.setTransform(K,0,0,K,0,0);drawBackground(t);if(!PPL)drawFloor(t);if(!OFF.crit)try{critDraw(dt)}catch(e){reportErr(e,"omurgasız")}else CPOST.length=0;const P2=performance.now();if(curWater()==="river")try{drawRiverBack(t,dt)}catch(e){reportErr(e,"nehir")}if(DFX&&!OFF.dark)try{drawDeepBack(t,dt);drawDeepPre(t,dt)}catch(e){reportErr(e,"derin")}try{bioPre(t)}catch(e){reportErr(e,"bio")}if(!OFF.fish)for(const f of depthSort(state.fish)){try{drawFish(f,t)}catch(e){try{ctx.restore()}catch(_){}reportErr(e,"balık "+f.type)}}try{bioPost(t)}catch(e){reportErr(e,"bio")}const P3=performance.now();if(!OFF.plants)drawPlants2(t,1);if(curWater()==="river")try{riverFx(t,dt)}catch(e){reportErr(e,"nehir")}if(DFX)try{if(OFF.lights){EM=[];ENV=[];EMI=[];EMPI=0;LUREW=[];ISO_EYES=[]}else drawDeepLight(t)}catch(e){reportErr(e,"ışık")}else if(!PPL)try{drawAtmo(t,dt)}catch(e){reportErr(e,"atmosfer")}const P4=performance.now();drawCoins(t);if(!window.__proto)drawStatus(t);const fo=feedModeOn()&&!VISIT;if(fo!==feedOnC){feedOnC=fo;$("feed").classList.toggle("on",fo)}if(SELLM)try{drawSellTags()}catch(e){}drawParticles(dt);drawTapInfo();if(ADM.on)try{admDebug(t)}catch(e){}drawDN();if(window.__proto)veEnvTick(t,dt);
 const P5=performance.now();if(admFps){PRF.n++;PRF.ph+=P1-P0;PRF.fl+=P2-P1;PRF.fi+=P3-P2;PRF.pl+=P4-P3;PRF.ot+=P5-P4;PRF.all+=P5-P0+(P0-now>0?0:0);PRF.ns+=ns}
 requestAnimationFrame(frame)}
 canvas.addEventListener("pointerdown",e=>{audio();startAmbience();const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;try{if(!EDIT)dkPoke(x,y)}catch(_){}if(EDIT){editDown(e,x,y);return}if(SELLM){sellTap(x,y);return}if(ZEN)zenHint();if(TIBTN&&tapInfo&&tapInfo.id===TIBTN.id&&x>=TIBTN.x&&x<=TIBTN.x+TIBTN.w&&y>=TIBTN.y&&y<=TIBTN.y+TIBTN.h){renOpen(TIBTN.id);return}if(!VISIT){let cc=null,cd=1e9;for(const c of coinsLoose){const d=Math.hypot(x-c.x,y-c.y);if(d<34&&d<cd){cc=c;cd=d}}if(cc){pickCoin(cc);return}}
 if(!VISIT&&feedModeOn()&&!isColl(state.tank)){dropFood(x,y,4);lastDrag=performance.now();return}
 if(!VISIT&&state.chest&&Math.abs(x-state.chest.x*W)<CHW()*.6&&y>CHY()-CHW()*.9&&y<CHY()+12){openChest();return}deepTap(x,y);if(critTap(x,y))return;let hit=null,dist=Infinity;state.fish.forEach(f=>{const s=getSpecies(f.type),fx=f.x*W,fy=f.y*H;if(Math.hypot(x-fx,y-fy)<Math.max(55,fishW(f)*.42)&&Math.hypot(x-fx,y-fy)<dist){hit=f;dist=Math.hypot(x-fx,y-fy)}});if(hit){
-selectedFish=hit.id;hit.wake=simT+8;if(!VISIT){Q("tap");if(tw(state.tank)==="deep")Q("dtap")}tapInfo={id:hit.id,until:performance.now()+3200};
+selectedFish=hit.id;hit.wake=simT+8;if(!VISIT){Q("tap");if(tw(state.tank)==="deep")Q("dtap")}tapInfo={id:hit.id,until:performance.now()+3200};if(veOn()&&VE().handles(hit.type))VE().react(hit);
 for(let k=0;k<4;k++) particles.push({x:x+rand(-8,8), y:y+rand(-12,4), vx:rand(-18,18), vy:rand(-55,-15), life:rand(.9,1.6), type:"heart"});
 const s=getSpecies(hit.type);
 sfx("boop");
@@ -2638,7 +2638,7 @@ const UPN_EN={212:["Every tank now has its own water: pollen in freshwater, gold
 function upnShow(all){let seen=0;try{seen=+localStorage.getItem("akvNotes")||0}catch(e){}const L=all?UPN:UPN.filter(n=>n.v>seen).slice(0,3);if(!L.length)return;try{localStorage.setItem("akvNotes",String(UPN[0].v))}catch(e){}
  let el=$("upn");if(!el){el=document.createElement("div");el.id="upn";($("game")||document.body).appendChild(el);el.addEventListener("click",e=>{if(e.target===el||e.target.closest(".upb"))el.hidden=true})}
  el.innerHTML='<div class="upc"><h2>🆕 '+(EN?"What's new":"Yenilikler")+"</h2>"+L.map(n=>"<h3>"+(EN?"Version ":"Sürüm ")+n.v+" <small>· "+n.d+"</small></h3><ul>"+(EN&&UPN_EN[n.v]?UPN_EN[n.v]:n.t).map(x=>"<li>"+aEsc(x)+"</li>").join("")+"</ul>").join("")+'<button class="upb">'+(EN?"Great!":"Harika!")+"</button></div>";el.hidden=false;sfx("click")}
-function upnAuto(){let seen=0;try{seen=+localStorage.getItem("akvNotes")||0}catch(e){}if(seen>=UPN[0].v)return;if(!(state.level>=2)||VISIT){try{localStorage.setItem("akvNotes",String(UPN[0].v))}catch(e){}return}if(typeof openKey!=="undefined"&&openKey){setTimeout(upnAuto,4000);return}upnShow(false)}
+function upnAuto(){if(window.__proto)return;let seen=0;try{seen=+localStorage.getItem("akvNotes")||0}catch(e){}if(seen>=UPN[0].v)return;if(!(state.level>=2)||VISIT){try{localStorage.setItem("akvNotes",String(UPN[0].v))}catch(e){}return}if(typeof openKey!=="undefined"&&openKey){setTimeout(upnAuto,4000);return}upnShow(false)}
 setTimeout(upnAuto,4500);try{$("notesBtn").onclick=()=>{try{closeSheet()}catch(e){}upnShow(true)}}catch(e){}
 function admDashHTML(){const all=allFish(),wk=workFish(),inc=wk.filter(f=>f.age>=MATURE&&!f.sick).reduce((a,f)=>a+incomeRate(getSpecies(f.type))*3600,0),val=all.reduce((a,f)=>a+saleValue(f),0),mutN=all.filter(f=>mutOf(f)!=="normal").length;
  const kv=(k,v)=>"<div><span>"+k+"</span><b>"+v+"</b></div>";let h='<div class="admkv">';
@@ -2857,25 +2857,71 @@ function fingK(f,TR,x,y,fw,fh,bx0,bx1,by0,by1){const F=FING;if(!F||simT-F.t>(F.o
  f.tx=Math.min(bx1,Math.max(bx0,F.x-sd*fw*.45));f.ty=Math.min(by1,Math.max(by0,F.y+((f.id%5)-2)*fh*.3));f.tt=.4;f.rest=false;f.act="";if(d<fw*1.2&&Math.abs(F.x-x)>8)f.dir=sd;
  if(P==="Hareketli"&&d>150&&!(f.fgT>simT)){f.burst=.25;f.fgT=simT+1.5}return true}
 
-// ===== prototip: animasyon deneme tankı (adres sonuna ?proto) — kayıtlara dokunmaz, buluta bağlanmaz
+// sürüm 213: görüntü motoru (px/akv-visual.js) sadece deneme sayfasında (?proto) çalışır; asıl oyunda yüklenmez ve hiçbir şeyi değiştirmez.
+var VEENV=false,PXON=true,PPL=false,VEX=new WeakMap(),VEORIG={};
+function VE(){return window.AkvVE}
+function veOn(){const v=window.AkvVE;return !!(window.__proto&&PXON&&v&&v.ok&&v.fishOn)}
+function veEnvWant(){const v=window.AkvVE;return !!(window.__proto&&PXON&&v&&v.ok&&v.envOn&&!PPL&&!state.lowGfx&&LQ<2&&curWater()!=="deep"&&curWater()!=="abyss"&&!(state.admOff||{}).atmo)}
+function veFish(f,img,ox,oy,ww,h,ref){try{const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height;if(!iw||!ih)return false;const b=hswB(f),G=HSWG[f.type],R=ih/iw,m=ctx.getTransform(),wpx=ww*Math.hypot(m.a,m.b);
+ const ov=ref&&ref!==img,I=ov&&(ref.naturalWidth||ref.width)===iw&&(ref.naturalHeight||ref.height)===ih?hswInfo(ref,iw,ih):hswInfo(img,iw,ih);
+ const NX=Math.max(18,Math.min(40,Math.round(wpx/7))),NY=Math.max(10,Math.min(24,Math.round(NX*R*1.25))),P=hswPlan(f,I,NX,NY),V=hswMesh(f,P,R),tex=ov?img:hswTex(f,img,iw,ih,ww,h),n=(NX+1)*(NY+1);
+ let X=VEX.get(f);if(!X||X.length!==n*2){X=new Float32Array(n*2);VEX.set(f,X)}const lx=-ww/2+ox,ly=-h/2+oy;for(let k=0;k<n*2;k+=2){X[k]=lx+V[k]*ww;X[k+1]=ly+V[k+1]*ww}
+ const fs=f.fs==null?1:f.fs;return VE().drawFish(ctx,{f,type:f.type,src:tex,NX,NY,X,I,ww,h,t:simT,pa:b.pa,pp:b.pp,pc:G.pc,pv:G.pv,mouth:mouthOf(f),turn:Math.abs((f.dir||1)-fs),ph:f.phase||0})}
+ catch(e){reportErr(e,"görüntü motoru");try{VE().fishOn=false}catch(_){}return false}}
+function veEnvTick(t,dt){const v=window.AkvVE;if(!v||!v.ok)return;try{v.envShow(VEENV);if(VEENV){v.envFrame({W,H,floor:FLOOR,surf:SURF,night:nightAmt(),dt,t});v.perf(dt*1000)}}catch(e){reportErr(e,"ortam");v.envOn=false;v.envShow(false)}}
+// türe özel hareket ayarları (VE.SPECIES): boş bırakılanlar oyunun kendi değerinde kalır
+function veMove(on){const v=window.AkvVE;if(!v)return;for(const id of Object.keys(v.SPECIES)){const C=v.SPECIES[id];if(!C||!PH[id])continue;if(!VEORIG[id])VEORIG[id]={sp:PH[id][0],ac:PH[id][1],rest:TRAIT[id]?TRAIT[id].rest:undefined,ta:SWP[id]?SWP[id][0]:null,tf:SWP[id]?SWP[id][1]:null};const O=VEORIG[id],u=(k,d)=>on&&C[k]!=null?C[k]:d;
+ PH[id][0]=u("cruiseSpeed",O.sp);PH[id][1]=u("acceleration",O.ac);if(TRAIT[id]){const r=u("hoverChance",O.rest);if(r===undefined)delete TRAIT[id].rest;else TRAIT[id].rest=r}if(SWP[id]){SWP[id][0]=u("tailAmplitude",O.ta);SWP[id][1]=u("tailFrequency",O.tf)}}}
+function veStart(){const v=window.AkvVE;if(!v)return false;if(!v.ok&&!v.init(canvas))return false;v.fishOn=v.envOn=true;v.setQuality(3);veMove(true);return true}
+function veStop(){const v=window.AkvVE;if(!v)return;v.fishOn=v.envOn=false;try{v.envShow(false)}catch(e){}veMove(false)}
+// prototip: deneme tankı (adres sonuna ?proto) — kayıtlara dokunmaz, buluta bağlanmaz. Sürüm 213: yeni arayüz taslağı + görüntü motoru burada denenir.
+function ui2Build(){const UI2I={coin:"72efd56ad0e6b600",gem:"150e1cd3a040037e",set:"20c22d2ac79f4afc",fish:"ca6644d4c8aeb306",surprise:"9a3f6d502c070409",questBtn:"ba9ecb4f1ccc8c37",cupBtn:"67587855e7db36f1",sun:"4ed6000f6085f15a",moon:"7c190ca63c4f3516",camBtn:"323a9bc654ca809a",feed:"8c6b227678e015d8",clean:"1610d05abd2a2c0d",homeBtn:"6288a0aaeae7c916",dshop:"6d7d94aa5165a840",fishes:"ca6644d4c8aeb306",achBtn:"1828133d551f0a33",mapBtn:"6065f01097e13b19"};const im=k=>'<img src="a/'+UI2I[k]+'.webp" alt="">',lb=id=>{const e=$(id),s=e&&e.querySelector(".tll");return s?s.textContent:""},
+ b=(id,cls,inner)=>'<div role="button" tabindex="0" class="'+cls+'" data-go="'+id+'" aria-label="'+lb(id)+'">'+inner+'<i class="u-dot" data-bd="'+id+'" hidden></i></div>';
+ const el=document.createElement("div");el.id="ui2";el.innerHTML=
+ '<div class="u-lv g" data-go="questBtn"><span class="u-ring" id="u2ring"><b id="u2lv">1</b></span><span class="u-xp"><small>SEVİYE</small><span class="u-bar"><i id="u2xp"></i></span><small id="u2xpt"></small></span></div>'+
+ '<div class="u-cur g"><div role="button" tabindex="0" data-go="coinPill">'+im("coin")+'<b id="u2c">0</b></div><s></s><div role="button" tabindex="0" data-go="gemPill">'+im("gem")+'<b id="u2g">0</b></div></div>'+
+ '<div role="button" tabindex="0" class="u-gear g" data-go="set" aria-label="Ayarlar">'+im("set")+'</div>'+
+ '<div role="button" tabindex="0" class="u-tank g" data-go="mapBtn"><span class="u-tico" id="u2ti"></span><span class="u-tn"><b id="u2tn"></b><small id="u2tw"></small></span><span class="u-cnt">'+im("fish")+'<b id="u2cnt"></b></span></div>'+
+ '<div class="u-rail g">'+b("surprise","u-b",im("surprise"))+b("questBtn","u-b",im("questBtn"))+b("cupBtn","u-b",im("cupBtn"))+b("chatBtn","u-b",'<span class="u-emo">💬</span>')+'</div>'+
+ '<div class="u-util g">'+b("nightBtn","u-b",'<span class="u-dn">'+im("sun")+im("moon")+'</span>')+b("camBtn","u-b",im("camBtn"))+b("zenBtn","u-b",'<span class="u-emo">🧘</span>')+'</div>'+
+ '<div class="u-act">'+b("sellBtn","u-sm g",im("coin")+'<small>'+lb("sellBtn")+'</small>')+b("clean","u-sm g",im("clean")+'<small>'+lb("clean")+'</small>')+b("feed","u-feed g",im("feed")+'<small>'+lb("feed")+'</small><em id="u2fc"></em>')+'</div>'+
+ '<nav class="u-dock g">'+["homeBtn","dshop","fishes","achBtn","mapBtn"].map((id,i)=>b(id,"u-nv"+(i?"":" on"),im(id)+'<small>'+(id==="mapBtn"?"Tanklar":lb(id))+'</small>')).join("")+'</nav>';
+ $("game").appendChild(el);
+ el.addEventListener("click",e=>{const t=e.target.closest("[data-go]");if(!t)return;const r=$(t.dataset.go);if(r)r.click()});
+ const fmt=n=>n>=1e6?(n/1e6).toFixed(n>=1e7?0:1).replace(".",",")+" Mn":n>=1e4?(n/1e3).toFixed(n>=1e5?0:1).replace(".",",")+" B":String(Math.floor(n)),set=(id,v)=>{const e=$(id);if(e&&e.textContent!==v)e.textContent=v};
+ const tick=()=>{if(!el.offsetParent)return;const need=xpNeed(state.level),p=Math.min(1,Math.max(0,state.xp/need));set("u2lv",String(state.level));$("u2ring").style.setProperty("--p",(p*100).toFixed(1)+"%");$("u2xp").style.width=(p*100).toFixed(1)+"%";set("u2xpt",fmt(state.xp)+" / "+fmt(need));
+  set("u2c",fmt(state.coins));set("u2g",fmt(state.gems||0));const T=TANKS[state.tank]||TANKS.fresh;set("u2ti",T.icon);set("u2tn",T.name);set("u2tw",$("water").textContent.split("·").pop().trim());set("u2cnt",state.fish.length+"/"+fishCap(state.tank));set("u2fc",$("feedCost").textContent);
+  el.classList.toggle("night",!!state.night);el.querySelector(".u-feed").classList.toggle("on",$("feed").classList.contains("on"));el.querySelector('[data-go="sellBtn"]').classList.toggle("on",$("sellBtn").classList.contains("on"));
+  el.querySelectorAll("[data-bd]").forEach(d=>{const m={surprise:"badge",questBtn:"qbadge",chatBtn:"cbadge",fishes:"fbadge",achBtn:"abadge"}[d.dataset.bd],r=m&&$(m);d.hidden=!r||r.hidden})};
+ tick();setInterval(tick,400)}
 function protoInit(){if(!window.__proto)return;document.body.classList.add("proto");
- state.coins=1e9;state.level=MAXLV;state.tut=99;state.admOff=Object.assign({},state.admOff,{bg:1,plants:1,crit:1});
- const P=[["neon",6],["betta",1],["koi",1],["gold",1],["clown",2],["btang",1],["angel",1],["lion",1],["piranha",3],["eel",1],["arapaima",1],["lantern",5],["lancet",1],["hatchet",1]];
+ const rich=()=>{if(state.coins<5000)state.coins=48250};state.coins=48250;state.gems=127;state.level=27;state.xp=Math.round(xpNeed(27)*.62);state.tut=99;state.admOff=Object.assign({},state.admOff,{crit:1});
+ const P=[["neon",6],["betta",1],["koi",1],["gold",2],["angel",1],["guppy",3],["discus",1]].filter(([t])=>species.some(s=>s.id===t));
  const mk=t=>({id:state.nextId++,type:t,sizeTrait:"normal",mutation:"normal",gene:null,geneKnown:true,age:1.2,lifeHours:999,sizeGrowth:.3,rarity:"Normal",name:getSpecies(t).name,personality:["Uysal","Meraklı","Utangaç","Hareketli"][Math.random()*4|0],hunger:90,health:100,sick:false,x:rand(.12,.88),y:rand(.2,.75),dir:Math.random()<.5?-1:1,phase:rand(0,6)});
  const reset=()=>{state.fish=[];P.forEach(([t,n])=>{for(let i=0;i<n;i++)state.fish.push(mk(t))});state.decor=[];state.props=[];state.eggs=[];coinsLoose.length=0;renderUI()};reset();
- setInterval(()=>{state.dirt=0;state.chest=0;state.fish.forEach(f=>{f.hunger=Math.max(f.hunger,70);f.health=100;f.sick=false;f.lifeHours=999})},4000);
+ setInterval(()=>{rich();state.dirt=0;state.chest=0;state.fish.forEach(f=>{f.hunger=Math.max(f.hunger,70);f.health=100;f.sick=false;f.lifeHours=999})},4000);
+ try{ui2Build()}catch(e){reportErr(e,"arayüz taslağı")}
+ let UIM=0;const UIN=["Yeni taslak","Şimdiki arayüz","Arayüz yok"],uiSet=()=>{document.body.classList.toggle("pui-old",UIM===1);document.body.classList.toggle("pui-none",UIM===2)};
  const sp=species.slice().sort((a,b)=>(WATER[a.id]+a.price)>(WATER[b.id]+b.price)?1:-1);
- const el=document.createElement("div");el.id="protoP";el.innerHTML='<button class="pt" data-p="tg">🎬 Prototip</button><div class="pb">'+
+ const el=document.createElement("div");el.id="protoP";el.innerHTML='<button class="pt" data-p="tg">🎬 Deneme</button><div class="pb">'+
+ '<b>Arayüz</b><div class="pr"><button data-p="ui" id="ptUi"></button></div>'+
+ '<b>Görüntü motoru</b><div class="pr"><button data-p="ve" id="ptVe"></button><button data-p="plain" id="ptPl"></button></div>'+
  '<b>Hız</b><div class="pr">'+[.25,.5,1,2].map(v=>'<button data-ts="'+v+'"'+(v===1?' class="on"':"")+'>×'+String(v).replace(".",",")+"</button>").join("")+'</div>'+
  '<b>Balık</b><div class="pr"><select id="ptSp">'+sp.map(s=>'<option value="'+s.id+'">'+TANKS[WATER[s.id]].icon+" "+s.name+"</option>").join("")+'</select><button data-p="add">+ Ekle</button></div>'+
  '<div class="pr"><button data-p="del">Seçiliyi sil</button><button data-p="only">Sadece bu tür</button><button data-p="reset">Baştan</button></div>'+
  '<b>Dene</b><div class="pr"><button data-p="food">🍤 Yem at</button><button data-p="tap">👆 Cama vur</button><button data-p="night">🌙 Gece</button></div>'+
  '<div class="pr"><button data-p="hsw">🐟 Hibrit yüzme aç/kapa</button></div><small id="ptInfo"></small></div>';
  document.body.appendChild(el);
- const info=()=>{const s=$("ptInfo");if(s)s.textContent=state.fish.length+" balık · hibrit yüzme "+(HSW.on?"açık":"kapalı")+" · balığa dokununca bilgisi çıkar"};info();
+ let veSt="yükleniyor…";const veLbl=()=>{const v=window.AkvVE;veSt=!v?veSt:v.err&&!v.ok?"bu cihaz desteklemiyor":PXON?"açık":"kapalı"};
+ const info=()=>{veLbl();const s=$("ptInfo");if(s)s.textContent=state.fish.length+" balık · motor "+veSt+" · hibrit yüzme "+(HSW.on?"açık":"kapalı");$("ptUi").textContent="🎨 "+UIN[UIM];$("ptVe").textContent="🧪 Motor: "+veSt;$("ptVe").classList.toggle("on",veSt==="açık");$("ptPl").textContent="🖼️ Arka plan: "+(PPL?"sade":"tam")};info();
+ loadJS("px/akv-visual.js?v=213").then(()=>{if(!veStart())PXON=false;info()}).catch(()=>{veSt="yüklenemedi";PXON=false;info()});
  el.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;audio();const d=b.dataset;
   if(d.ts){window.__ts=+d.ts;el.querySelectorAll("[data-ts]").forEach(x=>x.classList.toggle("on",x===b))}
   else if(d.p==="tg")el.classList.toggle("open");
+  else if(d.p==="ui"){UIM=(UIM+1)%3;uiSet()}
+  
+  else if(d.p==="ve"){const v=window.AkvVE;if(v&&!(v.err&&!v.ok)){PXON=!PXON;if(PXON)veStart();else veStop()}}
+  else if(d.p==="plain"){PPL=!PPL;state.admOff=Object.assign({},state.admOff,{bg:PPL?1:0,plants:PPL?1:0});document.body.classList.toggle("pplain",PPL);renderUI()}
   else if(d.p==="add"){const t=$("ptSp").value;for(let i=0;i<(PH[t]&&PH[t][4]?4:1);i++)state.fish.push(mk(t));renderUI()}
   else if(d.p==="del"){const i=state.fish.findIndex(f=>f.id===selectedFish);if(i>=0){state.fish.splice(i,1);tapInfo=null;renderUI()}else notify("Önce tankta bir balığa dokun")}
   else if(d.p==="only"){const t=$("ptSp").value;state.fish=[];for(let i=0;i<(PH[t]&&PH[t][4]?6:3);i++)state.fish.push(mk(t));renderUI()}
