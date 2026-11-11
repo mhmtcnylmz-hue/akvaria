@@ -5,79 +5,116 @@
 <style>
 :root{color-scheme:dark}
 html,body{margin:0;height:100%;background:#071D32;overflow:hidden;font:700 13px/1.3 "Nunito",system-ui,sans-serif;color:#F2F8FB}
-canvas{display:block;width:100%;height:100%;touch-action:none}
-#p{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
-#p button{flex:0 1 auto;padding:9px 12px;border-radius:14px;border:1px solid rgba(138,220,232,.3);background:rgba(11,41,69,.82);color:#F2F8FB;font:inherit}
+canvas{position:fixed;inset:0;display:block;width:100%;height:100%;touch-action:none}
+#p{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);display:flex;flex-wrap:wrap;gap:6px;justify-content:center;z-index:2}
+#p button{padding:9px 12px;border-radius:14px;border:1px solid rgba(138,220,232,.3);background:rgba(11,41,69,.82);color:#F2F8FB;font:inherit}
 #p button.on{background:#2588EF;border-color:transparent}
-#t{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 10px);text-align:center;text-shadow:0 1px 3px #000;opacity:.9}
+#t{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 10px);text-align:center;text-shadow:0 1px 3px #000;opacity:.9;z-index:2;padding:0 12px}
 </style></head><body>
-<canvas id="c"></canvas>
-<div id="t">Kristal Melek · parçalı deneme · tanka dokun, balık oraya bakıp yüzer</div>
+<canvas id="bg"></canvas><canvas id="c"></canvas>
+<div id="t">Kristal Melek · esnek parçalı deneme (2) · tanka dokun, balık oraya bakıp yüzer</div>
 <div id="p">
- <button data-k="parts" class="on">Parçalar oynasın</button>
- <button data-k="debug">Parçaları göster</button>
+ <button data-k="parts" class="on">Esneme açık</button>
+ <button data-k="debug">Ağı göster</button>
  <button data-k="slow">Yavaş çekim</button>
  <button data-k="big">Büyük</button>
 </div>
 <script>
 "use strict";
-const cv=document.getElementById("c"),ctx=cv.getContext("2d");
+const bgc=document.getElementById("bg"),bx=bgc.getContext("2d"),cv=document.getElementById("c");
+const gl=cv.getContext("webgl2",{premultipliedAlpha:true,antialias:true,alpha:true});
 const BG=new Image();BG.src="../a/08970b7f57cee584.webp";
-const N=["govde","kuyruk","sirt","karin","yan","alt","goz","gozbebek"],I={};let left=N.length;
-N.forEach(n=>{const im=new Image();im.onload=()=>{if(--left===0)requestAnimationFrame(loop)};im.src="kristal/"+n+".webp";I[n]=im});
-// Parçaların gövdeye göre yeri (gövde resmi 594x355 piksel). p: parçanın kendi içindeki dönme noktası, at: gövdedeki yeri, s: ölçek
-const R={
- kuyruk:{p:[315,185],at:[22,177],s:.8},
- sirt:{p:[640,248],at:[405,34],s:.72},
- karin:{p:[470,6],at:[392,318],s:.72},
- alt:{p:[108,6],at:[440,286],s:.7},
- yan:{p:[172,70],at:[372,214],s:.66},
- goz:{p:[68,68],at:[482,138],s:.46},
- gozbebek:{at:[482,138],s:.42}
-};
 const opt={parts:true,debug:false,slow:false,big:false};
 document.getElementById("p").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const k=b.dataset.k;opt[k]=!opt[k];b.classList.toggle("on",opt[k])});
-let W=0,H=0,DPR=1;function size(){DPR=Math.min(2.5,devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR}addEventListener("resize",size);size();
-// balığın durumu
-const F={x:.5,y:.45,vx:0,vy:0,dir:1,turn:1,tx:.7,ty:.4,t:0,dash:0,look:[0,0],lookT:0,sacc:0,react:0};
-function pick(){F.tx=.15+Math.random()*.7;F.ty=.2+Math.random()*.45}
-pick();
+if(!gl){document.getElementById("t").textContent="Bu tarayıcı WebGL2 desteklemiyor";throw 0}
+// parçalar, gövde koordinatlarında (gövde resmi 594x355). p: parçanın gövdeye bağlanan noktası, at: gövdedeki yeri, s: ölçek, g: ağ sıklığı
+const R={
+ sirt:{p:[640,248],at:[402,40],s:.72,g:[26,12]},
+ karin:{p:[470,6],at:[390,312],s:.72,g:[22,10]},
+ alt:{p:[108,6],at:[440,284],s:.7,g:[6,16]},
+ kuyruk:{p:[315,185],at:[30,177],s:.8,g:[16,20]},
+ govde:{p:[0,0],at:[0,0],s:1,g:[30,16]},
+ yan:{p:[172,70],at:[374,214],s:.66,g:[14,8]},
+ goz:{p:[68,68],at:[482,138],s:.46,g:[2,2]},
+ gozbebek:{p:[34,34],at:[482,138],s:.42,g:[2,2]}
+};
+const ORDER=["sirt","karin","alt","kuyruk","govde","yan","goz","gozbebek"];
+const vs=`#version 300 es
+in vec2 a;in vec2 u;uniform mat3 M;out vec2 v;void main(){vec3 p=M*vec3(a,1.);gl_Position=vec4(p.xy,0.,1.);v=u;}`;
+const fs=`#version 300 es
+precision mediump float;in vec2 v;uniform sampler2D T;uniform float L;out vec4 o;void main(){vec4 c=texture(T,v);o=L>.5?vec4(1.,1.,.2,1.)*.8:c;}`;
+function sh(t,s){const x=gl.createShader(t);gl.shaderSource(x,s);gl.compileShader(x);if(!gl.getShaderParameter(x,gl.COMPILE_STATUS))throw gl.getShaderInfoLog(x);return x}
+const pr=gl.createProgram();gl.attachShader(pr,sh(gl.VERTEX_SHADER,vs));gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,fs));gl.linkProgram(pr);gl.useProgram(pr);
+const aL=gl.getAttribLocation(pr,"a"),uL=gl.getAttribLocation(pr,"u"),ML=gl.getUniformLocation(pr,"M"),LL=gl.getUniformLocation(pr,"L");
+gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
+let left=ORDER.length;
+for(const n of ORDER){const r=R[n],im=new Image();im.onload=()=>{
+  r.w=im.width;r.h=im.height;const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,true);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,im);gl.generateMipmap(gl.TEXTURE_2D);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);r.tex=t;
+  const [gx,gy]=r.g,n1=(gx+1)*(gy+1),B=new Float32Array(n1*2),U=new Float32Array(n1*2);let k=0;
+  for(let j=0;j<=gy;j++)for(let i=0;i<=gx;i++){const px=i/gx*r.w,py=j/gy*r.h;B[k]=r.at[0]+(px-r.p[0])*r.s;B[k+1]=r.at[1]+(py-r.p[1])*r.s;U[k]=i/gx;U[k+1]=j/gy;k+=2}
+  const I=[],Li=[];for(let j=0;j<gy;j++)for(let i=0;i<gx;i++){const a=j*(gx+1)+i,b=a+1,c=a+gx+1,d=c+1;I.push(a,b,c,b,d,c);Li.push(a,b,a,c)}
+  r.B=B;r.P=new Float32Array(n1*2);r.n=I.length;r.nl=Li.length;
+  r.vao=gl.createVertexArray();gl.bindVertexArray(r.vao);
+  r.pb=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,r.pb);gl.bufferData(gl.ARRAY_BUFFER,r.P,gl.DYNAMIC_DRAW);gl.enableVertexAttribArray(aL);gl.vertexAttribPointer(aL,2,gl.FLOAT,false,0,0);
+  const ub=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,ub);gl.bufferData(gl.ARRAY_BUFFER,U,gl.STATIC_DRAW);gl.enableVertexAttribArray(uL);gl.vertexAttribPointer(uL,2,gl.FLOAT,false,0,0);
+  r.ib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,r.ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(I),gl.STATIC_DRAW);
+  r.lb=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,r.lb);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(Li),gl.STATIC_DRAW);gl.bindVertexArray(null);
+  if(--left===0)requestAnimationFrame(loop)};im.src="kristal/"+n+".webp"}
+// tek hareket alanı: bütün parçalar aynı dalgadan geçer, bu yüzden birlikte esner ve birbirinden kopmaz
+const HEAD=575,TIP=-230,LEN=HEAD-TIP;
+const sm=(a,b,x)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t)};
+function field(n,X,Y,S){const u=Math.max(0,Math.min(1,(HEAD-X)/LEN)),ph=S.w-6.0*u,A=S.amp;
+ // omurga: baştan kuyruğa büyüyen dalga
+ let dy=A*26*Math.sin(ph)*u*u,dx=0;
+ // kuyruk yana savrulunca yandan bakınca kısalır; kökten uca doğru artar
+ const tq=sm(40,-230,X);dx+=(40-X)*.30*A*Math.pow(Math.sin(ph),2)*tq;dy+=A*22*Math.sin(ph-1.1)*tq*tq;
+ // kuyruk yüzgecinin kendi dalgası: ışınlar uca doğru geç kalır
+ if(n==="kuyruk"){const r=sm(30,-200,X);dy+=A*10*Math.sin(S.w-1.6-(178-Y)/70)*r*r}
+ // sırt / karın yüzgeci: kökten uca dalga, uç geriden gelir ve hafif gerilir
+ if(n==="sirt"||n==="karin"){const base=n==="sirt"?60:300,d=Math.min(1,Math.abs(Y-base)/170+Math.max(0,(250-X)/420));
+   dx+=(-8-10*A)*Math.sin(S.w*1.15-X/55-d*2.2)*d*d;dy+=(n==="sirt"?-1:1)*5*Math.sin(S.w*1.15-X/70-d*1.6)*d*d}
+ // uzun karın yüzgeci: sarkar ve suda salınır
+ if(n==="alt"){const d=Math.max(0,(Y-284)/170);dx+=(-10-8*A)*Math.sin(S.w*.8-d*2.4)*d*d;dy-=4*Math.abs(Math.sin(S.w*.8-d*2.4))*d}
+ // yan yüzgeç: kürek çeker; kök sabit, uç kıvrılarak açılıp kapanır
+ if(n==="yan"){const d=Math.max(0,Math.min(1,(374-X)/118)),f=S.f-d*1.3,o=.5+.5*Math.sin(f);dx+=(374-X)*.55*o;dy+=(9*Math.sin(f+.6)-(Y-214)*.25*o)*d}
+ // nefes: başın arkası çok hafif şişip iner
+ if(n==="govde"){const g=Math.exp(-((X-440)**2)/1800)*Math.exp(-((Y-178)**2)/9000);dy+=(Y-178)*.025*Math.sin(S.b)*g}
+ return [dx,dy]}
+let W=0,H=0,DPR=1;function size(){DPR=Math.min(2.5,devicePixelRatio||1);W=innerWidth;H=innerHeight;for(const c of [cv,bgc]){c.width=W*DPR;c.height=H*DPR}drawBG()}addEventListener("resize",size);
+function drawBG(){bx.setTransform(DPR,0,0,DPR,0,0);if(BG.naturalWidth){const k=Math.max(W/BG.naturalWidth,H/BG.naturalHeight),bw=BG.naturalWidth*k,bh=BG.naturalHeight*k;bx.drawImage(BG,(W-bw)/2,(H-bh)/2,bw,bh)}else{bx.fillStyle="#0b3b5c";bx.fillRect(0,0,W,H)}}
+BG.onload=drawBG;size();
+const F={x:.5,y:.45,vx:0,vy:0,dir:1,turn:1,tx:.7,ty:.4,dash:0,look:[0,0],lookT:0,sac:[0,0],react:0,w:0,f:0,b:0,amp:.3};
+function pick(){F.tx=.15+Math.random()*.7;F.ty=.2+Math.random()*.45}pick();
 cv.addEventListener("pointerdown",e=>{F.tx=e.clientX/W;F.ty=Math.min(.75,Math.max(.15,e.clientY/H));F.dash=1;F.react=1;F.lookAt=[e.clientX,e.clientY];F.lookUntil=performance.now()+1500});
-function part(n,ang,sx,sy){const r=R[n],im=I[n];ctx.save();ctx.translate(r.at[0],r.at[1]);ctx.rotate(ang||0);ctx.scale((sx||1)*r.s,(sy||1)*r.s);ctx.drawImage(im,-r.p[0],-r.p[1]);
- if(opt.debug){ctx.strokeStyle="#ff0";ctx.lineWidth=3/r.s;ctx.strokeRect(0-r.p[0],0-r.p[1],im.width,im.height);ctx.fillStyle="#f00";ctx.beginPath();ctx.arc(0,0,8/r.s,0,7);ctx.fill()}ctx.restore()}
 let last=0;
 function loop(now){requestAnimationFrame(loop);let dt=Math.min(.05,(now-(last||now))/1000);last=now;if(opt.slow)dt*=.25;
- ctx.setTransform(DPR,0,0,DPR,0,0);
- if(BG.complete&&BG.naturalWidth){const k=Math.max(W/BG.naturalWidth,H/BG.naturalHeight),bw=BG.naturalWidth*k,bh=BG.naturalHeight*k;ctx.drawImage(BG,(W-bw)/2,(H-bh)/2,bw,bh)}else{ctx.fillStyle="#0b3b5c";ctx.fillRect(0,0,W,H)}
- // yüzme
- const dx=F.tx-F.x,dy=F.ty-F.y,d=Math.hypot(dx*W,dy*H);if(d<30){F.dash=0;if(Math.random()<dt*.6)pick()}
- const sp=(F.dash?.55:.16)*(opt.big?1:1.1),ax=dx/Math.max(.001,Math.hypot(dx,dy)),ay=dy/Math.max(.001,Math.hypot(dx,dy));
- F.vx+=(ax*sp*(d>30?1:0)-F.vx)*Math.min(1,dt*2.2);F.vy+=(ay*sp*.6*(d>30?1:0)-F.vy)*Math.min(1,dt*2.2);
- F.x+=F.vx*dt*W/Math.max(W,H)*1.2;F.y+=F.vy*dt*H/Math.max(W,H)*1.2;
- if(Math.abs(F.vx)>.02)F.dir=F.vx>0?1:-1;F.turn+=(F.dir-F.turn)*Math.min(1,dt*5);
- const speed=Math.min(1,Math.hypot(F.vx,F.vy)/.4);F.t+=dt*(1.6+4.5*speed);F.react=Math.max(0,F.react-dt*1.5);
- // göz: küçük sıçramalarla bakar; dokununca oraya bakar
+ const dx=F.tx-F.x,dy=F.ty-F.y,d=Math.hypot(dx*W,dy*H);if(d<30){F.dash=0;if(Math.random()<dt*.5)pick()}
+ const sp=F.dash?.5:.15,m=Math.max(.001,Math.hypot(dx,dy)),go=d>30?1:0;
+ F.vx+=(dx/m*sp*go-F.vx)*Math.min(1,dt*2);F.vy+=(dy/m*sp*.6*go-F.vy)*Math.min(1,dt*2);
+ const K=1.2/Math.max(W,H);F.x+=F.vx*dt*W*K;F.y+=F.vy*dt*H*K;
+ if(Math.abs(F.vx)>.03)F.dir=F.vx>0?1:-1;F.turn+=(F.dir-F.turn)*Math.min(1,dt*4);
+ const speed=Math.min(1,Math.hypot(F.vx,F.vy)/.4);F.react=Math.max(0,F.react-dt*1.2);
+ const tgt=.28+.55*speed+.4*F.react;F.amp+=(tgt-F.amp)*Math.min(1,dt*3);
+ F.w+=dt*(2.2+5.5*speed+3*F.react);F.f+=dt*(3.2+2*speed);F.b+=dt*2.4;
  if(now>F.lookT){F.lookT=now+500+Math.random()*1600;F.look=[Math.random()*2-1,Math.random()*1.4-.7]}
- const sc=(Math.min(W,H)/594)*(opt.big?.78:.55),fx=F.x*W,fy=F.y*H;
- let lk=F.look;if(F.lookUntil>now&&F.lookAt){const lx=(F.lookAt[0]-fx)*F.dir,ly=F.lookAt[1]-fy,m=Math.hypot(lx,ly)||1;lk=[lx/m,ly/m]}
- F.sacc=F.sacc||[0,0];F.sacc[0]+=(lk[0]-F.sacc[0])*Math.min(1,dt*18);F.sacc[1]+=(lk[1]-F.sacc[1])*Math.min(1,dt*18);
- ctx.save();ctx.translate(fx,fy+Math.sin(now/900)*4);
- const bank=Math.max(-.25,Math.min(.25,F.vy*.9))*F.dir;ctx.rotate(bank);
- ctx.scale(sc*F.turn,sc*(1-.08*(1-Math.abs(F.turn))));ctx.translate(-300,-178);
- const t=F.t,P=opt.parts,amp=.16+.2*speed+.25*F.react;
- // arkadakiler: sırt, karın, alt yüzgeç, kuyruk
- part("sirt",P?Math.sin(t-.9)*.05:0,1,P?1+Math.sin(t-.9)*.03:1);
- part("karin",P?-Math.sin(t-.9)*.05:0,1,P?1+Math.sin(t-.7)*.03:1);
- part("alt",P?Math.sin(t*.7)*.12+.05:0);
- part("kuyruk",P?Math.sin(t)*amp:0,P?1-.18*Math.abs(Math.sin(t)):1,1);
- // gövde: kuyruk tarafı hafifçe kıvrılır
- if(P){const im=I.govde,n=12,cw=im.width/n;for(let i=0;i<n;i++){const u=1-(i+.5)/n,off=Math.sin(t-u*1.2)*amp*28*u*u;const x0=Math.floor(i*cw),x1=Math.ceil((i+1)*cw);ctx.save();ctx.beginPath();ctx.rect(x0,-40,x1-x0,im.height+80);ctx.clip();ctx.drawImage(im,0,off);ctx.restore()}}
- else ctx.drawImage(I.govde,0,0);
- // öndekiler: yan yüzgeç, göz
- part("yan",P?Math.sin(t*1.3+1)*(.28+.2*speed)+.1:0,P?.75+.25*Math.abs(Math.cos(t*1.3+1)):1,1);
- part("goz");
- {const r=R.gozbebek,g=R.goz;ctx.save();ctx.translate(g.at[0]+(P?F.sacc[0]*13:0),g.at[1]+(P?F.sacc[1]*10:0));ctx.scale(r.s,r.s);ctx.drawImage(I.gozbebek,-I.gozbebek.width/2,-I.gozbebek.height/2);ctx.restore()}
- ctx.restore();
+ const sc=(Math.min(W,H)/620)*(opt.big?.78:.55),fx=F.x*W,fy=F.y*H+Math.sin(now/900)*4;
+ let lk=F.look;if(F.lookUntil>now&&F.lookAt){const lx=(F.lookAt[0]-fx)*F.dir,ly=F.lookAt[1]-fy,mm=Math.hypot(lx,ly)||1;lk=[lx/mm,ly/mm]}
+ F.sac[0]+=(lk[0]-F.sac[0])*Math.min(1,dt*18);F.sac[1]+=(lk[1]-F.sac[1])*Math.min(1,dt*18);
+ const bank=Math.max(-.22,Math.min(.22,F.vy*.8))*F.dir,c=Math.cos(bank),s=Math.sin(bank),sx=sc*F.turn,sy=sc*(1-.06*(1-Math.abs(F.turn)));
+ const ox=-300,oy=-178,ax=c*sx,bxx=-s*sy,ay=s*sx,by=c*sy,tx=fx+ax*ox+bxx*oy,ty=fy+ay*ox+by*oy;
+ const M=new Float32Array([ax*2/W,-ay*2/H,0, bxx*2/W,-by*2/H,0, tx*2/W-1,1-ty*2/H,1]);
+ gl.viewport(0,0,cv.width,cv.height);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);gl.uniformMatrix3fv(ML,false,M);
+ const S={w:F.w,f:F.f,b:F.b,amp:F.amp};
+ for(const n of ORDER){const r=R[n],B=r.B,P=r.P;
+  if(n==="gozbebek"||n==="goz"){const e=opt.parts?field("govde",482,138,S):[0,0],ex=n==="gozbebek"&&opt.parts?F.sac[0]*12:0,ey=n==="gozbebek"&&opt.parts?F.sac[1]*9:0;for(let k=0;k<B.length;k+=2){P[k]=B[k]+e[0]+ex;P[k+1]=B[k+1]+e[1]+ey}}
+  else for(let k=0;k<B.length;k+=2){if(opt.parts){const v=field(n,B[k],B[k+1],S);P[k]=B[k]+v[0];P[k+1]=B[k+1]+v[1]}else{P[k]=B[k];P[k+1]=B[k+1]}}
+  gl.bindVertexArray(r.vao);gl.bindBuffer(gl.ARRAY_BUFFER,r.pb);gl.bufferSubData(gl.ARRAY_BUFFER,0,P);gl.bindTexture(gl.TEXTURE_2D,r.tex);
+  gl.uniform1f(LL,0);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,r.ib);gl.drawElements(gl.TRIANGLES,r.n,gl.UNSIGNED_SHORT,0);
+  if(opt.debug&&n!=="goz"&&n!=="gozbebek"){gl.uniform1f(LL,1);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,r.lb);gl.drawElements(gl.LINES,r.nl,gl.UNSIGNED_SHORT,0)}}
+ gl.bindVertexArray(null);
 }
 </script>
 </body></html>
