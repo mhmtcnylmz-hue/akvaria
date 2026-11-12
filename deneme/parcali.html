@@ -93,6 +93,8 @@ function loadSpec(X,done){let left=X.O.length;
    let o,w;if(r.k==="tail"){o=r.cf[j];w=1-(gx-i)/gx/.45}else if(r.k==="top"){o=r.cf[i];w=1-(gy-j)/gy/.5}else{o=r.cf[i];w=1-j/gy/.5}
    if(o&&w>0){w=w*w*(3-2*w);B[k]+=o[0]*w;B[k+1]+=o[1]*w}}U[k]=i/gx;U[k+1]=j/gy;k+=2}
   const I=[],Li=[];for(let j=0;j<gy;j++)for(let i=0;i<gx;i++){const a=j*(gx+1)+i,b=a+1,cc=a+gx+1,d=cc+1;I.push(a,b,cc,b,d,cc);Li.push(a,b,a,cc)}
+  const Qd=new Float32Array(n1);for(let j=0;j<=gy;j++)for(let i=0;i<=gx;i++)Qd[j*(gx+1)+i]=r.k==="tail"?(gx-i)/gx:r.k==="top"?(gy-j)/gy:j/gy;
+  r.Qd=Qd;r.FH=(r.k==="tail"?r.w:r.h)*r.s;
   r.B=B;r.P=new Float32Array(n1*2);r.n=I.length;r.nl=Li.length;r.len=Math.max(r.w,r.h)*r.s;
   r.vao=gl.createVertexArray();gl.bindVertexArray(r.vao);
   r.pb=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,r.pb);gl.bufferData(gl.ARRAY_BUFFER,r.P,gl.DYNAMIC_DRAW);gl.enableVertexAttribArray(aL);gl.vertexAttribPointer(aL,2,gl.FLOAT,false,0,0);
@@ -104,13 +106,20 @@ function loadSpec(X,done){let left=X.O.length;
 // Koi (sazan) gözlemine göre: dalga gövdenin arka yarısında büyür, hızlanınca vuruş genişliği değil sıklığı artar,
 // birkaç vuruştan sonra süzülür; yan yüzgeçler yavaşken açılıp kürek çeker, hızlı süzülürken gövdeye yatar; dönüşte baş önce döner.
 const sm=(a,b,x)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t)};
-function field(r,X,Y,S){const HEAD=SP.head,TIP=SP.tip,LEN=HEAD-TIP,u=Math.max(0,Math.min(1,(HEAD-X)/LEN)),k=r.k,A=S.amp,ph=S.w-5.2*u;
+function field(r,X,Y,S,vi){const qd=vi!=null&&r.Qd?r.Qd[vi]:-1;const HEAD=SP.head,TIP=SP.tip,LEN=HEAD-TIP,u=Math.max(0,Math.min(1,(HEAD-X)/LEN)),k=r.k,A=S.amp,ph=S.w-5.2*u;
  const env=Math.pow(u,2.3);let dy=A*LEN*.028*MP.stiff*Math.sin(ph)*env+S.bend*LEN*.06*u*u,dx=0;
  const t0=SP.R.kuyruk.at[0]+10,tq=sm(t0,TIP,X);dx+=(t0-X)*.28*Math.min(1,A*1.4)*Math.pow(Math.sin(ph),2)*tq;dy+=A*LEN*.022*Math.sin(ph-1.0)*tq*tq;
- if(k==="tail"){const q=sm(t0,TIP+30,X);dy+=(A*10+3)*MP.tail*Math.sin(S.w*.9-1.7-(SP.cy-Y)/80)*q*q}
- if(k==="top"||k==="anal"||k==="pelv"){const fh=r.h*r.s,d=k==="pelv"?Math.min(1.2,Math.hypot(X-r.at[0],Y-r.at[1])/r.len):Math.min(1.2,Math.abs(Y-r.at[1])/fh+Math.max(0,r.at[0]-X)/(r.w*r.s)*.35),wv=S.w*.85-d*2.3-X/110,FN=MP.fin;
-   dx+=((-5-8*A)*Math.sin(wv)*FN-S.spd*22)*d*d;dy+=(k==="top"?-1:1)*(3+3*A)*FN*Math.sin(wv+.8)*d*d;
-   if(k==="top")dy+=(Y-r.at[1])*(-.22*S.fold)}
+ if(k==="tail"){const q=sm(t0,TIP+30,X);dy+=(A*10+3)*MP.tail*Math.sin(S.w*.9-1.7-(SP.cy-Y)/80)*q*q;
+   // kuyruk: vururken açılır, süzülürken/dururken biraz toplanır (ışınlar birbirine yaklaşır)
+   if(qd>=0){const c=r.at[1];dy+=(c-Y)*.2*(1-S.tsp)*qd*qd}}
+ if((k==="top"||k==="anal"||k==="pelv")&&qd>=0){const o=qd*r.FH,FN=MP.fin,er=1-S.fold;
+   // dalgalanma: dipten uca gecikmeli; dururken (yüzgeç açıkken) daha belirgin — balık ince ayarı yüzgeçleriyle yapar
+   const wv=S.w*.85-qd*2.3-X/110,ra=(.35+.65*er)*FN;
+   dx+=((-5-8*A)*Math.sin(wv)*ra-S.spd*18)*qd*qd;dy+=(k==="top"?-1:1)*(3+3*A)*ra*Math.sin(wv+.8)*qd*qd;
+   // kapanma: hızlıyken ışınlar geriye yatar, yüzgeç alçalır; dururken/dönerken/ürkünce dikleşir
+   const f=S.fold;dx-=o*.62*f;dy+=(k==="top"?1:-1)*o*.5*f;
+   // ürkünce bir an fazladan açılır
+   if(S.flare>0)dy+=(k==="top"?-1:1)*o*.12*S.flare}
  if(k==="pect"){const d=Math.max(0,Math.min(1,Math.hypot(X-r.at[0],Y-r.at[1])/r.len)),f=S.f+(r.far?Math.PI*.85:0)-d*1.4;
    const open=1-S.fold,o=.5+.5*Math.sin(f),fx=r.at[0]-X,fy=Y-r.at[1];
    dx+=fx*(.18+.45*S.fold)+fx*.35*open*o;dy+=(-fy*(.45*S.fold+.2*open*o)+7*MP.pectA*open*Math.sin(f+.6))*d;dx*=MP.pectA>1?1+(MP.pectA-1)*.5:1}
@@ -130,7 +139,7 @@ function setMode(v){const list=v==="hepsi"?Object.keys(MPS):[v];ALL=v==="hepsi";
  for(const k of list){const X=SPEC[k];if(X.R.govde.vao){if(--left===0)ready()}else loadSpec(X,()=>{if(--left===0)ready()})}}
 cv.addEventListener("pointerdown",e=>{if(!FISH.length)return;const now=performance.now();let best=null,bd=1e9;
  for(const f of FISH){f.F.lookAt=[e.clientX,e.clientY];f.F.lookUntil=now+1600;const d=Math.hypot(f.F.x*W-e.clientX,f.F.y*H-e.clientY);if(d<bd){bd=d;best=f}}
- const G=best.F;G.turnCool=0;G.tap=1;G.pickT=now;G.tx=e.clientX/W;G.ty=Math.min(.75,Math.max(.15,e.clientY/H));G.urg=1;if(G.mode!=="turn"){G.mode="burst";G.beats=Math.max(2,Math.min(5,1+Math.hypot((G.tx-G.x)*W,(G.ty-G.y)*H)/120|0))}});
+ const G=best.F;G.flare=1;G.turnCool=0;G.tap=1;G.pickT=now;G.tx=e.clientX/W;G.ty=Math.min(.75,Math.max(.15,e.clientY/H));G.urg=1;if(G.mode!=="turn"){G.mode="burst";G.beats=Math.max(2,Math.min(5,1+Math.hypot((G.tx-G.x)*W,(G.ty-G.y)*H)/120|0))}});
 document.getElementById("p").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const k=b.dataset.k;opt[k]=!opt[k];b.classList.toggle("on",opt[k])});
 const MODEN={glide:"süzülüyor",burst:"kuyruk vuruşu",hover:"durup kürek çekiyor",turn:"dönüyor"};
 function step(fish,now,dt){F=fish.F;SP=fish.sp;MP=fish.mp;const BLpx=lenPx(fish);
@@ -152,7 +161,8 @@ function step(fish,now,dt){F=fish.F;SP=fish.sp;MP=fish.mp;const BLpx=lenPx(fish)
  {const mg=Math.min(.45,BLpx*.5/W+.02);if((F.dir<0&&F.x<mg+.08)||(F.dir>0&&F.x>1-mg-.08)){if(!F.tap&&F.mode!=="turn"&&F.mode!=="hover"){F.v*=1-dt*2;if(Math.sign(F.tx-F.x)===F.dir)pick()}}F.x=Math.max(mg,Math.min(1-mg,F.x));if(F.tap)F.tx=Math.max(mg,Math.min(1-mg,F.tx))}{const yb=Math.max(.12,Math.min(.8,F.y));if(yb!==F.y){F.y=yb;F.pitch*=.9}}
  F.spd=Math.min(1,F.v/(1.2*MP.sp));
  const ampT=(F.mode==="burst"?.5+.08*F.urg:F.mode==="turn"?.35:F.mode==="hover"?.12:.08)*MP.amp;F.amp+=(ampT-F.amp)*Math.min(1,dt*3.5);
- const foldT=F.mode==="hover"||F.mode==="turn"?0:F.spd>.45?.85:.35;F.fold+=(foldT-F.fold)*Math.min(1,dt*2.5);
+ const foldT=F.urg>.6||F.mode==="hover"||F.mode==="turn"?0:F.spd>.45?.75:.3;F.fold+=(foldT-F.fold)*Math.min(1,dt*(foldT<F.fold?5:1.8));
+ const tspT=F.mode==="burst"||F.mode==="turn"?1:0;F.tsp=(F.tsp||0)+(tspT-(F.tsp||0))*Math.min(1,dt*3);F.flare=Math.max(0,(F.flare||0)-dt*1.6);
  F.f+=dt*(F.mode==="hover"?4.2:2.6)*MP.pect;F.b+=dt*(F.mode==="hover"?3:2.2);
  if(now>F.lookT){F.lookT=now+500+Math.random()*1600;F.look=[Math.random()*2-1,Math.random()*1.4-.7]}}
 function draw(fish,now,dt){F=fish.F;SP=fish.sp;MP=fish.mp;
@@ -162,14 +172,14 @@ function draw(fish,now,dt){F=fish.F;SP=fish.sp;MP=fish.mp;
  const pc=Math.cos(F.pitch),ps=Math.sin(F.pitch),C0=SP.c[0],C1=SP.c[1];
  const tx=fx-sc*C0,ty2=fy-sc*C1;
  gl.uniformMatrix3fv(ML,false,new Float32Array([sc*2/W,0,0, 0,-sc*2/H,0, tx*2/W-1,1-ty2*2/H,1]));
- const S={w:F.w,f:F.f,b:F.b,amp:opt.parts?F.amp:0,fold:F.fold,spd:F.spd||0,bend:opt.parts?F.bend:0};
+ const S={w:F.w,f:F.f,b:F.b,amp:opt.parts?F.amp:0,fold:F.fold,spd:F.spd||0,bend:opt.parts?F.bend:0,tsp:F.tsp||0,flare:F.flare||0};
  const turning=F.mode==="turn",P0=F.turnP,from=F.turnFrom,to=F.dir;
  const dirAt=X=>{if(!turning)return to;const u=Math.max(0,Math.min(1,(SP.head-X)/(SP.head-SP.tip))),p=Math.max(0,Math.min(1,P0*1.2-u*.2)),e=p*p*(3-2*p),d=from*Math.cos(e*Math.PI);return Math.abs(d)<.14?.14*Math.sign(d||to):d};
  const eR=SP.R.goz.w*SP.R.goz.s;
  for(const n of SP.O){const r=SP.R[n],B=r.B,P=r.P;if(!B)continue;
   if(r.k==="eye"||r.k==="pupil"){const e=opt.parts?field(SP.R.govde,r.at[0],r.at[1],S):[0,0],ex=r.k==="pupil"&&opt.parts?F.sac[0]*eR*.09:0,ey=r.k==="pupil"&&opt.parts?F.sac[1]*eR*.07:0,sx=dirAt(r.at[0]);
    for(let k=0;k<B.length;k+=2){const X=B[k]+e[0]+ex-C0,Y=B[k+1]+e[1]+ey-C1;P[k]=C0+(X*pc-Y*ps)*sx;P[k+1]=C1+X*ps+Y*pc}}
-  else for(let k=0;k<B.length;k+=2){let X=B[k],Y=B[k+1];const sx=dirAt(X);if(opt.parts){const v=field(r,X,Y,S);X+=v[0];Y+=v[1]}X-=C0;Y-=C1;P[k]=C0+(X*pc-Y*ps)*sx;P[k+1]=C1+X*ps+Y*pc}
+  else for(let k=0;k<B.length;k+=2){let X=B[k],Y=B[k+1];const sx=dirAt(X);if(opt.parts){const v=field(r,X,Y,S,k>>1);X+=v[0];Y+=v[1]}X-=C0;Y-=C1;P[k]=C0+(X*pc-Y*ps)*sx;P[k+1]=C1+X*ps+Y*pc}
   gl.bindVertexArray(r.vao);gl.bindBuffer(gl.ARRAY_BUFFER,r.pb);gl.bufferSubData(gl.ARRAY_BUFFER,0,P);gl.bindTexture(gl.TEXTURE_2D,r.tex);
   gl.uniform1f(DL,r.dim||1);gl.uniform1f(LL,0);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,r.ib);gl.drawElements(gl.TRIANGLES,r.n,gl.UNSIGNED_SHORT,0);
   if(opt.debug&&r.k!=="eye"&&r.k!=="pupil"){gl.uniform1f(LL,1);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,r.lb);gl.drawElements(gl.LINES,r.nl,gl.UNSIGNED_SHORT,0)}}
