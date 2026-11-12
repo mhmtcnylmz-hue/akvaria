@@ -89,7 +89,9 @@ function tex(X,name,cb){const key=X.dir+"/"+name;
 function loadSpec(X,done){let left=X.O.length;
  for(const n of X.O){const r=X.R[n];tex(X,r.src||n,T=>{r.tex=T.t;r.w=T.w;r.h=T.h;
   const [gx,gy]=r.g,n1=(gx+1)*(gy+1),B=new Float32Array(n1*2),U=new Float32Array(n1*2),c=Math.cos(r.r||0),s=Math.sin(r.r||0);let k=0;
-  for(let j=0;j<=gy;j++)for(let i=0;i<=gx;i++){const px=i/gx*r.w;let py=j/gy*r.h;if(r.taper){const [x0,x1,f,cy]=r.taper,q=Math.max(0,Math.min(1,(px-x0)/(x1-x0))),e=q*q*(3-2*q);py=cy+(py-cy)*(1+(f-1)*e)}const lx=(px-r.p[0])*r.s,ly=(py-r.p[1])*r.s;B[k]=r.at[0]+lx*c-ly*s;B[k+1]=r.at[1]+lx*s+ly*c;U[k]=i/gx;U[k+1]=j/gy;k+=2}
+  for(let j=0;j<=gy;j++)for(let i=0;i<=gx;i++){const px=i/gx*r.w;let py=j/gy*r.h;if(r.taper){const [x0,x1,f,cy]=r.taper,q=Math.max(0,Math.min(1,(px-x0)/(x1-x0))),e=q*q*(3-2*q);py=cy+(py-cy)*(1+(f-1)*e)}const lx=(px-r.p[0])*r.s,ly=(py-r.p[1])*r.s;B[k]=r.at[0]+lx*c-ly*s;B[k+1]=r.at[1]+lx*s+ly*c;if(r.cf){// yüzgeç dibi gövde kavisine uydurulur: dipte tam, uca doğru azalarak
+   let o,w;if(r.k==="tail"){o=r.cf[j];w=1-(gx-i)/gx/.45}else if(r.k==="top"){o=r.cf[i];w=1-(gy-j)/gy/.5}else{o=r.cf[i];w=1-j/gy/.5}
+   if(o&&w>0){w=w*w*(3-2*w);B[k]+=o[0]*w;B[k+1]+=o[1]*w}}U[k]=i/gx;U[k+1]=j/gy;k+=2}
   const I=[],Li=[];for(let j=0;j<gy;j++)for(let i=0;i<gx;i++){const a=j*(gx+1)+i,b=a+1,cc=a+gx+1,d=cc+1;I.push(a,b,cc,b,d,cc);Li.push(a,b,a,cc)}
   r.B=B;r.P=new Float32Array(n1*2);r.n=I.length;r.nl=Li.length;r.len=Math.max(r.w,r.h)*r.s;
   r.vao=gl.createVertexArray();gl.bindVertexArray(r.vao);
