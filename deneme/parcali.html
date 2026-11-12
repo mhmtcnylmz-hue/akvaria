@@ -101,24 +101,30 @@ let W=0,H=0,DPR=1;function size(){DPR=Math.min(2.5,devicePixelRatio||1);W=innerW
 function drawBG(){bx.setTransform(DPR,0,0,DPR,0,0);if(BG.naturalWidth){const k=Math.max(W/BG.naturalWidth,H/BG.naturalHeight),bw=BG.naturalWidth*k,bh=BG.naturalHeight*k;bx.drawImage(BG,(W-bw)/2,(H-bh)/2,bw,bh)}else{bx.fillStyle="#0b3b5c";bx.fillRect(0,0,W,H)}}
 BG.onload=drawBG;size();
 const F={x:.5,y:.45,v:0,vy:0,dir:1,tx:.7,ty:.4,mode:"glide",modeT:0,beats:0,w:0,f:0,b:0,amp:.15,fold:.5,bend:0,turnP:1,turnFrom:1,look:[0,0],lookT:0,sac:[0,0],lookAt:null,lookUntil:0,urg:0};
-function pick(){F.tx=.25+Math.random()*.5;F.ty=.2+Math.random()*.45}pick();
-cv.addEventListener("pointerdown",e=>{F.tx=e.clientX/W;F.ty=Math.min(.75,Math.max(.15,e.clientY/H));F.urg=1;F.lookAt=[e.clientX,e.clientY];F.lookUntil=performance.now()+1600;if(F.mode!=="turn"){F.mode="burst";F.beats=3+Math.random()*2|0}});
+// yeni hedef: en az ekranın üçte biri kadar uzakta; çoğunlukla balığın baktığı yönde (sürekli geri dönmesin)
+function pick(){const ahead=Math.random()<.75,d=F.dir*(ahead?1:-1);let tx=F.x+d*(.3+Math.random()*.35);if(tx<.18||tx>.82)tx=F.x-d*(.3+Math.random()*.3);F.tx=Math.max(.18,Math.min(.82,tx));F.ty=.22+Math.random()*.42;F.pickT=performance.now()}
+F.turnCool=0;pick();window.__F=F;
+cv.addEventListener("pointerdown",e=>{F.turnCool=0;F.pickT=performance.now();F.tx=e.clientX/W;F.ty=Math.min(.75,Math.max(.15,e.clientY/H));F.urg=1;F.lookAt=[e.clientX,e.clientY];F.lookUntil=performance.now()+1600;if(F.mode!=="turn"){F.mode="burst";F.beats=3+Math.random()*2|0}});
 document.getElementById("p").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;if(b.dataset.sp){const X=SPEC[b.dataset.sp];const go=()=>{SP=X;spBtn()};X.R.govde.vao?go():loadSpec(X,go);return}const k=b.dataset.k;opt[k]=!opt[k];b.classList.toggle("on",opt[k])});
 const MODEN={glide:"süzülüyor",burst:"kuyruk vuruşu",hover:"durup kürek çekiyor",turn:"dönüyor"};
 let last=0;
 function loop(now){requestAnimationFrame(loop);let dt=Math.min(.05,(now-(last||now))/1000);last=now;if(opt.slow)dt*=.25;
  const L=Math.max(W,H),tdx=(F.tx-F.x)*W,tdy=(F.ty-F.y)*H,dist=Math.hypot(tdx,tdy),want=Math.sign(tdx)||F.dir;
- if(F.mode!=="turn"&&want!==F.dir&&Math.abs(tdx)>40){F.mode="turn";F.turnP=0;F.turnFrom=F.dir;F.dir=want}
+ const behind=Math.sign(tdx)!==F.dir,fresh=now-(F.pickT||0)<1500;
+ // vardı say: hedefe yakınsa ya da hedefin az ötesine geçtiyse dönmeden durup kürek çeker
+ if((F.mode==="burst"||F.mode==="glide")&&(dist<90||(!fresh&&behind&&Math.abs(tdx)<170))){F.mode="hover";F.modeT=1.4+Math.random()*1.8;F.urg=0}
+ // dönüş: hedef gerçekten arkadaysa ve son dönüşün üstünden zaman geçtiyse
+ else if(F.mode!=="turn"&&F.mode!=="hover"&&behind&&Math.abs(tdx)>=(fresh?70:170)&&(fresh||now>F.turnCool)){F.mode="turn";F.turnP=0;F.turnFrom=F.dir;F.dir=-F.dir}
  F.modeT-=dt;
- if(F.mode==="turn"){F.turnP=Math.min(1,F.turnP+dt/.75);F.w+=dt*4;F.bend=Math.sin(F.turnP*Math.PI)*.9;F.v*=1-dt*1.2;if(F.turnP>=1){F.mode="burst";F.beats=2;F.bend=0}}
- else if(F.mode==="burst"){const pw=F.w;F.w+=dt*(6.5+3*F.urg);if(Math.floor(pw/6.283)!==Math.floor(F.w/6.283)){F.v=Math.min(.42+.25*F.urg,F.v+.11+.08*F.urg);F.beats--}
-  if(F.beats<=0){F.mode=dist<60?"hover":"glide";F.modeT=.9+Math.random()*1.4;F.urg=Math.max(0,F.urg-.5)}}
- else if(F.mode==="glide"){F.w+=dt*1.6;if(F.modeT<=0||F.v<.06){F.mode=dist<60?"hover":"burst";F.beats=2+Math.random()*3|0;F.modeT=1.5+Math.random()*2.5}}
- else if(F.mode==="hover"){F.w+=dt*1.4;if(F.modeT<=0){pick();F.mode="burst";F.beats=2+Math.random()*2|0}}
+ if(F.mode==="turn"){F.turnP=Math.min(1,F.turnP+dt/.75);F.w+=dt*4;F.bend=Math.sin(F.turnP*Math.PI)*.9;F.v*=1-dt*1.2;if(F.turnP>=1){F.mode="burst";F.beats=2;F.bend=0;F.turnCool=now+1800}}
+ else if(F.mode==="burst"){const pw=F.w;F.w+=dt*(6.5+3*F.urg);if(Math.floor(pw/6.283)!==Math.floor(F.w/6.283)){const near=Math.min(1,dist/260);F.v=Math.min((.42+.25*F.urg)*(.45+.55*near),F.v+(.11+.08*F.urg)*(.4+.6*near));F.beats--}
+  if(F.beats<=0){F.mode="glide";F.modeT=.9+Math.random()*1.4;F.urg=Math.max(0,F.urg-.5)}}
+ else if(F.mode==="glide"){F.w+=dt*1.6;if(F.modeT<=0||F.v<.06){F.mode="burst";F.beats=Math.max(1,Math.min(4,1+dist/170|0));F.modeT=1.5+Math.random()*2.5}}
+ else if(F.mode==="hover"){F.w+=dt*1.4;if(F.modeT<=0){pick();F.mode="glide";F.modeT=.3}}
  F.v*=1-dt*(F.mode==="hover"?1.8:.55);
  const ty=Math.max(-1,Math.min(1,tdy/220));F.vy+=(ty*.12*(F.mode==="hover"?.5:1)-F.vy)*Math.min(1,dt*1.5);
  F.x+=F.v*F.dir*dt*1.15*L/W;F.y+=F.vy*dt*L/H;
- {const mg=Math.min(.45,(SP.head-SP.tip)*.5*(Math.min(W,H)/(SP.head-SP.tip)*.8)*(opt.big?.78:.55)/W+.02);if(F.x<mg||F.x>1-mg){F.x=Math.max(mg,Math.min(1-mg,F.x));F.v*=.5}}F.y=Math.max(.12,Math.min(.8,F.y));
+ {const mg=Math.min(.45,(SP.head-SP.tip)*.5*(Math.min(W,H)/(SP.head-SP.tip)*.8)*(opt.big?.78:.55)/W+.02);if((F.dir<0&&F.x<mg+.08)||(F.dir>0&&F.x>1-mg-.08)){if(F.mode!=="turn"&&F.mode!=="hover"){F.v*=1-dt*2;if(Math.sign(F.tx-F.x)===F.dir)pick()}}F.x=Math.max(mg,Math.min(1-mg,F.x))}F.y=Math.max(.12,Math.min(.8,F.y));
  const spd=Math.min(1,F.v/.42);
  const ampT=F.mode==="burst"?.55+.15*F.urg:F.mode==="turn"?.35:F.mode==="hover"?.12:.08;F.amp+=(ampT-F.amp)*Math.min(1,dt*3.5);
  const foldT=F.mode==="hover"||F.mode==="turn"?0:spd>.45?.85:.35;F.fold+=(foldT-F.fold)*Math.min(1,dt*2.5);
