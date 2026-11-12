@@ -139,7 +139,7 @@ function loop(now){requestAnimationFrame(loop);let dt=Math.min(.05,(now-(last||n
  let lk=F.look;if(F.lookUntil>now&&F.lookAt){const lx=(F.lookAt[0]-fx)*F.dir,ly=F.lookAt[1]-fy,mm=Math.hypot(lx,ly)||1;lk=[lx/mm,ly/mm]}
  F.sac[0]+=(lk[0]-F.sac[0])*Math.min(1,dt*18);F.sac[1]+=(lk[1]-F.sac[1])*Math.min(1,dt*18);
  stEl.textContent=MODEN[F.mode]+" · tanka dokun";
- const bank=F.pitch*F.dir,c=Math.cos(bank),s=Math.sin(bank);
+ const c=1,s=0,pc=Math.cos(F.pitch),ps=Math.sin(F.pitch),C0=SP.c[0],C1=SP.c[1];
  const ox=-SP.c[0],oy=-SP.c[1],ax=c*sc,bxx=-s*sc,ay=s*sc,by=c*sc,tx=fx+ax*ox+bxx*oy,ty2=fy+ay*ox+by*oy;
  const M=new Float32Array([ax*2/W,-ay*2/H,0, bxx*2/W,-by*2/H,0, tx*2/W-1,1-ty2*2/H,1]);
  gl.viewport(0,0,cv.width,cv.height);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);gl.uniformMatrix3fv(ML,false,M);
@@ -149,8 +149,8 @@ function loop(now){requestAnimationFrame(loop);let dt=Math.min(.05,(now-(last||n
  const dirAt=X=>{if(!turning)return to;const u=Math.max(0,Math.min(1,(SP.head-X)/(SP.head-SP.tip))),p=Math.max(0,Math.min(1,P0*1.2-u*.2)),e=p*p*(3-2*p),d=from*Math.cos(e*Math.PI);return Math.abs(d)<.14?.14*Math.sign(d||to):d};
  for(const n of SP.O){const r=SP.R[n],B=r.B,P=r.P;if(!B)continue;
   if(r.k==="eye"||r.k==="pupil"){const e=opt.parts?field(SP.R.govde,r.at[0],r.at[1],S):[0,0],ex=r.k==="pupil"&&opt.parts?F.sac[0]*12:0,ey=r.k==="pupil"&&opt.parts?F.sac[1]*9:0,sx=dirAt(r.at[0]);
-   for(let k=0;k<B.length;k+=2){P[k]=SP.c[0]+(B[k]+e[0]+ex-SP.c[0])*sx;P[k+1]=B[k+1]+e[1]+ey}}
-  else for(let k=0;k<B.length;k+=2){let X=B[k],Y=B[k+1];const sx=dirAt(X);if(opt.parts){const v=field(r,X,Y,S);X+=v[0];Y+=v[1]}P[k]=SP.c[0]+(X-SP.c[0])*sx;P[k+1]=Y}
+   for(let k=0;k<B.length;k+=2){const X=B[k]+e[0]+ex-C0,Y=B[k+1]+e[1]+ey-C1;P[k]=C0+(X*pc-Y*ps)*sx;P[k+1]=C1+X*ps+Y*pc}}
+  else for(let k=0;k<B.length;k+=2){let X=B[k],Y=B[k+1];const sx=dirAt(X);if(opt.parts){const v=field(r,X,Y,S);X+=v[0];Y+=v[1]}X-=C0;Y-=C1;P[k]=C0+(X*pc-Y*ps)*sx;P[k+1]=C1+X*ps+Y*pc}
   gl.bindVertexArray(r.vao);gl.bindBuffer(gl.ARRAY_BUFFER,r.pb);gl.bufferSubData(gl.ARRAY_BUFFER,0,P);gl.bindTexture(gl.TEXTURE_2D,r.tex);
   gl.uniform1f(DL,r.dim||1);gl.uniform1f(LL,0);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,r.ib);gl.drawElements(gl.TRIANGLES,r.n,gl.UNSIGNED_SHORT,0);
   if(opt.debug&&r.k!=="eye"&&r.k!=="pupil"){gl.uniform1f(LL,1);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,r.lb);gl.drawElements(gl.LINES,r.nl,gl.UNSIGNED_SHORT,0)}}
