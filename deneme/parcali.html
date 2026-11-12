@@ -118,20 +118,20 @@ function loop(now){requestAnimationFrame(loop);let dt=Math.min(.05,(now-(last||n
  else if(F.mode!=="turn"&&F.mode!=="hover"&&behind&&Math.abs(tdx)>=(fresh?70:170)&&(fresh||now>F.turnCool)){F.mode="turn";F.turnP=0;F.turnFrom=F.dir;F.dir=-F.dir}
  F.modeT-=dt;
  if(F.mode==="turn"){F.turnP=Math.min(1,F.turnP+dt/.75);F.w+=dt*4;F.bend=Math.sin(F.turnP*Math.PI)*.9;F.v*=1-dt*1.2;if(F.turnP>=1){F.mode="burst";F.beats=2;F.bend=0;F.turnCool=now+1800}}
- else if(F.mode==="burst"){const pw=F.w;F.w+=dt*(6.5+3*F.urg);if(Math.floor(pw/6.283)!==Math.floor(F.w/6.283)){const near=Math.min(1,dist/260);F.v=Math.min((.42+.25*F.urg)*(.45+.55*near),F.v+(.11+.08*F.urg)*(.4+.6*near));F.beats--}
+ else if(F.mode==="burst"){const pw=F.w;F.w+=dt*(6.2+1.8*F.urg);if(Math.floor(pw/6.283)!==Math.floor(F.w/6.283)){const near=Math.min(1,dist/260);F.v=Math.min((1.05+.55*F.urg)*(.5+.5*near),F.v+(.42+.22*F.urg)*(.45+.55*near));F.beats--}
   if(F.beats<=0){F.mode="glide";F.modeT=.9+Math.random()*1.4;F.urg=Math.max(0,F.urg-.5)}}
- else if(F.mode==="glide"){F.w+=dt*1.6;if(F.modeT<=0||F.v<.06){F.mode="burst";F.beats=Math.max(1,Math.min(4,1+dist/170|0));F.modeT=1.5+Math.random()*2.5}}
+ else if(F.mode==="glide"){F.w+=dt*1.6;if(F.modeT<=0||F.v<.25){F.mode="burst";F.beats=Math.max(1,Math.min(4,1+dist/170|0));F.modeT=1.5+Math.random()*2.5}}
  else if(F.mode==="hover"){F.w+=dt*1.4;if(F.modeT<=0){F.tap=0;pick();F.mode="glide";F.modeT=.3}}
  F.v*=1-dt*(F.mode==="hover"?1.8:.55);
  // burun hedefe döner: hedef aşağıdaysa burun aşağı (en çok ~45°); dururken yavaşça düzleşir
  const pT=F.mode==="hover"||F.mode==="turn"?Math.max(-.25,Math.min(.25,Math.atan2(tdy,Math.max(60,Math.abs(tdx)))))*(dist>30?1:0):Math.max(-.8,Math.min(.8,Math.atan2(tdy,Math.max(20,Math.abs(tdx)))));
  F.pitch+=(pT-F.pitch)*Math.min(1,dt*(F.mode==="burst"?3:1.6));
  // durup kürek çekerken yüzgeçlerle hedefe doğru çok yavaş süzülür
- if(F.mode==="hover"&&dist>20)F.v=Math.max(F.v,Math.min(.05,dist/2000));
- F.x+=F.v*Math.cos(F.pitch)*F.dir*dt*1.15*L/W;F.y+=F.v*Math.sin(F.pitch)*dt*1.15*L/H;
+ if(F.mode==="hover"&&dist>20)F.v=Math.max(F.v,Math.min(.18,dist/600));
+ const BLpx=(SP.head-SP.tip)*(Math.min(W,H)/(SP.head-SP.tip)*.8)*(opt.big?.78:.55);F.x+=F.v*BLpx*Math.cos(F.pitch)*F.dir*dt/W;F.y+=F.v*BLpx*Math.sin(F.pitch)*dt/H;
  {const mg=Math.min(.45,(SP.head-SP.tip)*.5*(Math.min(W,H)/(SP.head-SP.tip)*.8)*(opt.big?.78:.55)/W+.02);if((F.dir<0&&F.x<mg+.08)||(F.dir>0&&F.x>1-mg-.08)){if(!F.tap&&F.mode!=="turn"&&F.mode!=="hover"){F.v*=1-dt*2;if(Math.sign(F.tx-F.x)===F.dir)pick()}}F.x=Math.max(mg,Math.min(1-mg,F.x));F.mg=mg;if(F.tap)F.tx=Math.max(mg,Math.min(1-mg,F.tx))}{const yb=Math.max(.12,Math.min(.8,F.y));if(yb!==F.y){F.y=yb;F.pitch*=.9}}
- const spd=Math.min(1,F.v/.42);
- const ampT=F.mode==="burst"?.55+.15*F.urg:F.mode==="turn"?.35:F.mode==="hover"?.12:.08;F.amp+=(ampT-F.amp)*Math.min(1,dt*3.5);
+ const spd=Math.min(1,F.v/1.2);
+ const ampT=F.mode==="burst"?.5+.08*F.urg:F.mode==="turn"?.35:F.mode==="hover"?.12:.08;F.amp+=(ampT-F.amp)*Math.min(1,dt*3.5);
  const foldT=F.mode==="hover"||F.mode==="turn"?0:spd>.45?.85:.35;F.fold+=(foldT-F.fold)*Math.min(1,dt*2.5);
  F.f+=dt*(F.mode==="hover"?4.2:2.6);F.b+=dt*(F.mode==="hover"?3:2.2);
  if(now>F.lookT){F.lookT=now+500+Math.random()*1600;F.look=[Math.random()*2-1,Math.random()*1.4-.7]}
