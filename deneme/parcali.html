@@ -38,7 +38,7 @@ const SPEC={
    yan2:{k:"pect",src:"yan",p:[160,15],at:[486,326],s:.74,r:.62,g:[12,12],dim:.55,far:1},
    karin:{k:"anal",p:[400,45],at:[178,302],s:.7,r:.22,g:[22,12]},
    alt:{k:"pelv",p:[325,15],at:[352,352],s:.72,r:.38,g:[18,14]},
-   kuyruk:{k:"tail",p:[345,205],at:[32,178],s:1,g:[16,20]},
+   kuyruk:{k:"tail",p:[350,208],at:[30,180],s:1,g:[20,22],taper:[230,362,.74,208]},
    govde:{k:"body",p:[0,0],at:[0,0],s:1,g:[34,18]},
    yan:{k:"pect",p:[160,15],at:[470,330],s:.8,r:.55,g:[12,12]},
    goz:{k:"eye",p:[64,64],at:[565,248],s:1,g:[2,2]},
@@ -71,7 +71,7 @@ function tex(X,name,cb){const key=X.dir+"/"+name;
 function loadSpec(X,done){let left=X.O.length;
  for(const n of X.O){const r=X.R[n];tex(X,r.src||n,T=>{r.tex=T.t;r.w=T.w;r.h=T.h;
   const [gx,gy]=r.g,n1=(gx+1)*(gy+1),B=new Float32Array(n1*2),U=new Float32Array(n1*2),c=Math.cos(r.r||0),s=Math.sin(r.r||0);let k=0;
-  for(let j=0;j<=gy;j++)for(let i=0;i<=gx;i++){const lx=(i/gx*r.w-r.p[0])*r.s,ly=(j/gy*r.h-r.p[1])*r.s;B[k]=r.at[0]+lx*c-ly*s;B[k+1]=r.at[1]+lx*s+ly*c;U[k]=i/gx;U[k+1]=j/gy;k+=2}
+  for(let j=0;j<=gy;j++)for(let i=0;i<=gx;i++){const px=i/gx*r.w;let py=j/gy*r.h;if(r.taper){const [x0,x1,f,cy]=r.taper,q=Math.max(0,Math.min(1,(px-x0)/(x1-x0))),e=q*q*(3-2*q);py=cy+(py-cy)*(1+(f-1)*e)}const lx=(px-r.p[0])*r.s,ly=(py-r.p[1])*r.s;B[k]=r.at[0]+lx*c-ly*s;B[k+1]=r.at[1]+lx*s+ly*c;U[k]=i/gx;U[k+1]=j/gy;k+=2}
   const I=[],Li=[];for(let j=0;j<gy;j++)for(let i=0;i<gx;i++){const a=j*(gx+1)+i,b=a+1,cc=a+gx+1,d=cc+1;I.push(a,b,cc,b,d,cc);Li.push(a,b,a,cc)}
   r.B=B;r.P=new Float32Array(n1*2);r.n=I.length;r.nl=Li.length;r.len=Math.max(r.w,r.h)*r.s;
   r.vao=gl.createVertexArray();gl.bindVertexArray(r.vao);
