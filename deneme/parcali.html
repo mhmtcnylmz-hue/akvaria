@@ -23,6 +23,7 @@ canvas{position:fixed;inset:0;display:block;width:100%;height:100%;touch-action:
  <button data-k="slow">Yavaş çekim</button>
  <button data-k="big">Büyük</button>
 </div>
+<script src="kodbalik.js?v=1"></script>
 <script>
 "use strict";
 const bgc=document.getElementById("bg"),bx=bgc.getContext("2d"),cv=document.getElementById("c"),stEl=document.getElementById("st");
@@ -74,6 +75,11 @@ const MPS={
  koi2:{ad:"Koi (yeni çizim)",sp:1,freq:1,amp:1,stiff:1,tail:1,fin:1.5,pect:1,pectA:1,glide:1,hover:1,size:1,yeni:1},
  clown2:{ad:"Palyaço (yeni çizim)",sp:.8,freq:1.7,amp:.85,stiff:.85,tail:1.1,fin:.9,pect:2,pectA:1.4,glide:.35,hover:1.3,size:.55,yeni:1},
  neon2:{ad:"Neon (yeni çizim)",sp:1.8,freq:1.9,amp:.9,stiff:1,tail:.9,fin:.6,pect:1.5,pectA:1,glide:1.3,hover:.5,size:.38,yeni:1},
+ kod:{ad:"Kod ile çizilen Koi",sp:1,freq:1,amp:1,stiff:1,tail:1,fin:1.5,pect:1,pectA:1,glide:1,hover:1,size:1,kod:"normal"},
+ kod_albino:{ad:"Kod Koi · Albino",sp:1,freq:1,amp:1,stiff:1,tail:1,fin:1.5,pect:1,pectA:1,glide:1,hover:1,size:1,kod:"albino",mut:1},
+ kod_transparent:{ad:"Kod Koi · Transparan",sp:1,freq:1,amp:1,stiff:1,tail:1,fin:1.5,pect:1,pectA:1,glide:1,hover:1,size:1,kod:"transparent",mut:1},
+ kod_melanistic:{ad:"Kod Koi · Melanistik",sp:1,freq:1,amp:1,stiff:1,tail:1,fin:1.5,pect:1,pectA:1,glide:1,hover:1,size:1,kod:"melanistic",mut:1},
+ kod_gold:{ad:"Kod Koi · Altın",sp:1,freq:1,amp:1,stiff:1,tail:1,fin:1.5,pect:1,pectA:1,glide:1,hover:1,size:1,kod:"gold",mut:1},
  gold:{ad:"Japon Balığı",sp:.55,freq:.9,amp:.8,stiff:.7,tail:1.7,fin:1.8,pect:1.7,pectA:1.3,glide:.9,hover:1.4,size:.62}
 };
 let SP=null,MP=null,F=null;
@@ -87,7 +93,9 @@ const pr=gl.createProgram();gl.attachShader(pr,sh(gl.VERTEX_SHADER,vs));gl.attac
 const aL=gl.getAttribLocation(pr,"a"),uL=gl.getAttribLocation(pr,"u"),ML=gl.getUniformLocation(pr,"M"),LL=gl.getUniformLocation(pr,"L"),DL=gl.getUniformLocation(pr,"D");
 gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
 const TEX={};
+function upTex(im){const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,true);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,im);gl.generateMipmap(gl.TEXTURE_2D);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);return {t,w:im.width,h:im.height}}
 function tex(X,name,cb){const key=X.dir+"/"+name;
+ if(!TEX[key]&&X.cv&&X.cv[name])TEX[key]=Promise.resolve(upTex(X.cv[name]));
  if(!TEX[key])TEX[key]=new Promise(res=>{const im=new Image();im.onload=()=>{const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,true);
   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,im);gl.generateMipmap(gl.TEXTURE_2D);
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
@@ -143,7 +151,7 @@ function newF(){return {x:.12+Math.random()*.76,y:.15+Math.random()*.62,v:0,pitc
 function pick(){const ahead=Math.random()<.75,d=F.dir*(ahead?1:-1);let tx=F.x+d*(.3+Math.random()*.35);if(tx<.18||tx>.82)tx=F.x-d*(.3+Math.random()*.3);F.tx=Math.max(.18,Math.min(.82,tx));F.ty=.15+Math.random()*.62;F.pickT=performance.now()}
 function lenPx(f){return ALL?Math.min(W,H)*.42*f.mp.size:Math.min(W,H)*.8*(opt.big?.78:.55)}
 const sel=document.getElementById("sel");
-function setMode(v){const list=v==="hepsi"?Object.keys(MPS).filter(k=>!MPS[k].mut&&!MPS[k].yeni):v==="yeni"?["koi2","clown2","neon2","koi","clown","neon"]:v==="koimut"?["koi","koi_albino","koi_transparent","koi_melanistic","koi_gold","koi_glitch"]:[v];ALL=v==="hepsi"||v==="koimut"||v==="yeni";let left=list.length;const ready=()=>{FISH=list.map(k=>{const f={sp:SPEC[k],mp:MPS[k],F:newF()};F=f.F;SP=f.sp;MP=f.mp;pick();return f});window.__FISH=FISH;window.__F=FISH[0].F};
+function setMode(v){const list=v==="hepsi"?Object.keys(MPS).filter(k=>!MPS[k].mut&&!MPS[k].yeni&&!MPS[k].kod):v==="kodhep"?["kod","kod_albino","kod_transparent","kod_melanistic","kod_gold"]:v==="yeni"?["koi2","clown2","neon2","koi","clown","neon"]:v==="koimut"?["koi","koi_albino","koi_transparent","koi_melanistic","koi_gold","koi_glitch"]:[v];ALL=v==="hepsi"||v==="koimut"||v==="yeni"||v==="kodhep";for(const k of list)if(MPS[k].kod&&!SPEC[k]&&window.KODBALIK)SPEC[k]=KODBALIK.build(MPS[k].kod);let left=list.length;const ready=()=>{FISH=list.map(k=>{const f={sp:SPEC[k],mp:MPS[k],F:newF()};F=f.F;SP=f.sp;MP=f.mp;pick();return f});window.__FISH=FISH;window.__F=FISH[0].F};
  for(const k of list){const X=SPEC[k];if(X.R.govde.vao){if(--left===0)ready()}else loadSpec(X,()=>{if(--left===0)ready()})}}
 cv.addEventListener("pointerdown",e=>{if(!FISH.length)return;const now=performance.now();let best=null,bd=1e9;
  for(const f of FISH){f.F.lookAt=[e.clientX,e.clientY];f.F.lookUntil=now+1600;const d=Math.hypot(f.F.x*W-e.clientX,f.F.y*H-e.clientY);if(d<bd){bd=d;best=f}}
@@ -199,7 +207,7 @@ function loop(now){requestAnimationFrame(loop);let dt=Math.min(.05,(now-(last||n
  const ord=ALL?FISH.slice().sort((a,b)=>a.mp.size-b.mp.size).reverse():FISH;for(const f of ord)draw(f,now,dt);
  window.__ms=(window.__ms||0)*.95+(performance.now()-t0)*.05;stEl.textContent=ALL?FISH.length+" balık · "+Math.round(1000/fpsA)+" fps · tanka dokun":MODEN[FISH[0].F.mode]+" · tanka dokun"}
 fetch("turler.json").then(r=>r.json()).then(J=>{Object.assign(SPEC,J);
- sel.innerHTML='<option value="hepsi">Hepsi birlikte</option><option value="koimut">Koi mutasyonları</option><option value="yeni">Yeni çizim + eski (karşılaştırma)</option>'+Object.keys(MPS).map(k=>'<option value="'+k+'">'+MPS[k].ad+"</option>").join("");
- const q=(location.search.match(/tur=(\w+)/)||[])[1];sel.value=q&&(MPS[q]||q==="koimut"||q==="yeni")?q:"hepsi";setMode(sel.value);sel.addEventListener("change",()=>setMode(sel.value));requestAnimationFrame(loop)});
+ sel.innerHTML='<option value="hepsi">Hepsi birlikte</option><option value="kodhep">Kod ile çizilen Koi (5 renk)</option><option value="koimut">Koi mutasyonları</option><option value="yeni">Yeni çizim + eski (karşılaştırma)</option>'+Object.keys(MPS).map(k=>'<option value="'+k+'">'+MPS[k].ad+"</option>").join("");
+ const q=(location.search.match(/tur=(\w+)/)||[])[1];sel.value=q&&(MPS[q]||q==="koimut"||q==="yeni"||q==="kodhep")?q:"hepsi";setMode(sel.value);sel.addEventListener("change",()=>setMode(sel.value));requestAnimationFrame(loop)});
 </script>
 </body></html>
