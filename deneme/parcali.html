@@ -140,6 +140,9 @@ function field(r,X,Y,S,vi){const qd=vi!=null&&r.Qd?r.Qd[vi]:-1;const HEAD=SP.hea
    const f=S.fold;dx-=o*.62*f;dy+=(k==="top"?1:-1)*o*.5*f;
    // ürkünce bir an fazladan açılır
    if(S.flare>0)dy+=(k==="top"?-1:1)*o*.12*S.flare}
+ if(k==="pect"&&r.cover){// yüzgeç kendi izini hiç terk etmez: sadece dışa uzar ve uçta hafif çırpar (altı asla açılmaz)
+   const d=Math.max(0,Math.min(1,Math.hypot(X-r.at[0],Y-r.at[1])/r.len)),f=S.f+(r.far?Math.PI*.85:0)-d*1.2,o=.5+.5*Math.sin(f),fx=r.at[0]-X,fy=Y-r.at[1],open=1-S.fold;
+   const ext=.03+.09*open*o+.03*(1-open);dx-=fx*ext;dy+=fy*ext+2.2*open*Math.sin(f+.6)*d*d;return [dx,dy]}
  if(k==="pect"){const d=Math.max(0,Math.min(1,Math.hypot(X-r.at[0],Y-r.at[1])/r.len)),f=S.f+(r.far?Math.PI*.85:0)-d*1.4;
    const open=1-S.fold,o=.5+.5*Math.sin(f),fx=r.at[0]-X,fy=Y-r.at[1];
    dx+=fx*(.18+.45*S.fold)+fx*.35*open*o;dy+=(-fy*(.45*S.fold+.2*open*o)+7*MP.pectA*open*Math.sin(f+.6))*d;dx*=MP.pectA>1?1+(MP.pectA-1)*.5:1}
